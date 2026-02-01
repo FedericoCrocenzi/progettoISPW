@@ -1,0 +1,123 @@
+/* Stato NORMALE */
+.bottone-giallo {
+    -fx-background-color: #FFF176;
+    -fx-text-fill: #333333;
+    -fx-background-radius: 15;
+    -fx-font-weight: normal;
+    -fx-font-size: 16px;
+    -fx-cursor: hand;
+}
+
+/* Stato QUANDO PASSI SOPRA (Hover) */
+.bottone-giallo:hover {
+    -fx-background-color: #ffffa8; /* Un po' più chiaro */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 2);
+}
+
+/* Stato QUANDO CLICCHI (Pressed) */
+.bottone-giallo:pressed {
+    -fx-background-color: #d4c662; /* Più scuro */
+    -fx-translate-y: 2; /* Si sposta giù di 2 pixel per sembrare premuto */
+}
+
+/* --- Stato NORMALE (Copia esatta delle tue impostazioni) --- */
+.btn-scanner {
+    -fx-background-color: transparent;
+    -fx-border-color: white;
+    -fx-border-width: 2;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+
+    /* La tua ombra */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5);
+
+    /* Testo */
+    -fx-text-fill: white;
+    -fx-font-size: 10px;
+    -fx-font-weight: normal;
+    -fx-cursor: hand;
+}
+
+/* --- Quando PASSI SOPRA (Hover) --- */
+.btn-scanner:hover {
+    /* Aggiunge un velo bianco al 10% per far capire che è attivo */
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* --- Quando CLICCHI (Pressed) - L'animazione che cercavi --- */
+.btn-scanner:pressed {
+    /* Diventa bianco semitrasparente più visibile (30%) */
+    -fx-background-color: rgba(255, 255, 255, 0.3);
+
+    /* Opzionale: riduce l'ombra per dare l'effetto che il bottone si "abbassa" */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 2);
+    -fx-translate-y: 1;
+}
+
+/* --- Stile Base dei pulsanti del menu in basso --- */
+.menu-btn {
+    -fx-background-color: transparent; /* Toglie lo sfondo grigio default */
+    -fx-text-fill: white;              /* Testo bianco */
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER;             /* Centra tutto */
+    -fx-content-display: TOP;          /* Mette l'icona SOPRA il testo */
+    -fx-border-width: 0;               /* Nessun bordo */
+}
+
+/* --- Quando il mouse ci passa sopra (Hover) --- */
+.menu-btn:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(255, 255, 255, 0.8), 10, 0, 0, 0); /* Leggero bagliore simulato */
+    -fx-text-fill: #FFFFFF;            /* Bianco */
+}
+
+/* --- QUANDO È ATTIVO/PREMUTO (Selected) --- */
+.menu-btn:selected {
+    -fx-text-fill: #FFFFFF; /*#FFF176;             Diventa Giallo Agricenter */
+    -fx-underline: true;               /* SOTTOLINEA IL NOME */
+    -fx-font-weight: bold;             /* Testo in grassetto */
+    -fx-background-color: rgba(255, 255, 255, 0.1); /* Leggero sfondo per evidenziare */
+}
+
+/* --- BOTTONE RICERCA (Lente) --- */
+
+/* 1. Stato NORMALE */
+.bottone-ricerca {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-padding: 0; /* Rimuove bordi inutili */
+}
+
+/* 2. Stato HOVER (Quando il mouse passa sopra) */
+.bottone-ricerca:hover {
+    -fx-scale-x: 1.1; /* Si ingrandisce del 10% (effetto "pop") */
+    -fx-scale-y: 1.1;
+    -fx-effect: dropshadow(three-pass-box, rgba(255,255,255,0.3), 5, 0, 0, 0); /* Un leggero alone */
+}
+
+/* 3. Stato PRESSED (Quando CLICCHI) - Qui sta la magia */
+.bottone-ricerca:pressed {
+    -fx-background-color: transparent; /* Rimane trasparente */
+    -fx-scale-x: 0.9;  /* Si rimpicciolisce (sembra andare in fondo) */
+    -fx-scale-y: 0.9;
+    -fx-translate-y: 2; /* Si sposta giù di 2 pixel */
+}
+
+.pulsantiCarrello{
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-padding: 0; /* Rimuove bordi inutili */
+    -fx-background-radius: 15
+}
+
+.pulsantiCarrello:hover{
+    -fx-scale-x: 1.1; /* Si ingrandisce del 10% (effetto "pop") */
+    -fx-scale-y: 1.1;
+    -fx-background-color: #F5F5F5;
+}
+
+.pulsantiCarrello:pressed{
+    -fx-scale-x: 0.9;  /* Si rimpicciolisce (sembra andare in fondo) */
+    -fx-scale-y: 0.9;
+    -fx-translate-y: 2; /* Si sposta giù di 2 pixel */
+}
