@@ -48,7 +48,7 @@ public class Carrello extends Subject {
         for (Map.Entry<Articolo, Integer> entry : contenuto.entrySet()) {
             Articolo art = entry.getKey();
             Integer qta = entry.getValue();
-            totale += art.getPrezzo() * qta;
+            totale += art.ottieniPrezzo() * qta;
         }
         return totale;
     }
