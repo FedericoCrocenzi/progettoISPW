@@ -16,7 +16,7 @@ public abstract class Articolo implements Serializable {
     private int id;
     private String descrizione;
     private double prezzo;
-    private int scorta; // Corrisponde a "quantitaDisponibile" o "scorta" nel diagramma
+    private int scorta;
 
     // Costruttore
     public Articolo(int id, String descrizione, double prezzo, int scorta) {
@@ -31,7 +31,6 @@ public abstract class Articolo implements Serializable {
     /**
      * Verifica la disponibilità in magazzino.
      * Metodo concreto ereditato da tutte le sottoclassi.
-     * Corrisponde a: +Disponibilita(qtaRichiesta): boolean
      */
     public boolean checkDisponibilita(int qtaRichiesta) {
         return this.scorta >= qtaRichiesta;
@@ -44,7 +43,6 @@ public abstract class Articolo implements Serializable {
     public void aggiornaScorta(int quantita) {
         int nuovaScorta = this.scorta + quantita;
         if (nuovaScorta < 0) {
-            // Qui potremmo lanciare un'eccezione custom, per ora gestiamo base
             throw new IllegalArgumentException("La scorta non può essere negativa");
         }
         this.scorta = nuovaScorta;
@@ -54,12 +52,32 @@ public abstract class Articolo implements Serializable {
 
     /**
      * Metodo astratto che forza le sottoclassi a definire i propri dettagli specifici.
-     * Questo abilita il BINDING DINAMICO: a runtime verrà eseguito il metodo
-     * della classe concreta (es. Mangime o Utensile).
      */
     public abstract String getDettagliSpecifici();
 
-    // --- GETTERS & SETTERS ---
+    // --- OVERRIDE METODI OBJECT (Fondamentali per l'uso nelle MAPPE del Carrello) ---
+
+    @Override
+    public boolean equals(Object o) {
+        // 1. Se è lo stesso oggetto in memoria, è uguale
+        if (this == o) return true;
+
+        // 2. Se l'altro oggetto è null o è di una classe diversa, non sono uguali
+        if (o == null || getClass() != o.getClass()) return false;
+
+        // 3. Casting e confronto sull'ID (chiave primaria logica)
+        Articolo articolo = (Articolo) o;
+        return id == articolo.id;
+    }
+
+    @Override
+    public int hashCode() {
+        // Restituisce l'hash basato sull'ID.
+        // Necessario perché oggetti uguali DEVONO avere lo stesso hash.
+        return Integer.hashCode(id);
+    }
+
+    // --- METODI DI LETTURA (NO GETTER STANDARD) ---
 
     public int leggiId() { return id; }
     public String leggiDescrizione() { return descrizione; }

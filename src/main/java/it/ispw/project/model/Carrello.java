@@ -27,19 +27,19 @@ public class Carrello extends Subject {
         }
 
         // NOTIFICA: Avviso la GUI che il totale è cambiato
-        super.notifyObservers();
+        super.notifyObservers(this);
     }
 
     public void rimuoviArticolo(Articolo articolo) {
         if (contenuto.containsKey(articolo)) {
             contenuto.remove(articolo);
-            super.notifyObservers();
+            super.notifyObservers(this);
         }
     }
 
     public void svuotaCarrello() {
         contenuto.clear();
-        super.notifyObservers();
+        super.notifyObservers(this);
     }
 
     public double calcolaTotale() {

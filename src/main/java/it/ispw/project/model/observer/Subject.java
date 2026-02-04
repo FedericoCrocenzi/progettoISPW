@@ -22,7 +22,7 @@ public abstract class Subject {
     }
 
     // Metodo protetto: solo le sottoclassi (es. Carrello) possono lanciare notifiche
-    protected void notifyObservers() {
+    protected void notifyObservers(Object data) {
         for (Observer o : observers) {
             o.update(); // Chiamata polimorfica
         }
