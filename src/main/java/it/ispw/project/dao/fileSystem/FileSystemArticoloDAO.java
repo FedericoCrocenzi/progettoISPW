@@ -1,4 +1,4 @@
-package it.ispw.project.dao.FileSystem;
+package it.ispw.project.dao.fileSystem;
 
 import it.ispw.project.dao.ArticoloDAO;
 import it.ispw.project.model.Articolo;

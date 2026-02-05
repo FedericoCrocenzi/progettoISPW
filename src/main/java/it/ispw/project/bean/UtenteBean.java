@@ -9,6 +9,7 @@ public class UtenteBean {
     // Dati specifici del cliente (null se è un commesso)
     private String email;
     private String indirizzo;
+    private String sessionId;
 
     public UtenteBean() {}
 
@@ -28,4 +29,8 @@ public class UtenteBean {
 
     public String getIndirizzo() { return indirizzo; }
     public void setIndirizzo(String indirizzo) { this.indirizzo = indirizzo; }
+
+    public String getSessionId() { return sessionId; }
+    public void setSessionId(String sessionId) { this.sessionId = sessionId; }
+
 }
