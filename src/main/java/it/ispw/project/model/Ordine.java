@@ -1,6 +1,5 @@
 package it.ispw.project.model;
 
-
 import java.util.Date;
 import java.util.Map;
 
@@ -9,16 +8,15 @@ public class Ordine {
     private int id;
     private Date dataCreazione;
     private double totale;
-    private String stato; // Es: "PAGATO", "SPEDITO"
+    private String stato;
 
-    // Relazione con il Cliente (proprietario dell'ordine)
-    private Cliente cliente;
+    // CORREZIONE 1: Usiamo Utente, non Cliente (coerenza con Single Table)
+    private Utente cliente;
 
-    // Composizione: L'ordine contiene la lista degli articoli acquistati
-    // Potremmo usare una classe 'RigaOrdine', ma una Map qui è sufficiente per iniziare
     private Map<Articolo, Integer> articoliAcquistati;
 
-    public Ordine(int id, Date dataCreazione, Cliente cliente, Map<Articolo, Integer> articoli, double totale) {
+    // Costruttore
+    public Ordine(int id, Date dataCreazione, Utente cliente, Map<Articolo, Integer> articoli, double totale) {
         this.id = id;
         this.dataCreazione = dataCreazione;
         this.cliente = cliente;
@@ -27,16 +25,30 @@ public class Ordine {
         this.stato = "IN_ELABORAZIONE";
     }
 
-    // Metodi di business
+    // --- LOGICA DI BUSINESS ---
+
     public void completaOrdine() {
         this.stato = "COMPLETATO";
     }
 
-    // Getters & Setters
-    public int getId() { return id; }
+    /**
+     * CORREZIONE 2: Metodo semantico per la persistenza.
+     * Questo NON è un setter generico. Serve per trasformare l'oggetto
+     * da "Transiente" (in memoria) a "Persistente" (con ID DB).
+     */
+    public void registraIdGenerato(int id) {
+        if (this.id != 0) {
+            // Opzionale: impedisce di sovrascrivere l'ID se esiste già
+            throw new IllegalStateException("L'ordine ha già un ID assegnato!");
+        }
+        this.id = id;
+    }
+
+    // --- GETTERS (Solo lettura) ---
+    public int leggiId() { return id; }
     public Date getDataCreazione() { return dataCreazione; }
     public double getTotale() { return totale; }
     public String getStato() { return stato; }
-    public Cliente getCliente() { return cliente; }
+    public Utente getCliente() { return cliente; } // Ritorna Utente
     public Map<Articolo, Integer> getArticoliAcquistati() { return articoliAcquistati; }
 }
