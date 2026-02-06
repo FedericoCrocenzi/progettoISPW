@@ -1,6 +1,6 @@
 package it.ispw.project.graphicController;
 
-import it.ispw.project.graphicController.ViewSwitcher;
+import it.ispw.project.view.ViewSwitcher;
 import javafx.fxml.FXML;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;

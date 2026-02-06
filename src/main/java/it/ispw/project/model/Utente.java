@@ -34,12 +34,12 @@ public class Utente {
 
     // --- GETTERS (Solo lettura, niente Setter) ---
 
-    public int getId() { return id; }
-    public String getUsername() { return username; }
-    public String getPassword() { return password; }
-    public String getRuolo() { return ruolo; }
-    public String getEmail() { return email; }
-    public String getIndirizzo() { return indirizzo; }
+    public int ottieniId() { return id; }
+    public String leggiUsername() { return username; }
+    public String ottieniPassword() { return password; }
+    public String scopriRuolo() { return ruolo; }
+    public String leggiEmail() { return email; }
+    public String leggiIndirizzo() { return indirizzo; }
 
     // N.B. Se in futuro serve modificare l'email, creerai un metodo di business:
     // public void aggiornaProfilo(String email, String indirizzo) { ... }

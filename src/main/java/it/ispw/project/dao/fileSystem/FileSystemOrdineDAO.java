@@ -54,7 +54,7 @@ public class FileSystemOrdineDAO implements OrdineDAO {
             sb.append(ordine.getDataCreazione().getTime()).append(";"); // Salvo timestamp long
             sb.append(ordine.getTotale()).append(";");
             sb.append(ordine.getStato()).append(";");
-            sb.append(ordine.getCliente().getId()).append(";");
+            sb.append(ordine.getCliente().ottieniId()).append(";");
             sb.append(articoliStr.toString()); // colonna articoli
 
             bw.write(sb.toString());

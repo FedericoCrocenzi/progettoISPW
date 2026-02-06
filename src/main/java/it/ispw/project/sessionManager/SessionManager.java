@@ -36,7 +36,7 @@ public class SessionManager {
         Session existingSession = checkDuplicateSessionUtente(utente);
 
         if (existingSession != null) {
-            logger.log(Level.WARNING, "L'utente {0} ha già una sessione attiva.", utente.getUsername());
+            logger.log(Level.WARNING, "L'utente {0} ha già una sessione attiva.", utente.leggiUsername());
             return existingSession.getSessionId();
         }
 
@@ -45,7 +45,7 @@ public class SessionManager {
         String sessionId = session.getSessionId();
         activeSessions.put(sessionId, session);
 
-        logger.log(Level.INFO, "Nuova sessione creata: {0} per utente {1}", new Object[]{sessionId, utente.getUsername()});
+        logger.log(Level.INFO, "Nuova sessione creata: {0} per utente {1}", new Object[]{sessionId, utente.leggiUsername()});
         return sessionId;
     }
 
@@ -66,7 +66,7 @@ public class SessionManager {
         return activeSessions.values()
                 .stream()
                 // Controllo per username (univoco)
-                .filter(session -> session.getUsername().equals(utente.getUsername()))
+                .filter(session -> session.getUsername().equals(utente.leggiUsername()))
                 .findFirst()
                 .orElse(null);
     }

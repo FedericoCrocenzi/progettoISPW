@@ -16,6 +16,8 @@ public class Queries {
 
     public static final String SELECT_UTENTE_BY_ID =
             "SELECT * FROM utente WHERE id = ?";
+    public static final String INSERT_UTENTE =
+            "INSERT INTO utente (username, password, ruolo, email, indirizzo) VALUES (?, ?, ?, ?, ?)";
 
     // =================================================================================
     // QUERY TABELLA ARTICOLO

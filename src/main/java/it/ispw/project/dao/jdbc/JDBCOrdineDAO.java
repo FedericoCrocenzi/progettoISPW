@@ -42,7 +42,7 @@ public class JDBCOrdineDAO implements OrdineDAO {
             stmtOrdine.setTimestamp(1, new Timestamp(ordine.getDataCreazione().getTime()));
             stmtOrdine.setDouble(2, ordine.getTotale());
             stmtOrdine.setString(3, ordine.getStato());
-            stmtOrdine.setInt(4, ordine.getCliente().getId());
+            stmtOrdine.setInt(4, ordine.getCliente().ottieniId());
 
             int affectedRows = stmtOrdine.executeUpdate();
 

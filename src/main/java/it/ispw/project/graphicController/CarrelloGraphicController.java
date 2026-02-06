@@ -18,11 +18,15 @@ public class CarrelloGraphicController implements ControllerGraficoBase, Observe
     @FXML private Label lblTotale;
 
     private AcquistaArticoloControllerApplicativo appController;
-    private String sessionId;
+    private String sessionId; // Manteniamo il sessionId per riferimenti futuri se necessario
 
     @Override
     public void initData(String sessionId) {
         this.sessionId = sessionId;
+
+        // SOLUZIONE:
+        // Creiamo il controller applicativo QUI, dove abbiamo il sessionId,
+        // invece che nel costruttore della classe.
         this.appController = new AcquistaArticoloControllerApplicativo(sessionId);
 
         // REGISTRAZIONE OBSERVER:

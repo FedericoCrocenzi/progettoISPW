@@ -1,4 +1,4 @@
-package it.ispw.project.graphicController;
+package it.ispw.project.view;
 
 import it.ispw.project.graphicController.ControllerGraficoBase;
 import javafx.fxml.FXMLLoader;

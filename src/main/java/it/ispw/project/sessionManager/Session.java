@@ -9,22 +9,29 @@ public class Session {
 
     private final String sessionId;
 
-    // Dati dell'utente appiattiti (stile esempio) o oggetto intero
+    // AGGIUNTO: Conserviamo l'intero oggetto Utente
+    private Utente utenteCorrente;
+
+    // Dati appiattiti (se ti servono per accesso rapido)
     private int userId;
     private String username;
-    private String ruolo; // Nel tuo esempio era roleEnum, qui usiamo String per coerenza con Utente
+    private String ruolo;
 
-    // LO STATO DELLA SESSIONE: Il Carrello!
-    // Sostituisce "actualGuidedTour" del tuo esempio
+    // Lo stato della sessione (Carrello)
     private Carrello carrelloCorrente;
 
     public Session(Utente utente) {
         this.sessionId = generateSessionId();
-        this.userId = utente.getId();
-        this.username = utente.getUsername();
-        this.ruolo = utente.getRuolo();
 
-        // Ogni nuova sessione nasce con un carrello vuoto pronto all'uso
+        // Assegnazione oggetto completo
+        this.utenteCorrente = utente;
+
+        // Assegnazione dati derivati
+        this.userId = utente.ottieniId(); // Assicurati che Utente abbia questo metodo (o ottieniId)
+        this.username = utente.leggiUsername();
+        this.ruolo = utente.scopriRuolo();
+
+        // Inizializza carrello vuoto
         this.carrelloCorrente = new Carrello();
     }
 
@@ -32,30 +39,15 @@ public class Session {
         return UUID.randomUUID().toString();
     }
 
-    // --- Getters & Setters ---
-
-    public String getSessionId() {
-        return sessionId;
+    // --- NUOVO METODO NECESSARIO ---
+    public Utente getUtenteCorrente() {
+        return utenteCorrente;
     }
 
-    public int getUserId() {
-        return userId;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getRuolo() {
-        return ruolo;
-    }
-
-    public Carrello getCarrelloCorrente() {
-        return carrelloCorrente;
-    }
-
-    // Utile se vogliamo resettare il carrello senza distruggere la sessione
-    public void resetCarrello() {
-        this.carrelloCorrente = new Carrello();
-    }
+    // --- Getters Esistenti ---
+    public String getSessionId() { return sessionId; }
+    public int getUserId() { return userId; }
+    public String getUsername() { return username; }
+    public String getRuolo() { return ruolo; }
+    public Carrello getCarrelloCorrente() { return carrelloCorrente; }
 }
