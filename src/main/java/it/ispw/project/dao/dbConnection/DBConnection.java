@@ -6,25 +6,34 @@ import java.sql.SQLException;
 
 public class DBConnection {
 
-    private static final String URL = "jdbc:mysql://localhost:3306/agricola_db";
-    private static final String USER = "root"; // Metti il tuo user (es. root)
-    private static final String PASS = "root"; // Metti la tua password (o lascia vuoto "")
-    private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
+    // 1. CREDENZIALI DEL DATABASE (L'utente tecnico creato via SQL)
+    // NON toccare questi valori: servono per "accendere" la connessione.
+    private static final String USER = "ispw_user";
+    private static final String PASS = "password123";
 
-    private static Connection conn = null;
+    // Assicurati che il nome del DB dopo la porta 3306 sia corretto
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/applicazioneISPW";
+    private static final String DRIVER_CLASS_NAME = "com.mysql.cj.jdbc.Driver";
+
+    private static Connection connection = null;
 
     private DBConnection() {}
 
+    /**
+     * Restituisce la connessione attiva al Database.
+     */
     public static Connection getConnection() {
-        if (conn == null) {
-            try {
-                Class.forName(DRIVER);
-                conn = DriverManager.getConnection(URL, USER, PASS);
-            } catch (ClassNotFoundException | SQLException e) {
-                e.printStackTrace();
-                // In un progetto reale qui lanceremmo una SystemException
-            }
+        try {
+            // Caricamento del Driver (necessario per versioni vecchie di Java/Tomcat, male non fa)
+            Class.forName(DRIVER_CLASS_NAME);
+
+            // Creazione connessione usando l'Utente Tecnico
+            return DriverManager.getConnection(DB_URL, USER, PASS);
+
+        } catch (ClassNotFoundException | SQLException e) {
+            System.err.println("ERRORE CRITICO DB CONNECTION:");
+            e.printStackTrace();
+            return null;
         }
-        return conn;
     }
 }

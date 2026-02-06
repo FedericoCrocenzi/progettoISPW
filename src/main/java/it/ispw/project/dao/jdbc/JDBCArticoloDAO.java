@@ -2,6 +2,7 @@ package it.ispw.project.dao.jdbc;
 
 import it.ispw.project.dao.ArticoloDAO;
 import it.ispw.project.dao.dbConnection.DBConnection;
+import it.ispw.project.dao.dbConnection.Queries; // Importiamo le costanti SQL
 import it.ispw.project.model.Articolo;
 import it.ispw.project.model.Fitofarmaco;
 import it.ispw.project.model.Mangime;
@@ -19,9 +20,12 @@ public class JDBCArticoloDAO implements ArticoloDAO {
     @Override
     public Articolo selectArticoloById(int id) {
         Connection conn = DBConnection.getConnection();
-        String query = "SELECT * FROM articolo WHERE id = ?";
 
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+        // Controllo robustezza
+        if (conn == null) return null;
+
+        // Uso costante SQL
+        try (PreparedStatement stmt = conn.prepareStatement(Queries.SELECT_ARTICOLO_BY_ID)) {
             stmt.setInt(1, id);
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -36,15 +40,17 @@ public class JDBCArticoloDAO implements ArticoloDAO {
     }
 
     /**
-     * Restituisce TUTTO il catalogo (es. per popolare la homepage).
+     * Restituisce TUTTO il catalogo.
      */
     @Override
     public List<Articolo> selectAllArticoli() {
         List<Articolo> catalogo = new ArrayList<>();
         Connection conn = DBConnection.getConnection();
-        String query = "SELECT * FROM articolo";
 
-        try (PreparedStatement stmt = conn.prepareStatement(query);
+        if (conn == null) return catalogo; // Ritorna lista vuota per evitare NPE nel controller
+
+        // Uso costante SQL
+        try (PreparedStatement stmt = conn.prepareStatement(Queries.SELECT_ALL_ARTICOLI);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
@@ -62,15 +68,15 @@ public class JDBCArticoloDAO implements ArticoloDAO {
 
     /**
      * Aggiorna SOLO la quantità disponibile (Scorta).
-     * Usato dopo che un ordine è stato finalizzato.
      */
     @Override
     public void updateScorta(Articolo articolo) {
         Connection conn = DBConnection.getConnection();
-        String query = "UPDATE articolo SET scorta = ? WHERE id = ?";
+        if (conn == null) return;
 
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-            // Usiamo i tuoi metodi custom del Model (leggi/ottieni)
+        // Uso costante SQL
+        try (PreparedStatement stmt = conn.prepareStatement(Queries.UPDATE_ARTICOLO_SCORTA)) {
+            // Usiamo i metodi di lettura del Model
             stmt.setInt(1, articolo.ottieniScorta());
             stmt.setInt(2, articolo.leggiId());
 
@@ -83,15 +89,16 @@ public class JDBCArticoloDAO implements ArticoloDAO {
 
     /**
      * Ricerca avanzata per filtri (Nome, Tipo, Prezzo).
-     * Gestisce dinamicamente quali filtri applicare.
      */
     @Override
     public List<Articolo> selectByFilter(String descrizione, String tipo, Double min, Double max) {
         List<Articolo> risultati = new ArrayList<>();
         Connection conn = DBConnection.getConnection();
 
-        // Costruzione dinamica della query
-        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM articolo WHERE 1=1");
+        if (conn == null) return risultati;
+
+        // Costruzione dinamica partendo dalla base "SELECT ... WHERE 1=1"
+        StringBuilder queryBuilder = new StringBuilder(Queries.SELECT_ARTICOLO_BASE);
 
         if (descrizione != null && !descrizione.isEmpty()) {
             queryBuilder.append(" AND descrizione LIKE ?");
@@ -135,8 +142,6 @@ public class JDBCArticoloDAO implements ArticoloDAO {
     }
 
     // --- METODO PRIVATO DI SUPPORTO (Factory Method Interno) ---
-    // Questo è il cuore del Polimorfismo nel DAO.
-    // Trasforma una riga SQL nell'oggetto Java corretto (Mangime, Utensile, ecc.)
     private Articolo istanziaArticoloDaResultSet(ResultSet rs) throws SQLException {
 
         // 1. Leggo i dati comuni
@@ -144,7 +149,7 @@ public class JDBCArticoloDAO implements ArticoloDAO {
         String desc = rs.getString("descrizione");
         double prezzo = rs.getDouble("prezzo");
         int scorta = rs.getInt("scorta");
-        String tipo = rs.getString("tipo"); // Discriminatore
+        String tipo = rs.getString("tipo");
 
         // 2. Switch sul tipo per creare l'istanza specifica
         switch (tipo) {
@@ -158,11 +163,11 @@ public class JDBCArticoloDAO implements ArticoloDAO {
                 return new Utensile(id, desc, prezzo, scorta, materiale);
 
             case "FITOFARMACO":
+                // Handle 0/1 tinyint as boolean
                 boolean patentino = rs.getBoolean("richiede_patentino");
                 return new Fitofarmaco(id, desc, prezzo, scorta, patentino);
 
             default:
-                // Se il tipo nel DB non corrisponde a nulla di noto, ritorniamo null o logghiamo errore
                 System.err.println("Tipo articolo non riconosciuto: " + tipo);
                 return null;
         }

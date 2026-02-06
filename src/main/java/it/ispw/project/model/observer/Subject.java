@@ -5,8 +5,6 @@ import java.util.List;
 
 public abstract class Subject {
 
-    // Lista di oggetti che osservano questo subject
-    // Usiamo List<Observer> per sfruttare il POLIMORFISMO
     private List<Observer> observers;
 
     public Subject() {
@@ -21,10 +19,11 @@ public abstract class Subject {
         observers.remove(o);
     }
 
-    // Metodo protetto: solo le sottoclassi (es. Carrello) possono lanciare notifiche
+    // Metodo protetto
     protected void notifyObservers(Object data) {
         for (Observer o : observers) {
-            o.update(); // Chiamata polimorfica
+            // CORREZIONE QUI: Devi passare 'data' al metodo update!
+            o.update(data);
         }
     }
 }

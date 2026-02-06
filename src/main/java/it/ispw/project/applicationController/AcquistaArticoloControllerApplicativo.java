@@ -37,7 +37,7 @@ public class AcquistaArticoloControllerApplicativo {
     // Stato della sessione corrente
     private Carrello carrello;
 
-    public AcquistaArticoloControllerApplicativo() {
+    public AcquistaArticoloControllerApplicativo(String sessionId) {
         this.carrello = new Carrello();
     }
 
