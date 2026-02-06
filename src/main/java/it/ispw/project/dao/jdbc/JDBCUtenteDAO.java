@@ -2,15 +2,20 @@ package it.ispw.project.dao.jdbc;
 
 import it.ispw.project.dao.UtenteDAO;
 import it.ispw.project.dao.dbConnection.DBConnection;
-import it.ispw.project.dao.dbConnection.Queries; // Importiamo la classe con le costanti SQL
+import it.ispw.project.dao.dbConnection.Queries;
 import it.ispw.project.model.Utente;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class JDBCUtenteDAO implements UtenteDAO {
+
+    // Logger per tracciare operazioni ed errori in modo professionale
+    private final Logger logger = Logger.getLogger(JDBCUtenteDAO.class.getName());
 
     /**
      * Verifica le credenziali nel DB.
@@ -22,28 +27,33 @@ public class JDBCUtenteDAO implements UtenteDAO {
     public Utente checkCredentials(String identifier, String password) {
         Connection conn = DBConnection.getConnection();
 
-        // 1. Controllo di sicurezza: se la connessione è fallita, ritorniamo null invece di crashare
+        // 1. Controllo di sicurezza con Logger
         if (conn == null) {
-            System.err.println("[JDBCUtenteDAO] Errore: Connessione al database non disponibile.");
+            logger.log(Level.WARNING, "[JDBCUtenteDAO] Errore: Connessione al database non disponibile.");
             return null;
         }
 
-        // 2. Uso la query centralizzata
-        // Query attesa: SELECT * FROM utente WHERE (username = ? OR email = ?) AND password = ?
-        String query = Queries.SELECT_UTENTE_BY_CREDS;
-
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-
+        try (
+                // 2. Configurazione dello statement stile WanderWise
+                PreparedStatement stmt = conn.prepareStatement(
+                        Queries.SELECT_UTENTE_BY_CREDS,
+                        ResultSet.TYPE_SCROLL_INSENSITIVE,
+                        ResultSet.CONCUR_READ_ONLY)
+        ) {
             // 3. Binding dei parametri
             // Il primo ? è per username, il secondo ? è per email.
-            // Passiamo lo stesso input ("identifier") a entrambi.
             stmt.setString(1, identifier);
             stmt.setString(2, identifier);
             stmt.setString(3, password);
 
             try (ResultSet rs = stmt.executeQuery()) {
+                // Usiamo rs.next() che è standard per verificare se c'è almeno un risultato
                 if (rs.next()) {
-                    // 4. Costruzione dell'oggetto Utente con tutti i dati recuperati
+
+                    // Log opzionale per debug (utile per capire chi si è loggato)
+                    logger.log(Level.INFO, "Login effettuato con successo per: " + identifier);
+
+                    // 4. Costruzione dell'oggetto Utente
                     return new Utente(
                             rs.getInt("id"),
                             rs.getString("username"),
@@ -52,10 +62,13 @@ public class JDBCUtenteDAO implements UtenteDAO {
                             rs.getString("email"),
                             rs.getString("indirizzo")
                     );
+                } else {
+                    logger.log(Level.INFO, "Tentativo di login fallito (credenziali errate) per: " + identifier);
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Gestione errore professionale
+            logger.log(Level.SEVERE, "Errore SQL durante il controllo credenziali per: " + identifier, e);
         }
 
         return null;

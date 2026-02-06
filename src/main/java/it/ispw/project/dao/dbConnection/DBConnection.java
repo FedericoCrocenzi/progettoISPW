@@ -1,39 +1,58 @@
 package it.ispw.project.dao.dbConnection;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DBConnection {
 
-    // 1. CREDENZIALI DEL DATABASE (L'utente tecnico creato via SQL)
-    // NON toccare questi valori: servono per "accendere" la connessione.
-    private static final String USER = "ispw_user";
-    private static final String PASS = "password123";
+    private static Connection connection;
+    private static final Logger logger = Logger.getLogger(DBConnection.class.getName());
+    private static final Properties properties = new Properties();
 
-    // Assicurati che il nome del DB dopo la porta 3306 sia corretto
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/applicazioneISPW";
-    private static final String DRIVER_CLASS_NAME = "com.mysql.cj.jdbc.Driver";
+    // 1. Caricamento statico delle configurazioni (avviene una sola volta all'avvio)
+    static {
+        try (InputStream input = DBConnection.class.getClassLoader().getResourceAsStream("config.properties")) {
+            if (input == null) {
+                logger.log(Level.SEVERE, "Spiacente, impossibile trovare config.properties");
+            } else {
+                properties.load(input);
+            }
 
-    private static Connection connection = null;
+            // Caricamento driver (opzionale ma consigliato per compatibilità)
+            String driverClass = properties.getProperty("driverClassName");
+            if (driverClass != null) Class.forName(driverClass);
+
+        } catch (IOException | ClassNotFoundException e) {
+            logger.log(Level.SEVERE, "Errore nel caricamento della configurazione DB", e);
+        }
+    }
 
     private DBConnection() {}
 
     /**
-     * Restituisce la connessione attiva al Database.
+     * Restituisce l'istanza singleton della connessione.
+     * Se la connessione è chiusa o nulla, prova a riaprirla.
      */
     public static Connection getConnection() {
         try {
-            // Caricamento del Driver (necessario per versioni vecchie di Java/Tomcat, male non fa)
-            Class.forName(DRIVER_CLASS_NAME);
+            if (connection == null || connection.isClosed()) {
+                String dbUrl = properties.getProperty("dbUrl");
+                String user = properties.getProperty("username");
+                String pass = properties.getProperty("password");
 
-            // Creazione connessione usando l'Utente Tecnico
-            return DriverManager.getConnection(DB_URL, USER, PASS);
-
-        } catch (ClassNotFoundException | SQLException e) {
-            System.err.println("ERRORE CRITICO DB CONNECTION:");
-            e.printStackTrace();
-            return null;
+                connection = DriverManager.getConnection(dbUrl, user, pass);
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Fallita la connessione al Database", e);
+            // Opzionale: return null o rilanciare un'eccezione custom
+            connection = null;
         }
+        return connection;
     }
 }
