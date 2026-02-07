@@ -13,15 +13,15 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="rootLayout" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="539.0" prefWidth="474.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.ispw.project.graphicController.MainGraphicController">
+<BorderPane fx:id="rootLayout" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="539.0" prefWidth="474.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.ispw.project.graphicController.MainGraphicController">
     <top>
         <AnchorPane prefHeight="100.0" prefWidth="600.0" style="-fx-background-color: #125332; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5);" BorderPane.alignment="CENTER">
             <children>
                 <AnchorPane layoutX="6.0" layoutY="64.0" prefHeight="30.0" prefWidth="326.0">
                     <children>
-                        <TextField fx:id="txtRicerca" onAction="#cercaProdotti" layoutY="4.0" prefHeight="31.0" prefWidth="332.0" promptText="Cerca prodotti agricoli, mangimi..." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <TextField fx:id="txtRicerca" layoutY="4.0" onAction="#cercaProdotti" prefHeight="31.0" prefWidth="332.0" promptText="Cerca prodotti agricoli, mangimi..." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
 
-                        <Button onAction="#cercaProdotti" alignment="CENTER" contentDisplay="CENTER" layoutX="291.0" layoutY="2.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="40.0" styleClass="bottone-ricerca" stylesheets="@../style.css" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <Button alignment="CENTER" contentDisplay="CENTER" layoutX="291.0" layoutY="2.0" mnemonicParsing="false" onAction="#cercaProdotti" prefHeight="28.0" prefWidth="40.0" styleClass="bottone-ricerca" stylesheets="@../style.css" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                             <graphic>
                                 <ImageView fitHeight="20.0" fitWidth="20.0">
                                     <image>
@@ -99,7 +99,7 @@
                     </graphic>
                 </ToggleButton>
 
-                <ToggleButton fx:id="btnCarrello" contentDisplay="TOP" mnemonicParsing="false" onAction="#mostraCarrello" styleClass="menu-btn" stylesheets="@../style.css" text="Carrello(n)" toggleGroup="$menuGroup">
+                <ToggleButton fx:id="btnCarrello" contentDisplay="TOP" mnemonicParsing="false" onAction="#mostraCarrello" styleClass="menu-btn" stylesheets="@../style.css" text="Carrello" toggleGroup="$menuGroup">
                     <graphic>
                         <ImageView fitHeight="50.0" fitWidth="50.0">
                             <image>

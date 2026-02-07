@@ -71,7 +71,7 @@
                         <ToggleGroup fx:id="menuGroup" />
                     </toggleGroup>
                 </ToggleButton>
-                <ToggleButton contentDisplay="TOP" mnemonicParsing="false" selected="true" styleClass="menu-btn" stylesheets="@../style.css" text="Ordini(n)" toggleGroup="$menuGroup">
+                <ToggleButton contentDisplay="TOP" mnemonicParsing="false" selected="true" styleClass="menu-btn" stylesheets="@../style.css" text="Ordini" toggleGroup="$menuGroup">
                     <graphic>
                         <ImageView fitHeight="50.0" fitWidth="50.0">
                             <image>
