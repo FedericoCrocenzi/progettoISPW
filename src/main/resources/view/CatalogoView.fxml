@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.TilePane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<ScrollPane fitToWidth="true" prefHeight="200.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.ispw.project.graphicController.CatalogoGraphicController">
+    <content>
+        <TilePane fx:id="tilePaneCatalogo" hgap="20.0" prefHeight="200.0" prefWidth="318.0" vgap="20.0">
+            <padding>
+                <Insets top="20.0" />
+            </padding>
+            <children>
+                <VBox prefHeight="250.0" prefWidth="200.0" spacing="5.0" style="-fx-background-color: #F5F5F5; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5); -fx-alignment: center;">
+                    <children>
+                        <Label text="Product">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                        </Label>
+                        <ImageView fitHeight="105.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
+                        <Label text="Prezzo">
+                            <font>
+                                <Font name="System Bold" size="14.0" />
+                            </font>
+                        </Label>
+                        <Button mnemonicParsing="false" styleClass="bottone-giallo" stylesheets="@../style.css" text="Aggiungi al carrello" />
+                        <Button mnemonicParsing="false" prefHeight="20.0" prefWidth="114.0" styleClass="bottone-giallo" stylesheets="@../style.css" text="Acquista" />
+                    </children>
+                </VBox>
+            </children>
+        </TilePane>
+    </content>
+</ScrollPane>

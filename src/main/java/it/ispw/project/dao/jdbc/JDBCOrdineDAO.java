@@ -3,10 +3,16 @@ package it.ispw.project.dao.jdbc;
 import it.ispw.project.dao.OrdineDAO;
 import it.ispw.project.dao.dbConnection.DBConnection;
 import it.ispw.project.dao.dbConnection.Queries;
+// import it.ispw.project.exception.DAOException; // Rimuovi se non usato altrove
 import it.ispw.project.model.Articolo;
 import it.ispw.project.model.Ordine;
+import it.ispw.project.model.Utente;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,10 +24,8 @@ public class JDBCOrdineDAO implements OrdineDAO {
     @Override
     public void insertOrdine(Ordine ordine) {
         Connection conn = DBConnection.getConnection();
-
-        // 1. Controllo robustezza
         if (conn == null) {
-            logger.log(Level.WARNING, "[JDBCOrdineDAO] Impossibile effettuare insert: Connessione assente.");
+            logger.log(Level.WARNING, "Connessione al DB fallita.");
             return;
         }
 
@@ -29,115 +33,173 @@ public class JDBCOrdineDAO implements OrdineDAO {
         PreparedStatement stmtRiga = null;
 
         try {
-            // Disabilitiamo l'auto-commit per gestire la TRANSAZIONE (Testata + Righe)
-            conn.setAutoCommit(false);
+            conn.setAutoCommit(false); // Inizio Transazione
 
-            // =================================================================
-            // FASE 1: Inserimento Testata Ordine
-            // =================================================================
-            // Nota: Qui usiamo RETURN_GENERATED_KEYS perché è fondamentale recuperare l'ID
+            // 1. Insert Testata Ordine
             stmtOrdine = conn.prepareStatement(Queries.INSERT_ORDINE, Statement.RETURN_GENERATED_KEYS);
 
-            // Conversione data Java -> SQL Timestamp
             stmtOrdine.setTimestamp(1, new Timestamp(ordine.getDataCreazione().getTime()));
             stmtOrdine.setDouble(2, ordine.getTotale());
             stmtOrdine.setString(3, ordine.getStato());
             stmtOrdine.setInt(4, ordine.getCliente().ottieniId());
 
             int affectedRows = stmtOrdine.executeUpdate();
+            if (affectedRows == 0) throw new SQLException("Creazione ordine fallita.");
 
-            if (affectedRows == 0) {
-                throw new SQLException("Creazione ordine fallita, nessuna riga inserita.");
-            }
-
-            // =================================================================
-            // FASE 2: Recupero ID Generato (Auto-Increment)
-            // =================================================================
+            // 2. Recupero ID
             try (ResultSet rs = stmtOrdine.getGeneratedKeys()) {
                 if (rs.next()) {
-                    int idGenerato = rs.getInt(1);
-                    ordine.registraIdGenerato(idGenerato);
+                    ordine.registraIdGenerato(rs.getInt(1));
                 } else {
-                    throw new SQLException("Creazione ordine fallita, nessun ID ottenuto.");
+                    throw new SQLException("Nessun ID ottenuto.");
                 }
             }
 
-            // =================================================================
-            // FASE 3: Inserimento Righe Ordine (Batch Insert)
-            // =================================================================
+            // 3. Insert Righe (Batch)
             stmtRiga = conn.prepareStatement(Queries.INSERT_RIGA_ORDINE);
 
-            for (Map.Entry<Articolo, Integer> entry : ordine.getArticoliAcquistati().entrySet()) {
+            for (Map.Entry<Articolo, Integer> entry : ordine.getArticoli().entrySet()) {
                 Articolo art = entry.getKey();
-                Integer qta = entry.getValue();
+                int qta = entry.getValue();
 
-                stmtRiga.setInt(1, ordine.leggiId());   // ID appena generato
+                stmtRiga.setInt(1, ordine.leggiId());
                 stmtRiga.setInt(2, art.leggiId());
                 stmtRiga.setInt(3, qta);
                 stmtRiga.setDouble(4, art.ottieniPrezzo());
 
                 stmtRiga.addBatch();
             }
-
             stmtRiga.executeBatch();
 
-            // =================================================================
-            // FASE 4: Commit (Conferma Transazione)
-            // =================================================================
-            conn.commit();
-            logger.log(Level.INFO, "Ordine creato con successo. ID: " + ordine.leggiId());
+            conn.commit(); // Conferma Transazione
 
         } catch (SQLException e) {
-            // ROLLBACK: Se qualcosa va storto, annulliamo tutto
-            logger.log(Level.SEVERE, "Errore durante la transazione ordine. Eseguo Rollback.", e);
-            try {
-                if (conn != null) conn.rollback();
-            } catch (SQLException ex) {
-                logger.log(Level.SEVERE, "Errore durante il rollback", ex);
-            }
+            logger.log(Level.SEVERE, "Rollback inserimento ordine", e);
+            try { if (conn != null) conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
         } finally {
-            // Chiusura risorse e ripristino AutoCommit
             try {
                 if (stmtOrdine != null) stmtOrdine.close();
                 if (stmtRiga != null) stmtRiga.close();
                 if (conn != null) conn.setAutoCommit(true);
-            } catch (SQLException e) {
-                logger.log(Level.WARNING, "Errore nella chiusura delle risorse", e);
-            }
+            } catch (SQLException e) { e.printStackTrace(); }
         }
     }
 
     @Override
     public Ordine selectOrdineById(int id) {
-        // Implementazione futura se necessaria
-        return null;
+        Connection conn = DBConnection.getConnection();
+        Ordine ordine = null;
+
+        try (PreparedStatement stmt = conn.prepareStatement(Queries.SELECT_ORDINE_BY_ID)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    ordine = mapRowToOrdine(rs);
+                }
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Errore selectOrdineById: " + id, e);
+        }
+        return ordine;
+    }
+
+    @Override
+    public List<Ordine> findAll() {
+        Connection conn = DBConnection.getConnection();
+        List<Ordine> lista = new ArrayList<>();
+
+        try (PreparedStatement stmt = conn.prepareStatement(Queries.SELECT_ALL_ORDINI);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Ordine o = mapRowToOrdine(rs);
+                if (o != null) lista.add(o);
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Errore findAll ordini", e);
+        }
+        return lista;
     }
 
     @Override
     public void updateStato(Ordine ordine) {
         Connection conn = DBConnection.getConnection();
-        if (conn == null) return;
-
-        try (
-                // Qui usiamo lo stile WanderWise con i parametri ResultSet
-                PreparedStatement stmt = conn.prepareStatement(
-                        Queries.UPDATE_ORDINE_STATO,
-                        ResultSet.TYPE_SCROLL_INSENSITIVE,
-                        ResultSet.CONCUR_READ_ONLY)
-        ) {
+        try (PreparedStatement stmt = conn.prepareStatement(Queries.UPDATE_ORDINE_STATO)) {
             stmt.setString(1, ordine.getStato());
             stmt.setInt(2, ordine.leggiId());
-
-            int result = stmt.executeUpdate();
-
-            if (result > 0) {
-                logger.log(Level.INFO, "Stato ordine aggiornato. ID: " + ordine.leggiId() + " -> " + ordine.getStato());
-            } else {
-                logger.log(Level.WARNING, "Nessun ordine trovato per l'aggiornamento stato. ID: " + ordine.leggiId());
-            }
-
+            stmt.executeUpdate();
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Errore durante l'aggiornamento dello stato ordine", e);
+            logger.log(Level.SEVERE, "Errore updateStato", e);
         }
+    }
+
+    // =================================================================
+    // HELPER METHODS (Private)
+    // =================================================================
+
+    /**
+     * MODIFICATO: Rimossa gestione DAOException non necessaria.
+     * Se findById lancia SQLException, viene propagata perché il metodo dichiara "throws SQLException".
+     */
+    private Ordine mapRowToOrdine(ResultSet rs) throws SQLException {
+        int id = rs.getInt("id");
+        Timestamp data = rs.getTimestamp("data_creazione");
+        double totale = rs.getDouble("totale");
+        String stato = rs.getString("stato");
+        int idCliente = rs.getInt("id_cliente");
+
+        // 1. Recupero Utente
+        JDBCUtenteDAO utenteDAO = new JDBCUtenteDAO();
+        // Chiamata diretta senza try-catch per DAOException
+        Utente cliente = null;
+        try {
+            cliente = utenteDAO.findById(idCliente);
+        } catch (Exception e) { // Catch generico o SQLException se necessario, altrimenti togli il try
+            // Se UtenteDAO lancia SQLException, questo catch la intercetta se vuoi loggare,
+            // oppure rimuovi il try-catch e lascia propagare l'errore.
+            // Qui assumiamo che se fallisce, l'ordine non può essere creato correttamente.
+            throw new SQLException("Errore recupero cliente per ordine " + id, e);
+        }
+
+        // 2. Recupero Articoli
+        Map<Articolo, Integer> articoli = getRigheOrdine(id);
+
+        Ordine o = new Ordine(id, new Date(data.getTime()), cliente, articoli, totale);
+        o.setStato(stato);
+        return o;
+    }
+
+    /**
+     * MODIFICATO: Rimossa gestione DAOException non necessaria.
+     */
+    private Map<Articolo, Integer> getRigheOrdine(int idOrdine) {
+        Map<Articolo, Integer> mappa = new HashMap<>();
+        Connection conn = DBConnection.getConnection();
+
+        try (PreparedStatement stmt = conn.prepareStatement(Queries.SELECT_RIGHE_BY_ORDINE)) {
+            stmt.setInt(1, idOrdine);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                JDBCArticoloDAO articoloDAO = new JDBCArticoloDAO();
+                while (rs.next()) {
+                    int idArticolo = rs.getInt("id_articolo");
+                    int qta = rs.getInt("quantita");
+
+                    // Chiamata diretta. Se selectArticoloById fallisce internamente
+                    // restituendo null, lo gestiamo. Se lancia eccezione, la catturiamo qui sotto.
+                    try {
+                        Articolo a = articoloDAO.selectArticoloById(idArticolo);
+                        if (a != null) {
+                            mappa.put(a, qta);
+                        }
+                    } catch (Exception e) {
+                        logger.log(Level.WARNING, "Errore nel recupero articolo id=" + idArticolo, e);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            logger.log(Level.WARNING, "Errore SQL recupero righe ordine " + idOrdine, e);
+        }
+        return mappa;
     }
 }

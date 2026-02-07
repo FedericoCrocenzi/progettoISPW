@@ -10,6 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
+import it.ispw.project.exception.QuantitaInsufficienteException;
 
 import it.ispw.project.bean.ArticoloBean;
 import java.io.InputStream;
@@ -109,25 +110,24 @@ public class ArticoloViewGraphicController {
     public void aggiungiAlCarrello() {
         if (articoloCorrente != null && appController != null) {
             try {
-                // Creazione Bean
                 ArticoloBean articoloDaAggiungere = new ArticoloBean();
                 articoloDaAggiungere.setId(articoloCorrente.leggiId());
 
-                // Chiamata al Controller Applicativo (Ora gestiamo le eccezioni!)
+                // Chiamata al Controller
                 appController.aggiungiArticoloAlCarrello(articoloDaAggiungere, quantitaSelezionata);
 
-                // Feedback positivo
                 mostraMessaggio("Successo", "Articolo aggiunto al carrello!", Alert.AlertType.INFORMATION);
-
-                // Chiudi finestra dopo aggiunta
                 chiudiScheda();
 
+            } catch (QuantitaInsufficienteException e) {
+                // GESTIONE SPECIFICA: Popup di Warning (Giallo)
+                // Questo aiuta l'utente a capire che deve ridurre la quantità
+                mostraMessaggio("Scorta Insufficiente", e.getMessage(), Alert.AlertType.WARNING);
+
             } catch (DAOException e) {
-                // Errore DB: Popup Rosso
                 mostraMessaggio("Errore di Sistema", "Impossibile aggiungere al carrello: " + e.getMessage(), Alert.AlertType.ERROR);
                 e.printStackTrace();
             } catch (IllegalArgumentException e) {
-                // Errore Logica (es. scorta finita nel frattempo): Popup Giallo
                 mostraMessaggio("Attenzione", e.getMessage(), Alert.AlertType.WARNING);
             }
         }

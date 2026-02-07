@@ -3,7 +3,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
@@ -12,8 +11,6 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.TilePane?>
-<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
 <BorderPane fx:id="rootLayout" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="539.0" prefWidth="474.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.ispw.project.graphicController.MainGraphicController">
@@ -68,6 +65,10 @@
             </children>
         </AnchorPane>
     </top>
+
+    <center>
+    </center>
+
     <bottom>
         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="80.0" style="-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5); -fx-background-color: #125332;" BorderPane.alignment="CENTER">
             <padding>
@@ -86,6 +87,7 @@
                         <ToggleGroup fx:id="menuGroup" />
                     </toggleGroup>
                 </ToggleButton>
+
                 <ToggleButton fx:id="btnHome" contentDisplay="TOP" mnemonicParsing="false" onAction="#mostraHome" selected="true" styleClass="menu-btn" stylesheets="@../style.css" text="Home" toggleGroup="$menuGroup">
                     <graphic>
                         <ImageView fitHeight="50.0" fitWidth="50.0">
@@ -95,6 +97,7 @@
                         </ImageView>
                     </graphic>
                 </ToggleButton>
+
                 <ToggleButton fx:id="btnCarrello" contentDisplay="TOP" mnemonicParsing="false" onAction="#mostraCarrello" styleClass="menu-btn" stylesheets="@../style.css" text="Carrello(n)" toggleGroup="$menuGroup">
                     <graphic>
                         <ImageView fitHeight="50.0" fitWidth="50.0">
@@ -107,34 +110,4 @@
             </children>
         </HBox>
     </bottom>
-    <center>
-        <ScrollPane fitToWidth="true" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-            <content>
-                <TilePane hgap="20.0" prefHeight="200.0" prefWidth="318.0" vgap="20.0">
-                    <padding>
-                        <Insets top="20.0" />
-                    </padding>
-                    <children>
-                        <VBox prefHeight="250.0" prefWidth="200.0" spacing="5.0" style="-fx-background-color: #F5F5F5; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5); -fx-alignment: center;">
-                            <children>
-                                <Label text="Product">
-                                    <font>
-                                        <Font size="14.0" />
-                                    </font>
-                                </Label>
-                                <ImageView fitHeight="105.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
-                                <Label text="Prezzo">
-                                    <font>
-                                        <Font name="System Bold" size="14.0" />
-                                    </font>
-                                </Label>
-                                <Button mnemonicParsing="false" styleClass="bottone-giallo" stylesheets="@../style.css" text="Aggiungi al carrello" />
-                                <Button mnemonicParsing="false" prefHeight="20.0" prefWidth="114.0" styleClass="bottone-giallo" stylesheets="@../style.css" text="Acquista" />
-                            </children>
-                        </VBox>
-                    </children>
-                </TilePane>
-            </content>
-        </ScrollPane>
-    </center>
 </BorderPane>

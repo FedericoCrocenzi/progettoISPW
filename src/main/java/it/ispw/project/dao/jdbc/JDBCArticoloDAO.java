@@ -16,28 +16,22 @@ import java.util.logging.Logger;
 
 public class JDBCArticoloDAO implements ArticoloDAO {
 
-    // Logger per tracciare operazioni ed errori in modo professionale
     private final Logger logger = Logger.getLogger(JDBCArticoloDAO.class.getName());
 
-    /**
-     * Cerca un articolo per ID (chiave primaria).
-     */
     @Override
     public Articolo selectArticoloById(int id) {
         Connection conn = DBConnection.getConnection();
         if (conn == null) return null;
 
-        try (
-                // Configurazione dello statement come nell'esempio WanderWise
-                PreparedStatement stmt = conn.prepareStatement(
-                        Queries.SELECT_ARTICOLO_BY_ID,
-                        ResultSet.TYPE_SCROLL_INSENSITIVE,
-                        ResultSet.CONCUR_READ_ONLY)
+        try (PreparedStatement stmt = conn.prepareStatement(
+                Queries.SELECT_ARTICOLO_BY_ID,
+                ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY)
         ) {
             stmt.setInt(1, id);
 
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) { // rs.next() è più sicuro di rs.first() per set vuoti
+                if (rs.next()) {
                     return istanziaArticoloDaResultSet(rs);
                 }
             }
@@ -47,21 +41,17 @@ public class JDBCArticoloDAO implements ArticoloDAO {
         return null;
     }
 
-    /**
-     * Restituisce TUTTO il catalogo.
-     */
     @Override
     public List<Articolo> selectAllArticoli() {
         List<Articolo> catalogo = new ArrayList<>();
         Connection conn = DBConnection.getConnection();
         if (conn == null) return catalogo;
 
-        try (
-                PreparedStatement stmt = conn.prepareStatement(
-                        Queries.SELECT_ALL_ARTICOLI,
-                        ResultSet.TYPE_SCROLL_INSENSITIVE,
-                        ResultSet.CONCUR_READ_ONLY);
-                ResultSet rs = stmt.executeQuery()
+        try (PreparedStatement stmt = conn.prepareStatement(
+                Queries.SELECT_ALL_ARTICOLI,
+                ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+             ResultSet rs = stmt.executeQuery()
         ) {
             while (rs.next()) {
                 Articolo art = istanziaArticoloDaResultSet(rs);
@@ -75,26 +65,21 @@ public class JDBCArticoloDAO implements ArticoloDAO {
         return catalogo;
     }
 
-    /**
-     * Aggiorna SOLO la quantità disponibile (Scorta).
-     */
     @Override
     public void updateScorta(Articolo articolo) {
         Connection conn = DBConnection.getConnection();
         if (conn == null) return;
 
-        try (
-                PreparedStatement stmt = conn.prepareStatement(
-                        Queries.UPDATE_ARTICOLO_SCORTA,
-                        ResultSet.TYPE_SCROLL_INSENSITIVE,
-                        ResultSet.CONCUR_READ_ONLY)
+        try (PreparedStatement stmt = conn.prepareStatement(
+                Queries.UPDATE_ARTICOLO_SCORTA,
+                ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY)
         ) {
             stmt.setInt(1, articolo.ottieniScorta());
             stmt.setInt(2, articolo.leggiId());
 
             int result = stmt.executeUpdate();
 
-            // Logghiamo il successo come nell'esempio
             if (result > 0) {
                 logger.log(Level.INFO, "Scorta aggiornata per Articolo ID: " + articolo.leggiId());
             } else {
@@ -106,28 +91,23 @@ public class JDBCArticoloDAO implements ArticoloDAO {
         }
     }
 
-    /**
-     * Ricerca avanzata per filtri (Nome, Tipo, Prezzo).
-     */
     @Override
     public List<Articolo> selectByFilter(String descrizione, String tipo, Double min, Double max) {
         List<Articolo> risultati = new ArrayList<>();
         Connection conn = DBConnection.getConnection();
         if (conn == null) return risultati;
 
-        // Costruzione query dinamica
-        StringBuilder queryBuilder = new StringBuilder(Queries.SELECT_ARTICOLO_BASE);
+        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM articolo WHERE 1=1");
 
         if (descrizione != null && !descrizione.isEmpty()) queryBuilder.append(" AND descrizione LIKE ?");
         if (tipo != null && !tipo.isEmpty()) queryBuilder.append(" AND tipo = ?");
         if (min != null) queryBuilder.append(" AND prezzo >= ?");
         if (max != null) queryBuilder.append(" AND prezzo <= ?");
 
-        try (
-                PreparedStatement stmt = conn.prepareStatement(
-                        queryBuilder.toString(),
-                        ResultSet.TYPE_SCROLL_INSENSITIVE,
-                        ResultSet.CONCUR_READ_ONLY)
+        try (PreparedStatement stmt = conn.prepareStatement(
+                queryBuilder.toString(),
+                ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY)
         ) {
             int index = 1;
 
@@ -148,30 +128,55 @@ public class JDBCArticoloDAO implements ArticoloDAO {
     }
 
     // --- METODO PRIVATO DI SUPPORTO ---
+
+    /**
+     * Legge i dati dal ResultSet, inclusa l'immagine, e crea l'oggetto specifico.
+     */
     private Articolo istanziaArticoloDaResultSet(ResultSet rs) throws SQLException {
+        // 1. Lettura colonne comuni
         int id = rs.getInt("id");
         String desc = rs.getString("descrizione");
         double prezzo = rs.getDouble("prezzo");
         int scorta = rs.getInt("scorta");
         String tipo = rs.getString("tipo");
 
+        // NUOVO: Lettura del percorso immagine
+        String imgPath = rs.getString("immagine_path");
+
+        Articolo articolo = null;
+
+        // 2. Istanziazione della sottoclasse corretta
         switch (tipo) {
             case "MANGIME":
                 java.sql.Date sqlDate = rs.getDate("data_scadenza");
                 java.util.Date utilDate = (sqlDate != null) ? new java.util.Date(sqlDate.getTime()) : null;
-                return new Mangime(id, desc, prezzo, scorta, utilDate);
+                articolo = new Mangime(id, desc, prezzo, scorta, utilDate);
+                break;
 
             case "UTENSILE":
                 String materiale = rs.getString("materiale");
-                return new Utensile(id, desc, prezzo, scorta, materiale);
+                articolo = new Utensile(id, desc, prezzo, scorta, materiale);
+                break;
 
             case "FITOFARMACO":
                 boolean patentino = rs.getBoolean("richiede_patentino");
-                return new Fitofarmaco(id, desc, prezzo, scorta, patentino);
+                articolo = new Fitofarmaco(id, desc, prezzo, scorta, patentino);
+                break;
 
             default:
                 logger.log(Level.WARNING, "Tipo articolo sconosciuto nel DB: " + tipo);
                 return null;
         }
+
+        // 3. Impostazione dell'immagine
+        if (articolo != null) {
+            // Se il DB ritorna null o stringa vuota, usiamo un default di sicurezza
+            if (imgPath == null || imgPath.trim().isEmpty()) {
+                imgPath = "/Image/default.png";
+            }
+            articolo.setImmaginePath(imgPath);
+        }
+
+        return articolo;
     }
 }

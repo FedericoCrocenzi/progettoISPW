@@ -11,83 +11,84 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
-   <children>
-      <HBox layoutX="11.0" layoutY="16.0" spacing="20.0" style="-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 20, 0, 0, 0);; -fx-background-color: white; -fx-background-radius: 15;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-         <children>
-            <StackPane prefHeight="150.0" prefWidth="200.0">
-               <children>
-                  <ImageView fitHeight="250.0" fitWidth="300.0" pickOnBounds="true" preserveRatio="true" />
-               </children>
-            </StackPane>
-            <VBox alignment="TOP_CENTER" prefHeight="350.0" prefWidth="400.0" spacing="10.0" HBox.hgrow="ALWAYS">
-               <children>
-                  <Label text="Titolo del prodotto">
-                     <font>
-                        <Font name="System Bold" size="22.0" />
-                     </font>
-                  </Label>
-                  <Label text="Prezzo" textFill="#125332">
-                     <font>
-                        <Font name="System Bold" size="28.0" />
-                     </font>
-                  </Label>
-                  <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: trasparent;" vbarPolicy="NEVER">
-                    <content>
-                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0">
-                           <children>
-                              <Label layoutX="14.0" layoutY="5.0" text="Descrizione" textFill="#666666" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
-                                 <padding>
-                                    <Insets bottom="5.0" right="5.0" />
-                                 </padding>
-                              </Label>
-                           </children>
-                        </AnchorPane>
-                    </content>
-                  </ScrollPane>
-                  <Label style="-fx-text-fill: #D32F2F; -fx-background-color: #FFEBEE; -fx-padding: 5 10; -fx-background-radius: 5;" text="Richiede Patentino">
-                     <font>
-                        <Font name="System Bold" size="12.0" />
-                     </font>
-                  </Label>
-                  <HBox alignment="CENTER" fillHeight="false" prefHeight="100.0" prefWidth="200.0" spacing="10.0">
-                     <children>
-                        <Button mnemonicParsing="false" styleClass="bottone-giallo" stylesheets="@../style.css" text="Acquista" />
-                        <Button mnemonicParsing="false" styleClass="bottone-giallo" stylesheets="@../style.css" text="Aggiungi al Carrello" />
-                        <HBox alignment="CENTER" prefHeight="28.0" prefWidth="89.0" spacing="10.0" style="-fx-background-radius: 15; -fx-background-color: white; -fx-border-color: #FFF176; -fx-border-radius: 15; -fx-border-width: 2;">
-                           <children>
-                              <Button mnemonicParsing="false" prefHeight="26.0" prefWidth="28.0" styleClass="pulsantiCarrello" stylesheets="@../style.css" text="-">
-                                 <HBox.margin>
-                                    <Insets />
-                                 </HBox.margin>
-                                 <font>
-                                    <Font name="System Bold" size="12.0" />
-                                 </font>
-                              </Button>
-                              <Label alignment="CENTER" prefHeight="20.0" prefWidth="20.0" text="1" />
-                              <Button mnemonicParsing="false" prefHeight="26.0" prefWidth="29.0" styleClass="pulsantiCarrello" stylesheets="@../style.css" text="+">
-                                 <font>
-                                    <Font name="System Bold" size="12.0" />
-                                 </font>
-                              </Button>
-                           </children>
+<AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.ispw.project.graphicController.ArticoloViewGraphicController">
+    <children>
+        <HBox layoutX="11.0" layoutY="16.0" spacing="20.0" style="-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 20, 0, 0, 0);; -fx-background-color: white; -fx-background-radius: 15;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <StackPane prefHeight="150.0" prefWidth="200.0">
+                    <children>
+                        <ImageView fx:id="imgProdotto" fitHeight="250.0" fitWidth="300.0" pickOnBounds="true" preserveRatio="true" />
+                    </children>
+                </StackPane>
+                <VBox alignment="TOP_CENTER" prefHeight="350.0" prefWidth="400.0" spacing="10.0" HBox.hgrow="ALWAYS">
+                    <children>
+                        <Label fx:id="lblTitolo" text="Titolo del prodotto" wrapText="true">
+                            <font>
+                                <Font name="System Bold" size="22.0" />
+                            </font>
+                        </Label>
+                        <Label fx:id="lblPrezzo" text="Prezzo" textFill="#125332">
+                            <font>
+                                <Font name="System Bold" size="28.0" />
+                            </font>
+                        </Label>
+                        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: trasparent;" vbarPolicy="NEVER">
+                            <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0">
+                                    <children>
+                                        <Label fx:id="lblDescrizione" layoutX="14.0" layoutY="5.0" text="Descrizione" textFill="#666666" wrapText="true" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+                                            <padding>
+                                                <Insets bottom="5.0" right="5.0" />
+                                            </padding>
+                                        </Label>
+                                    </children>
+                                </AnchorPane>
+                            </content>
+                        </ScrollPane>
+                        <Label fx:id="lblPatentino" style="-fx-text-fill: #D32F2F; -fx-background-color: #FFEBEE; -fx-padding: 5 10; -fx-background-radius: 5;" text="Richiede Patentino">
+                            <font>
+                                <Font name="System Bold" size="12.0" />
+                            </font>
+                        </Label>
+                        <HBox alignment="CENTER" fillHeight="false" prefHeight="100.0" prefWidth="200.0" spacing="10.0">
+                            <children>
+                                <Button mnemonicParsing="false" onAction="#acquistaSubito" styleClass="bottone-giallo" stylesheets="@../style.css" text="Acquista" />
+                                <Button mnemonicParsing="false" onAction="#aggiungiAlCarrello" styleClass="bottone-giallo" stylesheets="@../style.css" text="Aggiungi al Carrello" />
+
+                                <HBox alignment="CENTER" prefHeight="28.0" prefWidth="89.0" spacing="10.0" style="-fx-background-radius: 15; -fx-background-color: white; -fx-border-color: #FFF176; -fx-border-radius: 15; -fx-border-width: 2;">
+                                    <children>
+                                        <Button mnemonicParsing="false" onAction="#diminuisciQuantita" prefHeight="26.0" prefWidth="28.0" styleClass="pulsantiCarrello" stylesheets="@../style.css" text="-">
+                                            <HBox.margin>
+                                                <Insets />
+                                            </HBox.margin>
+                                            <font>
+                                                <Font name="System Bold" size="12.0" />
+                                            </font>
+                                        </Button>
+                                        <Label fx:id="lblQuantita" alignment="CENTER" prefHeight="20.0" prefWidth="20.0" text="1" />
+                                        <Button mnemonicParsing="false" onAction="#aumentaQuantita" prefHeight="26.0" prefWidth="29.0" styleClass="pulsantiCarrello" stylesheets="@../style.css" text="+">
+                                            <font>
+                                                <Font name="System Bold" size="12.0" />
+                                            </font>
+                                        </Button>
+                                    </children>
+                                </HBox>
+                            </children>
                         </HBox>
-                     </children>
-                  </HBox>
-               </children>
-               <padding>
-                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-               </padding>
-            </VBox>
-            <Button mnemonicParsing="false" prefHeight="26.0" prefWidth="42.0" style="-fx-background-color: trasparent; -fx-font-weight: bold; -fx-text-fill: #999999; -fx-font-size: 18; -fx-cursor: hand;" text="X">
-               <HBox.margin>
-                  <Insets />
-               </HBox.margin>
-            </Button>
-         </children>
-         <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-         </padding>
-      </HBox>
-   </children>
+                    </children>
+                    <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                    </padding>
+                </VBox>
+                <Button mnemonicParsing="false" onAction="#chiudiScheda" prefHeight="26.0" prefWidth="42.0" style="-fx-background-color: trasparent; -fx-font-weight: bold; -fx-text-fill: #999999; -fx-font-size: 18; -fx-cursor: hand;" text="X">
+                    <HBox.margin>
+                        <Insets />
+                    </HBox.margin>
+                </Button>
+            </children>
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+        </HBox>
+    </children>
 </AnchorPane>

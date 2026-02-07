@@ -9,7 +9,7 @@ public class ArticoloBean {
     private String descrizione;
     private double prezzo;
     private int quantita; // Disponibilità o qta nel carrello
-
+    private String immaginePath; // Nuovo attributo
     // --- IL DISCRIMINATORE ---
     // Fondamentale: dice alla View come interpretare i dati (es. "MANGIME", "UTENSILE")
     private String type;
@@ -55,4 +55,11 @@ public class ArticoloBean {
 
     public boolean isServePatentino() { return servePatentino; }
     public void setServePatentino(boolean servePatentino) { this.servePatentino = servePatentino; }
-}
+
+    public String getImmaginePath() {
+        return immaginePath;
+    }
+
+    public void setImmaginePath(String immaginePath) {
+        this.immaginePath = immaginePath;
+}}

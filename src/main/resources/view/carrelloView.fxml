@@ -5,119 +5,68 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane style="-fx-background-color: #F5F5F5;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
-   <children>
-      <HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-         <children>
-            <AnchorPane prefHeight="400.0" prefWidth="500.0">
-               <children>
-                  <Label layoutX="110.0" layoutY="14.0" text="il tuo Carrello">
-                     <font>
-                        <Font name="System Bold" size="24.0" />
-                     </font>
-                  </Label>
-                  <ScrollPane fitToWidth="true" layoutX="87.0" layoutY="66.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="50.0">
-                     <content>
-                        <VBox prefHeight="337.0" prefWidth="339.0" spacing="15.0">
-                           <padding>
-                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                           </padding>
-                           <children>
-                              <AnchorPane prefHeight="100.0" prefWidth="318.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);;">
-                                 <children>
-                                    <ImageView fitHeight="80.0" fitWidth="80.0" layoutX="8.0" layoutY="6.0" pickOnBounds="true" preserveRatio="true" />
-                                    <Label layoutX="93.0" layoutY="17.0" text="Nome articolo" />
-                                    <Label layoutX="93.0" layoutY="53.0" text="Prezzo">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font></Label>
-                                    <HBox alignment="CENTER" layoutX="218.0" layoutY="62.0" prefHeight="28.0" prefWidth="89.0" spacing="10.0" style="-fx-background-radius: 15; -fx-background-color: white; -fx-border-color: #FFF176; -fx-border-radius: 15; -fx-border-width: 2;">
-                                       <children>
-                                          <Button mnemonicParsing="false" prefHeight="26.0" prefWidth="28.0" styleClass="pulsantiCarrello" stylesheets="@../style.css" text="-">
-                                             <HBox.margin>
-                                                <Insets />
-                                             </HBox.margin>
-                                             <font>
-                                                <Font name="System Bold" size="12.0" />
-                                             </font>
-                                          </Button>
-                                          <Label alignment="CENTER" prefHeight="20.0" prefWidth="20.0" text="1" />
-                                          <Button mnemonicParsing="false" prefHeight="26.0" prefWidth="29.0" styleClass="pulsantiCarrello" stylesheets="@../style.css" text="+">
-                                             <font>
-                                                <Font name="System Bold" size="12.0" />
-                                             </font></Button>
-                                       </children>
-                                    </HBox>
-                                    <Button contentDisplay="CENTER" layoutX="285.0" layoutY="3.0" mnemonicParsing="false" prefHeight="19.0" prefWidth="26.0" styleClass="pulsantiCarrello" stylesheets="@../style.css">
-                                       <font>
-                                          <Font name="Arial Bold" size="12.0" />
-                                       </font>
-                                       <graphic>
-                                          <ImageView fitHeight="18.0" fitWidth="15.0">
-                                             <image>
-                                                <Image url="@../Image/icons-cestino.png" />
-                                             </image>
-                                          </ImageView>
-                                       </graphic></Button>
-                                 </children>
-                              </AnchorPane>
-                           </children>
-                        </VBox>
-                     </content>
-                  </ScrollPane>
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="400.0" prefWidth="350.0">
-               <children>
-                  <VBox alignment="TOP_CENTER" layoutX="29.0" layoutY="69.0" prefHeight="221.0" prefWidth="100.0" spacing="15.0" style="-fx-background-color: #f8f9fa; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 0 1;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                     <children>
-                        <Label alignment="CENTER" prefHeight="27.0" prefWidth="174.0" text="RIEPILOGO ORDINE" textAlignment="CENTER">
-                           <font>
-                              <Font name="System Bold" size="18.0" />
-                           </font>
+<AnchorPane style="-fx-background-color: #F5F5F5;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.ispw.project.graphicController.CarrelloGraphicController">
+    <children>
+        <HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <AnchorPane prefHeight="400.0" prefWidth="500.0">
+                    <children>
+                        <Label layoutX="110.0" layoutY="14.0" text="Il tuo Carrello">
+                            <font>
+                                <Font name="System Bold" size="24.0" />
+                            </font>
                         </Label>
-                        <Separator prefWidth="200.0" />
-                        <AnchorPane prefHeight="66.0" prefWidth="185.0">
-                           <children>
-                              <Label layoutY="25.0" style="-fx-font-weight: bold;" text="Totale parziale">
-                                 <font>
-                                    <Font size="14.0" />
-                                 </font>
-                              </Label>
-                              <Label layoutX="144.0" layoutY="26.0" style="-fx-font-weight: bold;" text="€ 0.00" />
-                           </children>
-                        </AnchorPane>
-                        <Separator prefWidth="200.0" />
-                        <AnchorPane prefHeight="114.0" prefWidth="185.0">
-                           <children>
-                              <Label layoutX="61.0" layoutY="14.0" text="TOTALE">
-                                 <font>
-                                    <Font name="System Bold" size="18.0" />
-                                 </font>
-                              </Label>
-                              <Label layoutX="64.0" layoutY="41.0" text="IVA inclusa" />
-                              <Label layoutX="64.0" layoutY="79.0" text="€ 0.00" textFill="#125332">
-                                 <font>
-                                    <Font name="System Bold" size="20.0" />
-                                 </font>
-                              </Label>
-                           </children>
-                        </AnchorPane>
-                        <Button contentDisplay="CENTER" mnemonicParsing="false" prefHeight="38.0" prefWidth="222.0" styleClass="bottone-giallo" stylesheets="@../style.css" text="Procedi al Pagamento" />
-                     </children>
-                     <padding>
-                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-                     </padding>
-                  </VBox>
-               </children></AnchorPane>
-         </children>
-      </HBox>
-   </children>
+                        <ScrollPane fitToWidth="true" layoutX="87.0" layoutY="66.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="50.0">
+                            <content>
+                                <VBox fx:id="vboxCarrello" prefHeight="337.0" prefWidth="339.0" spacing="15.0">
+                                    <padding>
+                                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                    </padding>
+                                </VBox>
+                            </content>
+                        </ScrollPane>
+                    </children>
+                </AnchorPane>
+
+                <AnchorPane prefHeight="400.0" prefWidth="350.0">
+                    <children>
+                        <VBox alignment="TOP_CENTER" layoutX="29.0" layoutY="69.0" prefHeight="221.0" prefWidth="100.0" spacing="15.0" style="-fx-background-color: #f8f9fa; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 0 1;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                            <children>
+                                <Label alignment="CENTER" prefHeight="27.0" prefWidth="174.0" text="RIEPILOGO ORDINE" textAlignment="CENTER">
+                                    <font>
+                                        <Font name="System Bold" size="18.0" />
+                                    </font>
+                                </Label>
+                                <Separator prefWidth="200.0" />
+                                <AnchorPane prefHeight="114.0" prefWidth="185.0">
+                                    <children>
+                                        <Label layoutX="61.0" layoutY="14.0" text="TOTALE">
+                                            <font>
+                                                <Font name="System Bold" size="18.0" />
+                                            </font>
+                                        </Label>
+                                        <Label layoutX="64.0" layoutY="41.0" text="IVA inclusa" />
+                                        <Label fx:id="lblTotale" layoutX="64.0" layoutY="79.0" text="€ 0.00" textFill="#125332">
+                                            <font>
+                                                <Font name="System Bold" size="20.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </AnchorPane>
+                                <Button contentDisplay="CENTER" mnemonicParsing="false" onAction="#procediAlPagamento" prefHeight="38.0" prefWidth="222.0" styleClass="bottone-giallo" stylesheets="@../style.css" text="Procedi al Pagamento" />
+                            </children>
+                            <padding>
+                                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                            </padding>
+                        </VBox>
+                    </children>
+                </AnchorPane>
+            </children>
+        </HBox>
+    </children>
 </AnchorPane>

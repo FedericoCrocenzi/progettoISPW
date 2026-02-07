@@ -8,7 +8,7 @@ import java.util.List;
 
 public class MemoryOrdineDAO implements OrdineDAO {
 
-    // Tabella ordini in RAM
+    // IMPORTANTE: static per simulare la persistenza tra le varie schermate
     private static List<Ordine> tabellaOrdini = new ArrayList<>();
 
     @Override
@@ -20,32 +20,43 @@ public class MemoryOrdineDAO implements OrdineDAO {
             nuovoId = tabellaOrdini.get(tabellaOrdini.size() - 1).leggiId() + 1;
         }
 
-        // 2. Registro l'ID nel model usando il metodo semantico corretto
+        // 2. Registro l'ID nel model
         ordine.registraIdGenerato(nuovoId);
 
-        // 3. "Salvo" nella lista
+        // 3. "Salvo" nella lista condivisa
         tabellaOrdini.add(ordine);
 
-        System.out.println("DEMO: Ordine salvato in RAM con ID " + nuovoId);
-        System.out.println("DEMO: Totale ordine: " + ordine.getTotale());
+        System.out.println("DEMO (RAM): Ordine salvato con ID " + nuovoId + " | Totale: " + ordine.getTotale());
     }
 
     @Override
     public Ordine selectOrdineById(int id) {
         for (Ordine o : tabellaOrdini) {
-            if (o.leggiId() == id) return o;
+            if (o.leggiId() == id) {
+                return o;
+            }
         }
         return null;
     }
 
     @Override
+    public List<Ordine> findAll() {
+        // Restituisco una copia della lista per sicurezza
+        return new ArrayList<>(tabellaOrdini);
+    }
+
+    @Override
     public void updateStato(Ordine ordine) {
-        // In RAM l'oggetto è condiviso, quindi tecnicamente è già aggiornato.
-        // Ma per simulare la ricerca e update:
+        // In memoria (passaggio per riferimento), l'oggetto 'ordine' passato
+        // è lo stesso che sta nella lista 'tabellaOrdini'.
+        // Quindi l'aggiornamento è automatico.
+        // Tuttavia, per simulare un comportamento realistico di update:
+
         for (Ordine o : tabellaOrdini) {
             if (o.leggiId() == ordine.leggiId()) {
-                // Simuliamo update (in realtà 'o' e 'ordine' sono lo stesso oggetto)
-                System.out.println("DEMO: Stato aggiornato a " + ordine.getStato());
+                // In un DB vero faresti: UPDATE ... SET stato = ...
+                // Qui stampiamo solo un log di conferma
+                System.out.println("DEMO (RAM): Stato ordine #" + o.leggiId() + " aggiornato a: " + ordine.getStato());
                 return;
             }
         }

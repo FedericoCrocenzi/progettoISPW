@@ -1,54 +1,73 @@
 package it.ispw.project.graphicController;
 
-import it.ispw.project.view.ViewSwitcher;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
+import java.io.IOException;
 
 public class MainGraphicController implements ControllerGraficoBase {
 
-    @FXML private BorderPane rootLayout; // Il BorderPane principale nel tuo FXML
+    @FXML private BorderPane rootLayout; // Il contenitore principale
     @FXML private ToggleButton btnHome;
     @FXML private ToggleButton btnCarrello;
     @FXML private ToggleButton btnProfilo;
-    @FXML private ToggleGroup menuGroup; // Associa i bottoni a un gruppo nel FXML
+    @FXML private ToggleGroup menuGroup;
 
     private String sessionId;
 
     @Override
     public void initData(String sessionId) {
         this.sessionId = sessionId;
-
-        // 1. Configura il ViewSwitcher con il pannello centrale di questa finestra
-        ViewSwitcher.getInstance().setMainPane(rootLayout);
-
-        // 2. Carica la Home di default
+        // All'avvio carica la Home (Catalogo)
         mostraHome();
+    }
+
+    /**
+     * Metodo generico per cambiare la vista centrale mantenendo Top/Bottom bar.
+     */
+    private void caricaVistaCentrale(String fxmlPath) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Node vista = loader.load();
+
+            // Inizializza il controller della sotto-vista se necessario
+            Object controller = loader.getController();
+            if (controller instanceof ControllerGraficoBase) {
+                ((ControllerGraficoBase) controller).initData(sessionId);
+            }
+
+            // Sostituisce il centro del BorderPane
+            rootLayout.setCenter(vista);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Errore caricamento vista: " + fxmlPath);
+        }
     }
 
     @FXML
     public void mostraHome() {
-        // Carica la schermata catalogo prodotti
-        ViewSwitcher.getInstance().switchView("/view/CatalogoView.fxml", sessionId);
+        caricaVistaCentrale("/view/CatalogoView.fxml");
+        if (btnHome != null) btnHome.setSelected(true);
     }
 
     @FXML
     public void mostraCarrello() {
-        ViewSwitcher.getInstance().switchView("/view/CarrelloView.fxml", sessionId);
+        caricaVistaCentrale("/view/CarrelloView.fxml");
+        if (btnCarrello != null) btnCarrello.setSelected(true);
     }
 
     @FXML
     public void mostraProfilo() {
-        ViewSwitcher.getInstance().switchView("/view/ProfileView.fxml", sessionId);
+        caricaVistaCentrale("/view/ProfileView.fxml");
+        if (btnProfilo != null) btnProfilo.setSelected(true);
     }
 
     @FXML
     public void logout() {
-        // Qui si dovrebbe tornare alla schermata di Login
-        // SessionManager.getInstance().removeSession(sessionId);
-        // Stage stage = (Stage) rootLayout.getScene().getWindow();
-        // ... logica per caricare LoginView.fxml ...
-        System.out.println("Logout effettuato (Simulato)");
+        // Logica logout...
     }
 }

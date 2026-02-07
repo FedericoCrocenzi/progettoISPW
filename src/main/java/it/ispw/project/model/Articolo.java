@@ -17,7 +17,7 @@ public abstract class Articolo implements Serializable {
     private String descrizione;
     private double prezzo;
     private int scorta;
-
+    private String immaginePath;
     // Costruttore
     public Articolo(int id, String descrizione, double prezzo, int scorta) {
         this.id = id;
@@ -83,4 +83,9 @@ public abstract class Articolo implements Serializable {
     public String leggiDescrizione() { return descrizione; }
     public double ottieniPrezzo() { return prezzo; }
     public int ottieniScorta() { return scorta; }
+
+    public String getImmaginePath() {return this.immaginePath;}
+
+    public void setImmaginePath(String imgPath) {this.immaginePath = imgPath;
+    }
 }
