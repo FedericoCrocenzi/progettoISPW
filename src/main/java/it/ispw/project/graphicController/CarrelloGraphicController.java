@@ -3,9 +3,11 @@ package it.ispw.project.graphicController;
 import it.ispw.project.applicationController.AcquistaArticoloControllerApplicativo;
 import it.ispw.project.bean.ArticoloBean;
 import it.ispw.project.bean.CarrelloBean;
+import it.ispw.project.exception.QuantitaInsufficienteException;
 import it.ispw.project.model.Carrello;
 import it.ispw.project.model.observer.Observer;
 import it.ispw.project.sessionManager.SessionManager;
+import it.ispw.project.view.ViewSwitcher; // Assicurati di importare ViewSwitcher
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -17,73 +19,75 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 import java.io.InputStream;
 
 public class CarrelloGraphicController implements ControllerGraficoBase, Observer {
 
-    @FXML private VBox vboxCarrello; // Il contenitore dentro lo ScrollPane
+    @FXML private VBox vboxCarrello;
     @FXML private Label lblTotale;
 
     private AcquistaArticoloControllerApplicativo appController;
     private String sessionId;
+    private Carrello carrelloModel;
 
     @Override
     public void initData(String sessionId) {
         this.sessionId = sessionId;
         this.appController = new AcquistaArticoloControllerApplicativo(sessionId);
 
-        // Observer: si aggiorna se il carrello cambia (es. da altre finestre)
-        Carrello carrelloModel = SessionManager.getInstance().getSession(sessionId).getCarrelloCorrente();
-        carrelloModel.attach(this);
-
+        this.carrelloModel = SessionManager.getInstance().getSession(sessionId).getCarrelloCorrente();
+        if (this.carrelloModel != null) {
+            this.carrelloModel.attach(this);
+        }
         aggiornaVista();
     }
 
     @Override
     public void update(Object subject) {
-        // Aggiornamento thread-safe della UI
         Platform.runLater(this::aggiornaVista);
     }
 
     private void aggiornaVista() {
-        // 1. Recupero dati
         CarrelloBean carrelloBean = appController.visualizzaCarrello();
-
-        // 2. Pulizia Grafica
         vboxCarrello.getChildren().clear();
 
-        // 3. Generazione Card Prodotti
         if (carrelloBean.getListaArticoli().isEmpty()) {
-            vboxCarrello.getChildren().add(new Label("Il carrello è vuoto."));
+            Label emptyLabel = new Label("Il carrello è vuoto.");
+            emptyLabel.setStyle("-fx-font-size: 14px; -fx-padding: 10;");
+            vboxCarrello.getChildren().add(emptyLabel);
         } else {
             for (ArticoloBean art : carrelloBean.getListaArticoli()) {
                 AnchorPane card = creaCardProdotto(art);
                 vboxCarrello.getChildren().add(card);
             }
         }
-
-        // 4. Aggiornamento Totale
         lblTotale.setText(String.format("€ %.2f", carrelloBean.getTotale()));
     }
 
+    // --- MODIFICA QUI: USO DI VIEWSWITCHER ---
     @FXML
     public void procediAlPagamento() {
         if (vboxCarrello.getChildren().isEmpty() || lblTotale.getText().equals("€ 0.00")) {
-            mostraMessaggio("Carrello Vuoto", "Aggiungi articoli prima di pagare.");
+            mostraMessaggio("Carrello Vuoto", "Non puoi procedere al pagamento con il carrello vuoto.", Alert.AlertType.WARNING);
             return;
         }
-        mostraMessaggio("Pagamento", "Reindirizzamento al modulo di pagamento...");
-        // Qui chiameresti: ViewSwitcher.switchTo("PagamentoView.fxml", sessionId);
+
+        // Recuperiamo lo Stage attuale
+        Stage stage = (Stage) vboxCarrello.getScene().getWindow();
+
+        // Cambiamo completamente la scena usando ViewSwitcher
+        // Assicurati che il percorso sia corretto: "/view/PaymentView.fxml"
+        ViewSwitcher.switchTo("/view/PaymentView.fxml", sessionId, stage);
     }
 
-    // --- METODO CHE GENERA LA GRAFICA (Replica del tuo FXML) ---
+    // --- I METODI SOTTOSTANTI RIMANGONO UGUALI A PRIMA ---
     private AnchorPane creaCardProdotto(ArticoloBean art) {
         AnchorPane card = new AnchorPane();
         card.setPrefHeight(100.0);
         card.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);");
 
-        // Immagine
         ImageView imgView = new ImageView();
         imgView.setFitHeight(80.0);
         imgView.setFitWidth(80.0);
@@ -92,18 +96,16 @@ public class CarrelloGraphicController implements ControllerGraficoBase, Observe
         imgView.setPreserveRatio(true);
         caricaImmagine(imgView, art.getImmaginePath());
 
-        // Nome
         Label lblNome = new Label(art.getDescrizione());
         lblNome.setLayoutX(93.0);
         lblNome.setLayoutY(17.0);
+        lblNome.setStyle("-fx-font-size: 14px;");
 
-        // Prezzo
         Label lblPrezzo = new Label(String.format("€ %.2f", art.getPrezzo()));
         lblPrezzo.setLayoutX(93.0);
         lblPrezzo.setLayoutY(53.0);
         lblPrezzo.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
 
-        // Controlli Quantità
         HBox hBoxQty = new HBox(10);
         hBoxQty.setAlignment(Pos.CENTER);
         hBoxQty.setLayoutX(218.0);
@@ -113,7 +115,7 @@ public class CarrelloGraphicController implements ControllerGraficoBase, Observe
 
         Button btnMinus = new Button("-");
         btnMinus.setStyle("-fx-font-weight: bold; -fx-background-color: transparent; -fx-cursor: hand;");
-        btnMinus.setOnAction(e -> mostraMessaggio("Info", "Usa il cestino per rimuovere."));
+        btnMinus.setOnAction(e -> mostraMessaggio("Info", "Usa il tasto cestino per rimuovere l'articolo.", Alert.AlertType.INFORMATION));
 
         Label lblQty = new Label(String.valueOf(art.getQuantita()));
         lblQty.setStyle("-fx-font-weight: bold;");
@@ -123,21 +125,21 @@ public class CarrelloGraphicController implements ControllerGraficoBase, Observe
         btnPlus.setOnAction(e -> {
             try {
                 appController.aggiungiArticoloAlCarrello(art, 1);
+            } catch (QuantitaInsufficienteException ex) {
+                mostraMessaggio("Scorta Insufficiente", ex.getMessage(), Alert.AlertType.WARNING);
             } catch (Exception ex) {
-                mostraMessaggio("Errore", ex.getMessage());
+                mostraMessaggio("Errore", ex.getMessage(), Alert.AlertType.ERROR);
             }
         });
 
         hBoxQty.getChildren().addAll(btnMinus, lblQty, btnPlus);
 
-        // Bottone Cestino (Rimuovi)
-        Button btnTrash = new Button("X"); // Usa testo o icona
+        Button btnTrash = new Button("X");
         btnTrash.setLayoutX(285.0);
         btnTrash.setLayoutY(3.0);
-        btnTrash.setStyle("-fx-background-color: transparent; -fx-text-fill: red; -fx-font-weight: bold; -fx-cursor: hand;");
+        btnTrash.setStyle("-fx-background-color: transparent; -fx-text-fill: red; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;");
         btnTrash.setOnAction(e -> {
             appController.rimuoviArticoloDalCarrello(art);
-            // L'Observer richiamerà aggiornaVista() automaticamente
         });
 
         card.getChildren().addAll(imgView, lblNome, lblPrezzo, hBoxQty, btnTrash);
@@ -149,14 +151,12 @@ public class CarrelloGraphicController implements ControllerGraficoBase, Observe
             if (path == null || path.isEmpty()) path = "/Image/logo1.png";
             InputStream is = getClass().getResourceAsStream(path);
             if (is == null) is = getClass().getResourceAsStream("/Image/logo1.png");
-            imgView.setImage(new Image(is));
-        } catch (Exception e) {
-            // ignore
-        }
+            if (is != null) imgView.setImage(new Image(is));
+        } catch (Exception e) {}
     }
 
-    private void mostraMessaggio(String titolo, String testo) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+    private void mostraMessaggio(String titolo, String testo, Alert.AlertType type) {
+        Alert alert = new Alert(type);
         alert.setTitle(titolo);
         alert.setHeaderText(null);
         alert.setContentText(testo);

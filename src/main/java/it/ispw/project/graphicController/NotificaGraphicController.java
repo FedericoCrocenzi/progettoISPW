@@ -1,7 +1,7 @@
 package it.ispw.project.graphicController;
 
 import it.ispw.project.applicationController.AcquistaArticoloControllerApplicativo;
-import it.ispw.project.exception.DAOException; // Assicurati di importare l'eccezione
+import it.ispw.project.exception.DAOException;
 import it.ispw.project.model.GestoreNotifiche;
 import it.ispw.project.model.Ordine;
 import it.ispw.project.model.observer.Observer;
@@ -18,7 +18,7 @@ import javafx.stage.Stage;
 public class NotificaGraphicController implements ControllerGraficoBase, Observer {
 
     @FXML private Label lblTitolo;
-    @FXML private Label lblOrdine;
+    @FXML private Label lblOrdine; // Useremo questa label anche per il corpo del messaggio
     @FXML private Button btnAzione;
 
     private String sessionId;
@@ -31,102 +31,108 @@ public class NotificaGraphicController implements ControllerGraficoBase, Observe
         this.sessionId = sessionId;
         this.appController = new AcquistaArticoloControllerApplicativo(sessionId);
 
-        // 1. REGISTRAZIONE OBSERVER
-        GestoreNotifiche.getInstance().attach(this);
-
-        // 2. Recupero Dati Sessione
+        // Recupero sessione per capire chi è l'utente
         Session session = SessionManager.getInstance().getSession(sessionId);
+        // Se non c'è sessione (es. popup generico aperto senza contesto), usciamo
         if (session == null) return;
+
         this.ruoloUtente = session.getRuolo();
 
-        Ordine ordine = session.getUltimoOrdineCreato();
-        if (ordine != null) {
-            this.idOrdineCorrente = ordine.leggiId();
-            lblOrdine.setText("Ordine n° " + idOrdineCorrente);
-        }
-
-        // 3. Configurazione Vista
+        // Se è un CLIENTE, configuriamo la logica di "Sono in negozio"
         if ("CLIENTE".equalsIgnoreCase(ruoloUtente)) {
+            Ordine ordine = session.getUltimoOrdineCreato();
+            if (ordine != null) {
+                this.idOrdineCorrente = ordine.leggiId();
+                lblOrdine.setText("Ordine n° " + idOrdineCorrente);
+            }
+
+            // Registriamo l'observer SOLO se è un cliente che deve attendere la risposta
+            GestoreNotifiche.getInstance().attach(this);
             configuraPerCliente();
-        } else {
-            configuraPerCommesso();
         }
+        // Se è un COMMESSO, initData viene chiamato ma la configurazione specifica
+        // avverrà tramite setMessaggio() chiamato dal CommessoGraphicController.
+    }
+
+    /**
+     * Metodo usato per trasformare questa View in un Popup generico.
+     * Utile per il Commesso che deve solo leggere un avviso.
+     */
+    public void setMessaggio(String titolo, String corpoMessaggio) {
+        lblTitolo.setText(titolo);
+        lblOrdine.setText(corpoMessaggio);
+
+        // Configuriamo il bottone come un semplice "Chiudi" o "OK"
+        btnAzione.setText("OK");
+        btnAzione.setDisable(false);
+        btnAzione.setOnAction(e -> onClose());
     }
 
     public void onClose() {
-        GestoreNotifiche.getInstance().detach(this);
+        // Deregistra observer solo se era stato registrato
+        if ("CLIENTE".equalsIgnoreCase(ruoloUtente)) {
+            GestoreNotifiche.getInstance().detach(this);
+        }
+        // Chiude la finestra corrente
+        Stage stage = (Stage) btnAzione.getScene().getWindow();
+        stage.close();
     }
 
     private void configuraPerCliente() {
         lblTitolo.setText("Pagamento Effettuato");
         btnAzione.setText("Sono in negozio");
-        btnAzione.setOnAction(event -> {
-            // Nota: Se notificaPresenzaInNegozio non lancia DAOException, qui non serve il try-catch.
-            // Se lo lanciasse, dovresti aggiungerlo anche qui.
-            appController.notificaPresenzaInNegozio(idOrdineCorrente);
-
-            btnAzione.setDisable(true);
-            btnAzione.setText("In attesa del commesso...");
-            mostraInfo("Notifica Inviata", "Il commesso è stato avvisato.");
-        });
-    }
-
-    /**
-     * MODIFICATO: Aggiunto blocco try-catch per gestire DAOException
-     */
-    private void configuraPerCommesso() {
-        lblTitolo.setText("Gestione Ordine");
-        btnAzione.setText("Conferma Merce Pronta");
 
         btnAzione.setOnAction(event -> {
             try {
-                // Questa chiamata lancia DAOException perché aggiorna il DB
-                appController.confermaRitiroMerce(idOrdineCorrente);
+                // Chiama il controller applicativo per aggiornare lo stato DB e notificare il commesso
+                appController.segnalaClienteInNegozio(idOrdineCorrente);
 
                 btnAzione.setDisable(true);
-                btnAzione.setText("Ordine Completato");
-                mostraInfo("Conferma Inviata", "Il cliente è stato avvisato.");
+                btnAzione.setText("In attesa del commesso...");
+                mostraInfo("Notifica Inviata", "Il commesso è stato avvisato del tuo arrivo.");
 
             } catch (DAOException e) {
-                mostraErrore("Errore di Sistema", "Impossibile aggiornare lo stato dell'ordine: " + e.getMessage());
-                e.printStackTrace();
+                mostraErrore("Errore di Connessione", "Impossibile inviare la notifica: " + e.getMessage());
             }
         });
     }
 
-    // --- METODO OBSERVER ---
+    // --- METODO OBSERVER (Usato principalmente dal Cliente in attesa) ---
     @Override
     public void update(Object data) {
         Platform.runLater(() -> {
             if (data instanceof String) {
                 String msg = (String) data;
-                gestisciMessaggio(msg);
+                gestisciMessaggioCliente(msg);
             }
         });
     }
 
-    private void gestisciMessaggio(String msg) {
+    private void gestisciMessaggioCliente(String msg) {
+        // Il cliente attende che il commesso confermi che la merce è pronta (es. "MERCE_PRONTA")
         if ("CLIENTE".equalsIgnoreCase(ruoloUtente)) {
-            if (msg.contains("MERCE_PRONTA") && msg.contains(String.valueOf(idOrdineCorrente))) {
+            // Verifica che il messaggio riguardi il proprio ordine (opzionale ma consigliato)
+            // Assumiamo che il messaggio contenga l'ID ordine o sia generico per la demo
+            if (msg.contains("MERCE_PRONTA") || msg.contains("PRONTO")) {
                 lblTitolo.setText("MERCE PRONTA!");
+                lblOrdine.setText("Il tuo ordine #" + idOrdineCorrente + " è pronto al banco.");
+
                 btnAzione.setText("Ritira e Chiudi");
                 btnAzione.setDisable(false);
-                btnAzione.setOnAction(e -> tornaAllaHome());
+
+                // Al click, torna alla Home
+                btnAzione.setOnAction(e -> {
+                    onClose();
+                    // Recupera lo stage attuale prima che chiuda o usane uno nuovo se necessario
+                    // Nota: Qui onClose chiude lo stage popup. Per tornare alla home serve lo stage principale.
+                    // In architettura multi-window, il main stage potrebbe essere ancora sotto.
+                    // Se questa è l'unica finestra attiva:
+                    // ViewSwitcher.switchTo("MainView.fxml", sessionId, new Stage());
+                });
+
                 mostraInfo("Aggiornamento", "Il commesso ha preparato il tuo ordine!");
             }
-        } else {
-            if (msg.contains("CLIENTE_IN_NEGOZIO") && msg.contains(String.valueOf(idOrdineCorrente))) {
-                lblTitolo.setText("IL CLIENTE È QUI!");
-                mostraInfo("Attenzione", "Il cliente dell'ordine #" + idOrdineCorrente + " è arrivato in negozio.");
-            }
         }
-    }
-
-    @FXML
-    public void tornaAllaHome() {
-        onClose();
-        Stage stage = (Stage) btnAzione.getScene().getWindow();
-        ViewSwitcher.switchTo("MainView.fxml", sessionId, stage);
     }
 
     private void mostraInfo(String titolo, String contenuto) {

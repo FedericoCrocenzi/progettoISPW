@@ -1,19 +1,20 @@
 package it.ispw.project.graphicController;
 
 import it.ispw.project.applicationController.AcquistaArticoloControllerApplicativo;
-import it.ispw.project.exception.DAOException; // <--- Import Fondamentale
-import it.ispw.project.model.Articolo;
-import it.ispw.project.model.Fitofarmaco;
+import it.ispw.project.bean.ArticoloBean;
+import it.ispw.project.exception.DAOException;
+import it.ispw.project.exception.QuantitaInsufficienteException;
+import it.ispw.project.view.ViewSwitcher; // Assicurati di avere questa classe o simile per la navigazione
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.stage.Stage;
-import it.ispw.project.exception.QuantitaInsufficienteException;
+import javafx.scene.layout.BorderPane;
 
-import it.ispw.project.bean.ArticoloBean;
-import java.io.InputStream;
+import java.io.IOException;
 
 public class ArticoloViewGraphicController {
 
@@ -24,131 +25,101 @@ public class ArticoloViewGraphicController {
     @FXML private Label lblQuantita;
     @FXML private ImageView imgProdotto;
 
-    private Articolo articoloCorrente;
+    private ArticoloBean articoloCorrente;
     private int quantitaSelezionata = 1;
-    private String sessionId; // <--- Ci serve per collegarci alla sessione giusta
-
-    // Non lo istanziamo subito con 'new ...()' perché ci serve il sessionId
+    private String sessionId;
     private AcquistaArticoloControllerApplicativo appController;
 
     /**
-     * Chiamato dalla MainView.
-     * AGGIORNAMENTO: Passiamo anche il sessionId per inizializzare correttamente il controller.
+     * Inizializza la vista con i dati dell'articolo cliccato.
      */
-    public void setDatiArticolo(Articolo articolo, String sessionId) {
+    public void setDatiArticolo(ArticoloBean articolo, String sessionId) {
         this.articoloCorrente = articolo;
         this.sessionId = sessionId;
-
-        // INIZIALIZZAZIONE CORRETTA DEL CONTROLLER
-        // Collega questo controller grafico alla sessione utente esistente (e al suo carrello)
         this.appController = new AcquistaArticoloControllerApplicativo(sessionId);
 
-        // 1. Impostiamo i testi
-        lblTitolo.setText(articolo.leggiDescrizione()); // Usa metodo del Model (Information Hiding)
-        lblPrezzo.setText(String.format("€ %.2f", articolo.ottieniPrezzo()));
-        lblDescrizione.setText(generaDescrizioneDettagliata(articolo));
+        // Popolamento UI
+        lblTitolo.setText(articolo.getDescrizione()); // O getNome() se presente nel Bean
+        lblPrezzo.setText(String.format("€ %.2f", articolo.getPrezzo()));
+        lblDescrizione.setText(articolo.getDescrizione()); // O campo descrizione estesa
+        lblQuantita.setText(String.valueOf(quantitaSelezionata));
 
-        // 2. Gestione visibilità avviso Patentino
-        if (articolo instanceof Fitofarmaco) {
-            Fitofarmaco fito = (Fitofarmaco) articolo;
-            lblPatentino.setVisible(fito.isRichiedePatentino());
-            lblPatentino.setManaged(fito.isRichiedePatentino());
-        } else {
-            lblPatentino.setVisible(false);
-            lblPatentino.setManaged(false);
-        }
-
-        // 3. Caricamento Immagine
-        caricaImmagine(articolo);
-    }
-
-    private String generaDescrizioneDettagliata(Articolo a) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(a.leggiDescrizione()).append("\n\n");
-        sb.append("Disponibilità in magazzino: ").append(a.ottieniScorta()).append(" unità.\n");
-        return sb.toString();
-    }
-
-    private void caricaImmagine(Articolo a) {
-        // Logica per caricare l'immagine (simulata o da risorse)
-        // Nota: Assicurati che i percorsi esistano o gestisci il null
+        // Gestione Immagine
         try {
-            String imagePath = "/images/art_" + a.leggiId() + ".png";
-            InputStream is = getClass().getResourceAsStream(imagePath);
-            if (is == null) {
-                is = getClass().getResourceAsStream("/images/placeholder_product.png");
-            }
-            if (is != null) {
-                imgProdotto.setImage(new Image(is));
+            if (articolo.getImmaginePath() != null) {
+                imgProdotto.setImage(new Image(getClass().getResourceAsStream(articolo.getImmaginePath())));
             }
         } catch (Exception e) {
-            System.err.println("Errore caricamento immagine: " + e.getMessage());
+            System.err.println("Immagine non trovata: " + articolo.getImmaginePath());
+        }
+
+        // Gestione Patentino (mostra solo se necessario)
+        if ("FITOFARMACO".equals(articolo.getType()) && articolo.isServePatentino()) {
+            lblPatentino.setVisible(true);
+        } else {
+            lblPatentino.setVisible(false);
         }
     }
 
     @FXML
     public void aumentaQuantita() {
-        if (quantitaSelezionata < articoloCorrente.ottieniScorta()) {
-            quantitaSelezionata++;
-            aggiornaLabelQuantita();
-        }
+        // Qui potresti controllare la scorta massima dal bean se disponibile
+        quantitaSelezionata++;
+        lblQuantita.setText(String.valueOf(quantitaSelezionata));
     }
 
     @FXML
     public void diminuisciQuantita() {
         if (quantitaSelezionata > 1) {
             quantitaSelezionata--;
-            aggiornaLabelQuantita();
+            lblQuantita.setText(String.valueOf(quantitaSelezionata));
         }
-    }
-
-    private void aggiornaLabelQuantita() {
-        lblQuantita.setText(String.valueOf(quantitaSelezionata));
     }
 
     @FXML
     public void aggiungiAlCarrello() {
-        if (articoloCorrente != null && appController != null) {
-            try {
-                ArticoloBean articoloDaAggiungere = new ArticoloBean();
-                articoloDaAggiungere.setId(articoloCorrente.leggiId());
-
-                // Chiamata al Controller
-                appController.aggiungiArticoloAlCarrello(articoloDaAggiungere, quantitaSelezionata);
-
-                mostraMessaggio("Successo", "Articolo aggiunto al carrello!", Alert.AlertType.INFORMATION);
-                chiudiScheda();
-
-            } catch (QuantitaInsufficienteException e) {
-                // GESTIONE SPECIFICA: Popup di Warning (Giallo)
-                // Questo aiuta l'utente a capire che deve ridurre la quantità
-                mostraMessaggio("Scorta Insufficiente", e.getMessage(), Alert.AlertType.WARNING);
-
-            } catch (DAOException e) {
-                mostraMessaggio("Errore di Sistema", "Impossibile aggiungere al carrello: " + e.getMessage(), Alert.AlertType.ERROR);
-                e.printStackTrace();
-            } catch (IllegalArgumentException e) {
-                mostraMessaggio("Attenzione", e.getMessage(), Alert.AlertType.WARNING);
-            }
+        try {
+            appController.aggiungiArticoloAlCarrello(articoloCorrente, quantitaSelezionata);
+            mostraMessaggio("Successo", "Articolo aggiunto al carrello!", Alert.AlertType.INFORMATION);
+            // Opzionale: Tornare al catalogo dopo l'aggiunta?
+            chiudiScheda();
+        } catch (QuantitaInsufficienteException e) {
+            mostraMessaggio("Attenzione", e.getMessage(), Alert.AlertType.WARNING);
+        } catch (IllegalArgumentException | DAOException e) {
+            mostraMessaggio("Errore", e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
     @FXML
     public void acquistaSubito() {
-        // Aggiunge e poi (idealmente) porta al carrello
         aggiungiAlCarrello();
-        // In un'app reale qui faresti anche ViewSwitcher.switchTo(CARRELLO, ...)
-        // Ma attenzione: aggiungiAlCarrello chiude la scheda.
+        // Logica per andare direttamente al carrello
+        // ViewSwitcher.switchTo(ViewSwitcher.CARRELLO, sessionId, ...);
     }
 
+    /**
+     * Il tasto "X" funge da tasto "Indietro" per tornare al Catalogo.
+     */
     @FXML
     public void chiudiScheda() {
-        if (lblTitolo.getScene() != null && lblTitolo.getScene().getWindow() != null) {
-            ((Stage) lblTitolo.getScene().getWindow()).close();
+        try {
+            // Ricarica la vista del Catalogo
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/main/resources/view/CatalogoView.fxml"));
+            Parent catalogoNode = loader.load();
+
+            CatalogoGraphicController controller = loader.getController();
+            controller.initData(sessionId);
+
+            // Trova il BorderPane principale (MainView) e imposta il centro
+            BorderPane mainLayout = (BorderPane) lblTitolo.getScene().lookup("#rootLayout");
+            if (mainLayout != null) {
+                mainLayout.setCenter(catalogoNode);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    // Metodo helper per i popup
     private void mostraMessaggio(String titolo, String contenuto, Alert.AlertType type) {
         Alert alert = new Alert(type);
         alert.setTitle(titolo);

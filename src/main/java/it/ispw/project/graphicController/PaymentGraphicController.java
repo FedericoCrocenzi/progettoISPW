@@ -7,7 +7,7 @@ import it.ispw.project.bean.PagamentoBean;
 import it.ispw.project.bean.UtenteBean;
 import it.ispw.project.exception.DAOException;
 import it.ispw.project.exception.PaymentException;
-import it.ispw.project.view.ViewSwitcher;
+import it.ispw.project.view.ViewSwitcher; // Import necessario
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -42,11 +42,11 @@ public class PaymentGraphicController implements ControllerGraficoBase {
     }
 
     @FXML
-    public void confermaPagamentoClick() {
+    public void confermaPagamento() {
         try {
             PagamentoBean pagamentoBean = new PagamentoBean();
 
-            // 1. Gestione Metodo Pagamento e Popolamento Bean
+            // 1. Logica popolamento bean (identica a prima)
             if (rbCarta != null && rbCarta.isSelected()) {
                 pagamentoBean.setMetodoPagamento("CARTA_CREDITO");
                 pagamentoBean.setNumeroCarta(txtNumeroCarta.getText());
@@ -58,29 +58,22 @@ public class PaymentGraphicController implements ControllerGraficoBase {
             } else if (rbContanti != null && rbContanti.isSelected()) {
                 pagamentoBean.setMetodoPagamento("CONTANTI_CONSEGNA");
             } else {
-                // Fallback default
                 pagamentoBean.setMetodoPagamento("CARTA_CREDITO");
-                pagamentoBean.setNumeroCarta(txtNumeroCarta.getText());
-                pagamentoBean.setIntestatario(txtIntestatario.getText());
-                pagamentoBean.setDataScadenza(txtScadenzaMese.getText() + "/" + txtScadenzaAnno.getText());
-                pagamentoBean.setCvv(txtCvv.getText());
             }
 
-            // 2. Impostiamo l'importo
             CarrelloBean carrelloTmp = appController.visualizzaCarrello();
             pagamentoBean.setImportoDaPagare(carrelloTmp.getTotale());
 
-            // 3. Chiamata al Controller Applicativo
-            // Nota: L'utenteBean è vuoto perché il controller usa il SessionManager per sicurezza.
-            OrdineBean ordineConfermato = appController.completaAcquisto(pagamentoBean, carrelloTmp, new UtenteBean());
+            // 2. Esecuzione Pagamento
+            appController.completaAcquisto(pagamentoBean, carrelloTmp, new UtenteBean());
 
-            // 4. Feedback Utente
-            mostraMessaggio("Pagamento Riuscito",
-                    "Il tuo ordine #" + ordineConfermato.getId() + " è stato confermato!",
-                    Alert.AlertType.INFORMATION);
-
-            // 5. Cambio Scena -> Verso la Notifica
-            goToNotifica();
+            // 3. Navigazione verso NOTIFICA (con ViewSwitcher)
+            Stage stage = (Stage) btnConferma.getScene().getWindow();
+            // Assicurati che il percorso sia corretto.
+            // notificaView ora apparirà come schermata intera o popup gestito dal main?
+            // Se notificaView è pensata come popup, qui potresti voler tornare alla Home e POI aprire il popup.
+            // Ma per ora usiamo switch diretto:
+            ViewSwitcher.switchTo("/view/notificaView.fxml", sessionId, stage);
 
         } catch (PaymentException e) {
             mostraMessaggio("Errore Pagamento", e.getMessage(), Alert.AlertType.WARNING);
@@ -95,16 +88,12 @@ public class PaymentGraphicController implements ControllerGraficoBase {
 
     @FXML
     public void tornaAlCarrello() {
+        // Torna alla MainView (che si aprirà sulla Home/Catalogo di default)
         Stage stage = (Stage) btnIndietro.getScene().getWindow();
-        ViewSwitcher.switchTo("carrelloView.fxml", sessionId, stage);
-    }
+        ViewSwitcher.switchTo("/view/MainView.fxml", sessionId, stage);
 
-    // --- NUOVO METODO DI NAVIGAZIONE ---
-    private void goToNotifica() {
-        Stage stage = (Stage) btnConferma.getScene().getWindow();
-        // Passiamo alla view di notifica/pickup.
-        // L'ordine è già stato salvato in sessione dal Controller Applicativo.
-        ViewSwitcher.switchTo("notificaView.fxml", sessionId, stage);
+        // Se volessi riaprire esattamente il carrello, dovresti modificare il MainGraphicController
+        // per accettare un parametro "initialView" nell'initData, ma per ora il ritorno alla Home è standard.
     }
 
     private void mostraMessaggio(String titolo, String testo, Alert.AlertType type) {

@@ -19,8 +19,9 @@
             <children>
                 <AnchorPane layoutX="6.0" layoutY="64.0" prefHeight="30.0" prefWidth="326.0">
                     <children>
-                        <TextField layoutY="4.0" prefHeight="31.0" prefWidth="332.0" promptText="Cerca prodotti agricoli, mangimi..." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                        <Button alignment="CENTER" contentDisplay="CENTER" layoutX="291.0" layoutY="2.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="40.0" styleClass="bottone-ricerca" stylesheets="@../style.css" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <TextField fx:id="txtRicerca" onAction="#cercaProdotti" layoutY="4.0" prefHeight="31.0" prefWidth="332.0" promptText="Cerca prodotti agricoli, mangimi..." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+
+                        <Button onAction="#cercaProdotti" alignment="CENTER" contentDisplay="CENTER" layoutX="291.0" layoutY="2.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="40.0" styleClass="bottone-ricerca" stylesheets="@../style.css" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                             <graphic>
                                 <ImageView fitHeight="20.0" fitWidth="20.0">
                                     <image>

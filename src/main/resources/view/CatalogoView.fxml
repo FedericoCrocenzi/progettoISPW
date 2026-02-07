@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<ScrollPane fitToWidth="true" prefHeight="200.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.ispw.project.graphicController.CatalogoGraphicController">
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" vbarPolicy="NEVER" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.ispw.project.graphicController.CatalogoGraphicController">
     <content>
         <TilePane fx:id="tilePaneCatalogo" hgap="20.0" prefHeight="200.0" prefWidth="318.0" vgap="20.0">
             <padding>
