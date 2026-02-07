@@ -15,18 +15,21 @@ public class GestoreNotifiche extends Subject {
         return GestoreNotificheHelper.INSTANCE;
     }
 
-    // --- METODI DI BUSINESS ---
+    // --- METODI DI NOTIFICA ---
 
     /**
-     * Invia una notifica PUSH al commesso con l'ordine appena creato.
+     * Usato quando viene creato un nuovo ordine (Notifica al Magazzino/Commesso)
      */
     public void inviaNotificaNuovoOrdine(Ordine ordine) {
-        // Creiamo un semplice messaggio/oggetto wrapper o passiamo direttamente l'ordine
-        // Per semplicità e chiarezza passiamo l'Ordine.
-        // La View riceverà l'oggetto Ordine direttamente nel metodo update(Object data).
+        // Notifica gli observer passando l'oggetto Ordine
         super.notifyObservers(ordine);
     }
 
-    // Non servono più i metodi getter (getOrdineOggettoDellaNotifica),
-    // perché i dati arrivano direttamente!
+    /**
+     * Usato per messaggi generici (es. "Cliente in negozio", "Merce Pronta")
+     */
+    public void inviaMessaggio(String messaggio) {
+        // Notifica gli observer passando una Stringa
+        super.notifyObservers(messaggio);
+    }
 }

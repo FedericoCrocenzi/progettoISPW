@@ -1,6 +1,7 @@
 package it.ispw.project.sessionManager;
 
 import it.ispw.project.model.Carrello;
+import it.ispw.project.model.Ordine;
 import it.ispw.project.model.Utente;
 
 import java.util.UUID;
@@ -16,6 +17,7 @@ public class Session {
     private int userId;
     private String username;
     private String ruolo;
+    private Ordine ultimoOrdineCreato;
 
     // Lo stato della sessione (Carrello)
     private Carrello carrelloCorrente;
@@ -42,6 +44,13 @@ public class Session {
     // --- NUOVO METODO NECESSARIO ---
     public Utente getUtenteCorrente() {
         return utenteCorrente;
+    }
+    public void setUltimoOrdineCreato(Ordine ordine) {
+        this.ultimoOrdineCreato = ordine;
+    }
+
+    public Ordine getUltimoOrdineCreato() {
+        return this.ultimoOrdineCreato;
     }
 
     // --- Getters Esistenti ---

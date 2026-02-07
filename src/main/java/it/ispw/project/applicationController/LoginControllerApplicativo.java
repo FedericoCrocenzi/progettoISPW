@@ -1,9 +1,11 @@
 package it.ispw.project.applicationController;
 
+import it.ispw.project.bean.LoginBean; // <--- Import del Bean
 import it.ispw.project.bean.UtenteBean;
 import it.ispw.project.dao.DAOFactory;
 import it.ispw.project.dao.UtenteDAO;
-import it.ispw.project.exception.DAOException; // <--- Importante: Importa la tua eccezione
+import it.ispw.project.exception.DAOException;
+import it.ispw.project.exception.InvalidCredentialsException; // <--- Import Eccezione Custom
 import it.ispw.project.model.Utente;
 import it.ispw.project.sessionManager.SessionManager;
 
@@ -12,44 +14,45 @@ public class LoginControllerApplicativo {
     private static final int TIPO_PERSISTENZA = DAOFactory.JDBC;
 
     /**
-     * Gestisce il login.
-     * @throws IllegalArgumentException se i dati sono nulli o le credenziali errate (logica di business).
-     * @throws DAOException se c'è un errore tecnico nel DB (errore di sistema).
+     * Gestisce il login ricevendo un Bean di input e restituendo un Bean di output.
      */
-    public UtenteBean login(String username, String password) throws IllegalArgumentException, DAOException {
+    public UtenteBean login(LoginBean loginBean) throws InvalidCredentialsException, DAOException {
 
-        // 1. Validazione input (Logica base)
-        if (username == null || password == null || username.isBlank() || password.isBlank()) {
-            throw new IllegalArgumentException("Username e password non possono essere vuoti.");
+        // 1. Validazione input sul Bean
+        if (loginBean == null || loginBean.getUsername() == null || loginBean.getPassword() == null) {
+            throw new InvalidCredentialsException("Dati di login mancanti o incompleti.");
+        }
+
+        String username = loginBean.getUsername();
+        String password = loginBean.getPassword();
+
+        if (username.isBlank() || password.isBlank()) {
+            throw new InvalidCredentialsException("Inserire username e password.");
         }
 
         // 2. Interrogazione DAO
         DAOFactory factory = DAOFactory.getDAOFactory(TIPO_PERSISTENZA);
         UtenteDAO utenteDAO = factory.getUtenteDAO();
 
-        // Questa chiamata ora può lanciare DAOException.
-        // Non usiamo try-catch qui perché vogliamo che l'errore "salga" alla GUI.
+        // Può lanciare DAOException (Errore Sistema)
         Utente utenteTrovato = utenteDAO.checkCredentials(username, password);
 
-        // 3. Verifica logica (Utente non trovato = credenziali sbagliate)
+        // 3. Verifica logica (Errore Business)
         if (utenteTrovato == null) {
-            throw new IllegalArgumentException("Credenziali non valide.");
+            throw new InvalidCredentialsException("Credenziali errate: Username o Password non validi.");
         }
 
-        // 4. GESTIONE SESSIONE (Solo se login OK)
+        // 4. Gestione Sessione
         String sessionId = SessionManager.getInstance().addSession(utenteTrovato);
 
         // 5. Creazione Bean di risposta
-        UtenteBean bean = new UtenteBean();
-        // Uso i metodi "parlanti" del model (Information Hiding)
-        bean.setUsername(utenteTrovato.leggiUsername());
-        bean.setRuolo(utenteTrovato.scopriRuolo());
-        bean.setEmail(utenteTrovato.leggiEmail());
-        bean.setIndirizzo(utenteTrovato.leggiIndirizzo());
+        UtenteBean outBean = new UtenteBean();
+        outBean.setUsername(utenteTrovato.leggiUsername());
+        outBean.setRuolo(utenteTrovato.scopriRuolo());
+        outBean.setEmail(utenteTrovato.leggiEmail());
+        outBean.setIndirizzo(utenteTrovato.leggiIndirizzo());
+        outBean.setSessionId(sessionId); // Token di sessione
 
-        // Passiamo il token alla GUI (utile per chiamate successive stateless, se previste)
-        bean.setSessionId(sessionId);
-
-        return bean;
+        return outBean;
     }
 }

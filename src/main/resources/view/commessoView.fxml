@@ -4,7 +4,6 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.image.Image?>
@@ -20,20 +19,6 @@
     <top>
         <AnchorPane prefHeight="100.0" prefWidth="600.0" style="-fx-background-color: #125332; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5);" BorderPane.alignment="CENTER">
             <children>
-                <AnchorPane layoutX="6.0" layoutY="64.0" prefHeight="30.0" prefWidth="326.0">
-                    <children>
-                        <TextField layoutY="4.0" prefHeight="31.0" prefWidth="332.0" promptText="Cerca prodotti agricoli, mangimi..." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                        <Button alignment="CENTER" contentDisplay="CENTER" layoutX="291.0" layoutY="2.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="40.0" styleClass="bottone-ricerca" stylesheets="@../style.css" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                            <graphic>
-                                <ImageView fitHeight="20.0" fitWidth="20.0">
-                                    <image>
-                                        <Image url="@../Image/icons8-magnifying-glass-100.png" />
-                                    </image>
-                                </ImageView>
-                            </graphic>
-                        </Button>
-                    </children>
-                </AnchorPane>
                 <ImageView fitHeight="53.0" fitWidth="47.0" layoutX="7.0" layoutY="4.0" AnchorPane.leftAnchor="7.0" AnchorPane.topAnchor="4.0">
                     <image>
                         <Image url="@../Image/logo1.png" />
@@ -86,16 +71,7 @@
                         <ToggleGroup fx:id="menuGroup" />
                     </toggleGroup>
                 </ToggleButton>
-                <ToggleButton contentDisplay="TOP" mnemonicParsing="false" selected="true" styleClass="menu-btn" stylesheets="@../style.css" text="Home" toggleGroup="$menuGroup">
-                    <graphic>
-                        <ImageView fitHeight="50.0" fitWidth="50.0">
-                            <image>
-                                <Image url="@../Image/house-128.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </ToggleButton>
-                <ToggleButton contentDisplay="TOP" mnemonicParsing="false" styleClass="menu-btn" stylesheets="@../style.css" text="Ordini(n)" toggleGroup="$menuGroup">
+                <ToggleButton contentDisplay="TOP" mnemonicParsing="false" selected="true" styleClass="menu-btn" stylesheets="@../style.css" text="Ordini(n)" toggleGroup="$menuGroup">
                     <graphic>
                         <ImageView fitHeight="50.0" fitWidth="50.0">
                             <image>
@@ -117,7 +93,7 @@
                     <children>
                         <VBox prefHeight="250.0" prefWidth="200.0" spacing="5.0" style="-fx-background-color: #F5F5F5; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5); -fx-alignment: center;">
                             <children>
-                                <Label text="Product">
+                                <Label text="Ordine n°">
                                     <font>
                                         <Font size="14.0" />
                                     </font>
@@ -131,6 +107,8 @@
                                         <Font name="System Bold" size="14.0" />
                                     </font>
                                 </Label>
+                        <Button mnemonicParsing="false" styleClass="bottone-giallo" stylesheets="@../style.css" text="Visualizza Ordine" />
+                        <Button mnemonicParsing="false" styleClass="bottone-giallo" stylesheets="@../style.css" text="Ordine Pronto" />
                             </children>
                         </VBox>
                     </children>

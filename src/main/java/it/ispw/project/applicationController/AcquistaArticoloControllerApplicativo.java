@@ -11,6 +11,7 @@ import it.ispw.project.dao.DAOFactory;
 import it.ispw.project.dao.OrdineDAO;
 import it.ispw.project.dao.UtenteDAO;
 import it.ispw.project.exception.DAOException;
+import it.ispw.project.exception.PaymentException;
 import it.ispw.project.model.Articolo;
 import it.ispw.project.model.Carrello;
 import it.ispw.project.model.Fitofarmaco;
@@ -27,37 +28,38 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Controller Applicativo per il caso d'uso "Acquista Articolo".
+ * Gestisce la logica di carrello, pagamento, creazione ordine e notifiche.
+ */
 public class AcquistaArticoloControllerApplicativo {
 
     private static final int TIPO_PERSISTENZA = DAOFactory.JDBC;
     private Carrello carrello;
-    private String sessionId; // Manteniamo riferimento alla sessione
+    private String sessionId;
 
-    // --- MODIFICA FONDAMENTALE ---
-    // Il costruttore ora accetta il sessionId
     public AcquistaArticoloControllerApplicativo(String sessionId) {
         this.sessionId = sessionId;
-
-        // Recuperiamo il carrello dalla Sessione invece di crearne uno nuovo!
-        // Questo allinea Controller e View sugli stessi dati.
         this.carrello = SessionManager.getInstance().getSession(sessionId).getCarrelloCorrente();
     }
 
-    // Costruttore di default (se serve per test, ma crea un carrello isolato)
     public AcquistaArticoloControllerApplicativo() {
         this.carrello = new Carrello();
     }
 
-    // ... visualizzaCatalogo, recuperaDatiCliente, ricercaArticoli restano uguali ...
+    // -----------------------------------------------------------------
+    // METODI OPERATIVI
+    // -----------------------------------------------------------------
+
     public List<ArticoloBean> visualizzaCatalogo() throws DAOException {
         return ricercaArticoli(null);
     }
 
     public UtenteBean recuperaDatiCliente(int idCliente) throws DAOException {
-        // ... (codice invariato)
         DAOFactory factory = DAOFactory.getDAOFactory(TIPO_PERSISTENZA);
         UtenteDAO utenteDAO = factory.getUtenteDAO();
         Utente utente = utenteDAO.findById(idCliente);
+
         UtenteBean bean = new UtenteBean();
         if (utente != null) {
             bean.setUsername(utente.leggiUsername());
@@ -69,66 +71,131 @@ public class AcquistaArticoloControllerApplicativo {
     }
 
     public List<ArticoloBean> ricercaArticoli(RicercaArticoloBean criteri) throws DAOException {
-        // ... (codice invariato)
         DAOFactory factory = DAOFactory.getDAOFactory(TIPO_PERSISTENZA);
         ArticoloDAO articoloDAO = factory.getArticoloDAO();
         List<Articolo> listaModel;
-        if (criteri == null) listaModel = articoloDAO.selectAllArticoli();
-        else listaModel = articoloDAO.selectByFilter(criteri.getTestoRicerca(), criteri.getTipoArticolo(), criteri.getPrezzoMin(), criteri.getPrezzoMax());
+
+        if (criteri == null) {
+            listaModel = articoloDAO.selectAllArticoli();
+        } else {
+            listaModel = articoloDAO.selectByFilter(
+                    criteri.getTestoRicerca(),
+                    criteri.getTipoArticolo(),
+                    criteri.getPrezzoMin(),
+                    criteri.getPrezzoMax()
+            );
+        }
+
         List<ArticoloBean> listaBean = new ArrayList<>();
-        for (Articolo a : listaModel) listaBean.add(convertiModelInBean(a));
+        for (Articolo a : listaModel) {
+            listaBean.add(convertiModelInBean(a));
+        }
         return listaBean;
     }
 
     public void aggiungiArticoloAlCarrello(ArticoloBean articoloBean, int quantita) throws IllegalArgumentException, DAOException {
-        // ... (codice invariato)
-        if (quantita <= 0) throw new IllegalArgumentException("Quantità positiva richiesta.");
+        if (quantita <= 0) throw new IllegalArgumentException("La quantità deve essere positiva.");
+
         DAOFactory factory = DAOFactory.getDAOFactory(TIPO_PERSISTENZA);
         ArticoloDAO articoloDAO = factory.getArticoloDAO();
         Articolo articoloModel = articoloDAO.selectArticoloById(articoloBean.getId());
-        if (articoloModel == null) throw new IllegalArgumentException("Articolo non esistente.");
+
+        if (articoloModel == null) throw new IllegalArgumentException("Articolo non più esistente.");
         if (!articoloModel.checkDisponibilita(quantita)) throw new IllegalArgumentException("Quantità insufficiente.");
 
-        // Questo 'this.carrello' ora punta a quello della Sessione
         this.carrello.aggiungiArticolo(articoloModel, quantita);
     }
 
-    public OrdineBean completaAcquisto(PagamentoBean datiPagamento, CarrelloBean carrelloBean, UtenteBean utenteBean) throws DAOException {
-        // Controllo stato interno
-        if (this.carrello.getListaArticoli().isEmpty()) {
-            throw new IllegalStateException("Il carrello è vuoto.");
+    public OrdineBean completaAcquisto(PagamentoBean datiPagamento, CarrelloBean carrelloBean, UtenteBean utenteBean)
+            throws DAOException, PaymentException {
+
+        // 1. VALIDAZIONE PAGAMENTO
+        if (datiPagamento == null) throw new PaymentException("Dati di pagamento mancanti.");
+
+        double totaleAtteso = this.carrello.calcolaTotale();
+        if (Math.abs(datiPagamento.getImportoDaPagare() - totaleAtteso) > 0.01) {
+            throw new PaymentException("L'importo del pagamento non corrisponde al totale del carrello.");
         }
 
-        // --- CORREZIONE QUI ---
-        // Recuperiamo la sessione usando l'ID memorizzato nel controller.
-        if (this.sessionId == null) {
-            throw new IllegalStateException("Sessione non valida: impossibile identificare l'utente.");
+        String metodo = datiPagamento.getMetodoPagamento();
+        if (metodo == null) throw new PaymentException("Selezionare un metodo di pagamento.");
+
+        switch (metodo) {
+            case "CARTA_CREDITO":
+                if (datiPagamento.getNumeroCarta() == null || datiPagamento.getNumeroCarta().length() != 16)
+                    throw new PaymentException("Numero carta non valido.");
+                if (datiPagamento.getCvv() == null || datiPagamento.getCvv().length() != 3)
+                    throw new PaymentException("CVV non valido.");
+                if (datiPagamento.getDataScadenza() == null || !datiPagamento.getDataScadenza().contains("/"))
+                    throw new PaymentException("Formato scadenza non valido.");
+                break;
+            case "PAYPAL": break;
+            case "CONTANTI_CONSEGNA": break;
+            default: throw new PaymentException("Metodo di pagamento non supportato.");
         }
+
+        // 2. CONTROLLO PRE-ORDINE
+        if (this.carrello.getListaArticoli().isEmpty()) throw new IllegalStateException("Il carrello è vuoto.");
+        if (this.sessionId == null) throw new IllegalStateException("Sessione non valida.");
 
         Session session = SessionManager.getInstance().getSession(this.sessionId);
-        if (session == null) {
-            throw new IllegalStateException("Sessione scaduta o non trovata.");
-        }
-
-        // Ora il metodo getUtenteCorrente() esiste grazie alla modifica al punto 1
+        if (session == null) throw new IllegalStateException("Sessione scaduta.");
         Utente utenteCorrente = session.getUtenteCorrente();
 
-        // Procedi con la creazione dell'ordine...
-        Ordine ordine = new Ordine(
-                0,
-                new Date(),
-                utenteCorrente,
-                this.carrello.getListaArticoli(),
-                this.carrello.calcolaTotale()
-        );
+        // 3. CREAZIONE ORDINE
+        Ordine ordine = new Ordine(0, new Date(), utenteCorrente, this.carrello.getListaArticoli(), this.carrello.calcolaTotale());
 
-        // ... (resto del metodo identico a prima: DAO, Notifiche, ecc.) ...
         DAOFactory factory = DAOFactory.getDAOFactory(TIPO_PERSISTENZA);
-        factory.getOrdineDAO().insertOrdine(ordine);
-        // ...
+        OrdineDAO ordineDAO = factory.getOrdineDAO();
+        ArticoloDAO articoloDAO = factory.getArticoloDAO();
+
+        ordineDAO.insertOrdine(ordine);
+
+        for (Map.Entry<Articolo, Integer> entry : this.carrello.getListaArticoli().entrySet()) {
+            Articolo art = entry.getKey();
+            art.aggiornaScorta(-entry.getValue());
+            articoloDAO.updateScorta(art);
+        }
+
+        // 4. NOTIFICA INIZIALE (Nuovo Ordine)
+        GestoreNotifiche.getInstance().inviaNotificaNuovoOrdine(ordine);
+
+        // 5. AGGIORNAMENTO SESSIONE
+        session.setUltimoOrdineCreato(ordine);
+
+        // 6. PULIZIA
+        this.carrello.svuota();
 
         return convertiOrdineInBean(ordine);
     }
+
+    // --- METODI DI NOTIFICA AGGIORNATI ---
+
+    /**
+     * Chiamato dalla view CLIENTE quando clicca "Sono in negozio".
+     * Usa il pattern Observer per avvisare il Commesso.
+     */
+    public void notificaPresenzaInNegozio(int idOrdine) {
+        // Messaggio strutturato che il NotificaGraphicController (Commesso) intercetterà
+        String messaggio = "CLIENTE_IN_NEGOZIO: Ordine #" + idOrdine;
+        GestoreNotifiche.getInstance().inviaMessaggio(messaggio);
+    }
+
+    /**
+     * Chiamato dalla view COMMESSO quando clicca "Merce Pronta".
+     * Usa il pattern Observer per avvisare il Cliente.
+     */
+    public void confermaRitiroMerce(int idOrdine) {
+        // Qui potresti anche aggiornare lo stato dell'ordine nel DB (es. "PRONTO")
+        // DAOFactory.getDAOFactory(...).getOrdineDAO().updateStato(idOrdine, "PRONTO");
+
+        String messaggio = "MERCE_PRONTA: Ordine #" + idOrdine;
+        GestoreNotifiche.getInstance().inviaMessaggio(messaggio);
+    }
+
+    // -----------------------------------------------------------------
+    // PRIVATE HELPERS
+    // -----------------------------------------------------------------
 
     public CarrelloBean visualizzaCarrello() {
         CarrelloBean carrelloBean = new CarrelloBean();
@@ -141,16 +208,25 @@ public class AcquistaArticoloControllerApplicativo {
         return carrelloBean;
     }
 
-    // ... helper convertiModelInBean e convertiOrdineInBean invariati ...
     private ArticoloBean convertiModelInBean(Articolo a) {
         ArticoloBean bean = new ArticoloBean();
         bean.setId(a.leggiId());
         bean.setDescrizione(a.leggiDescrizione());
         bean.setPrezzo(a.ottieniPrezzo());
         bean.setQuantita(a.ottieniScorta());
-        // ... gestione tipi ...
+        if (a instanceof Mangime) {
+            bean.setType("MANGIME");
+            bean.setDataScadenza(((Mangime) a).getScadenza());
+        } else if (a instanceof Utensile) {
+            bean.setType("UTENSILE");
+            bean.setMateriale(((Utensile) a).getMateriale());
+        } else if (a instanceof Fitofarmaco) {
+            bean.setType("FITOFARMACO");
+            bean.setServePatentino(((Fitofarmaco) a).isRichiedePatentino());
+        }
         return bean;
     }
+
     private OrdineBean convertiOrdineInBean(Ordine o) {
         OrdineBean bean = new OrdineBean();
         bean.setId(o.leggiId());

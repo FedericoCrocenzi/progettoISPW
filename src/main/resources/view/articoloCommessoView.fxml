@@ -13,62 +13,48 @@
 
 <AnchorPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <HBox layoutX="11.0" layoutY="16.0" spacing="20.0" style="-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 20, 0, 0, 0);; -fx-background-color: white; -fx-background-radius: 15;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-            <children>
-                <StackPane prefHeight="150.0" prefWidth="200.0">
-                    <children>
-                        <ImageView fitHeight="250.0" fitWidth="300.0" pickOnBounds="true" preserveRatio="true" />
-                    </children>
-                </StackPane>
-                <VBox alignment="TOP_CENTER" prefHeight="350.0" prefWidth="400.0" spacing="10.0" HBox.hgrow="ALWAYS">
-                    <children>
-                        <Label text="Titolo del prodotto">
-                            <font>
-                                <Font name="System Bold" size="22.0" />
-                            </font>
-                        </Label>
-                        <Label text="Prezzo" textFill="#125332">
-                            <font>
-                                <Font name="System Bold" size="28.0" />
-                            </font>
-                        </Label>
-                        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: trasparent;" vbarPolicy="NEVER">
-                            <content>
-                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0">
-                                    <children>
-                                        <Label layoutX="14.0" layoutY="5.0" text="Descrizione" textFill="#666666" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
-                                            <padding>
-                                                <Insets bottom="5.0" right="5.0" />
-                                            </padding>
-                                        </Label>
-                                    </children>
-                                </AnchorPane>
-                            </content>
-                        </ScrollPane>
-                        <Label style="-fx-text-fill: #D32F2F; -fx-background-color: #FFEBEE; -fx-padding: 5 10; -fx-background-radius: 5;" text="Richiede Patentino">
-                            <font>
-                                <Font name="System Bold" size="12.0" />
-                            </font>
-                        </Label>
-                  <Label text="Disponibilità: n unità">
-                     <font>
-                        <Font name="System Bold" size="14.0" />
-                     </font>
-                  </Label>
-                    </children>
-                    <padding>
-                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-                    </padding>
-                </VBox>
-                <Button mnemonicParsing="false" prefHeight="26.0" prefWidth="42.0" style="-fx-background-color: trasparent; -fx-font-weight: bold; -fx-text-fill: #999999; -fx-font-size: 18; -fx-cursor: hand;" text="X" textFill="#125332">
-                    <HBox.margin>
-                        <Insets />
-                    </HBox.margin>
-                </Button>
-            </children>
-            <padding>
-                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-            </padding>
-        </HBox>
+      <AnchorPane prefHeight="400.0" prefWidth="500.0" style="-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-background-radius: 15; -fx-background-color: #f8f9fa;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <Label layoutX="14.0" layoutY="14.0" text=" ORDINE N°" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0">
+               <font>
+                  <Font name="System Bold" size="24.0" />
+               </font>
+            </Label>
+            <ScrollPane fitToWidth="true" layoutX="11.2" layoutY="66.0" prefHeight="274.0" prefWidth="439.0" AnchorPane.bottomAnchor="75.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="50.0">
+               <content>
+                  <VBox prefHeight="294.0" prefWidth="450.0" spacing="15.0">
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                     <children>
+                        <AnchorPane prefHeight="100.0" prefWidth="318.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);;">
+                           <children>
+                              <ImageView fitHeight="80.0" fitWidth="80.0" layoutX="3.0" layoutY="6.0" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="5.0" />
+                              <Label layoutX="88.0" layoutY="13.0" text="Nome articolo" AnchorPane.bottomAnchor="70.0" AnchorPane.leftAnchor="95.0" />
+                              <Label layoutX="88.0" layoutY="37.0" text="Prezzo" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="95.0">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Label>
+                              <HBox alignment="CENTER" layoutX="218.0" layoutY="62.0" prefHeight="28.0" prefWidth="89.0" spacing="10.0" style="-fx-background-radius: 15; -fx-background-color: white; -fx-border-color: #FFF176; -fx-border-radius: 15; -fx-border-width: 2;" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
+                                 <children>
+                                    <Label alignment="CENTER" prefHeight="20.0" prefWidth="75.0" text="1 pz. richiesto" />
+                                 </children>
+                              </HBox>
+                              <Label layoutX="83.0" layoutY="62.0" style="-fx-text-fill: #c62828; -fx-background-color: #ffebee; -fx-background-radius: 5; -fx-padding: 5 10 5 10;" text="Richiede Patentino" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="95.0" />
+                           </children>
+                        </AnchorPane>
+                     </children>
+                  </VBox>
+               </content>
+            </ScrollPane>
+                <Button layoutX="444.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="42.0" style="-fx-background-color: trasparent; -fx-font-weight: bold; -fx-text-fill: #999999; -fx-font-size: 18; -fx-cursor: hand;" text="X" textFill="#125332" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            <StackPane layoutX="14.0" layoutY="362.0" prefHeight="64.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+               <children>
+                  <Button mnemonicParsing="false" styleClass="bottone-giallo" stylesheets="@../style.css" text="Ordine Pronto" />
+               </children>
+            </StackPane>
+         </children>
+      </AnchorPane>
     </children>
 </AnchorPane>
