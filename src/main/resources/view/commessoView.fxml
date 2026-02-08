@@ -15,7 +15,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="539.0" prefWidth="474.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="539.0" prefWidth="474.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.ispw.project.graphicController.CommessoGraphicController">
     <top>
         <AnchorPane prefHeight="100.0" prefWidth="600.0" style="-fx-background-color: #125332; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5);" BorderPane.alignment="CENTER">
             <children>
@@ -41,7 +41,7 @@
                         </ImageView>
                     </graphic>
                 </Button>
-                <Button contentDisplay="GRAPHIC_ONLY" layoutX="425.0" layoutY="4.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="30.0" styleClass="btn-scanner" stylesheets="@../style.css" AnchorPane.rightAnchor="8.59999999999998" AnchorPane.topAnchor="4.0">
+                <Button onAction="#onLogoutClick" contentDisplay="GRAPHIC_ONLY" layoutX="425.0" layoutY="4.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="30.0" styleClass="btn-scanner" stylesheets="@../style.css" AnchorPane.rightAnchor="8.59999999999998" AnchorPane.topAnchor="4.0">
                     <graphic>
                         <ImageView fitHeight="20.0" fitWidth="23.0">
                             <image>
@@ -86,7 +86,7 @@
     <center>
         <ScrollPane fitToWidth="true" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
             <content>
-                <TilePane hgap="20.0" prefHeight="200.0" prefWidth="318.0" vgap="20.0">
+                <TilePane fx:id="tilePaneOrdini" hgap="20.0" prefHeight="200.0" prefWidth="318.0" vgap="20.0">
                     <padding>
                         <Insets top="20.0" />
                     </padding>
@@ -97,9 +97,9 @@
                                     <font>
                                         <Font size="14.0" />
                                     </font>
-                           <VBox.margin>
-                              <Insets />
-                           </VBox.margin>
+                                    <VBox.margin>
+                                        <Insets />
+                                    </VBox.margin>
                                 </Label>
                                 <ImageView fitHeight="105.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
                                 <Label text="Prezzo">
@@ -107,8 +107,8 @@
                                         <Font name="System Bold" size="14.0" />
                                     </font>
                                 </Label>
-                        <Button mnemonicParsing="false" styleClass="bottone-giallo" stylesheets="@../style.css" text="Visualizza Ordine" />
-                        <Button mnemonicParsing="false" styleClass="bottone-giallo" stylesheets="@../style.css" text="Ordine Pronto" />
+                                <Button mnemonicParsing="false" styleClass="bottone-giallo" stylesheets="@../style.css" text="Visualizza Ordine" />
+                                <Button mnemonicParsing="false" styleClass="bottone-giallo" stylesheets="@../style.css" text="Ordine Pronto" />
                             </children>
                         </VBox>
                     </children>

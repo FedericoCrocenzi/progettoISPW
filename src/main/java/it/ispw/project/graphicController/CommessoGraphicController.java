@@ -17,6 +17,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.TilePane;
@@ -29,16 +31,41 @@ import java.util.List;
 
 public class CommessoGraphicController implements ControllerGraficoBase, Observer {
 
-    @FXML private TilePane tilePaneOrdini; // Deve corrispondere all'fx:id nel FXML
-    @FXML private Label lblNomeUtente;     // Opzionale
+    @FXML private TilePane tilePaneOrdini; // Assicurati di aggiungere fx:id="tilePaneOrdini" nell'FXML
+    @FXML private ToggleGroup menuGroup;   // Questo si collega al ToggleGroup definito nell'FXML
+    @FXML private Label lblNomeUtente;
 
     private String sessionId;
     private AcquistaArticoloControllerApplicativo appController;
 
+    /**
+     * Metodo chiamato automaticamente da JavaFX dopo il caricamento dell'FXML.
+     * Qui colleghiamo la logica del pulsante Profilo.
+     */
+    @FXML
+    public void initialize() {
+        if (menuGroup != null) {
+            menuGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal != null) {
+                    ToggleButton selected = (ToggleButton) newVal;
+                    // Se viene selezionato "Profilo", mostriamo l'avviso
+                    if ("Profilo".equals(selected.getText())) {
+                        mostraInfo("Funzionalità Non Disponibile", "La schermata Profilo non è stata ancora implementata.");
+
+                        // Opzionale: Torna automaticamente alla tab "Ordini" per non lasciare l'utente su una tab vuota
+                        // if (oldVal != null) menuGroup.selectToggle(oldVal);
+                    }
+                }
+            });
+        }
+    }
+
     @Override
     public void initData(String sessionId) {
         this.sessionId = sessionId;
-        this.appController = new AcquistaArticoloControllerApplicativo(sessionId);
+
+        // CORREZIONE ERRORE: Costruttore vuoto (Stateless)
+        this.appController = new AcquistaArticoloControllerApplicativo();
 
         // 1. Registrazione Observer
         GestoreNotifiche.getInstance().attach(this);
@@ -52,9 +79,15 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
     }
 
     /**
-     * Carica gli ordini e controlla se ci sono notifiche pendenti (Stand-alone persistence).
+     * Carica gli ordini e controlla se ci sono notifiche pendenti.
      */
     public void caricaOrdini() {
+        // Verifica di sicurezza se l'FXML non è collegato correttamente
+        if (tilePaneOrdini == null) {
+            System.err.println("ERRORE: tilePaneOrdini è null. Aggiungi fx:id=\"tilePaneOrdini\" al TilePane nel file FXML.");
+            return;
+        }
+
         try {
             tilePaneOrdini.getChildren().clear();
 
@@ -69,9 +102,7 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
             for (OrdineBean ordine : ordini) {
                 aggiungiCardOrdine(ordine);
 
-                // CONTROLLO STATO PER NOTIFICA PENDENTE
-                // Se il commesso si logga dopo che il cliente ha cliccato "Sono in negozio",
-                // lo stato nel DB è già aggiornato. Lo rileviamo qui.
+                // Controllo notifica pendente
                 if ("CLIENTE_IN_NEGOZIO".equals(ordine.getStato())) {
                     apriPopupNotifica("Cliente Arrivato",
                             "Il cliente dell'ordine #" + ordine.getId() + " è in negozio per il ritiro!");
@@ -84,7 +115,6 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
     }
 
     private void aggiungiCardOrdine(OrdineBean ordine) {
-        // ... (Creazione grafica della card identica a prima) ...
         VBox card = new VBox(5);
         card.setPrefSize(200, 250);
         card.setAlignment(Pos.CENTER);
@@ -99,16 +129,16 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
         imgView.setFitWidth(80);
         imgView.setPreserveRatio(true);
         try {
-            imgView.setImage(new Image(getClass().getResourceAsStream("/main/resources/Image/icon_ordine.png")));
-        } catch (Exception e) { /* Fallback */ }
+            imgView.setImage(new Image(getClass().getResourceAsStream("/Image/icon_ordine.png")));
+        } catch (Exception e) {
+            // Ignora se l'immagine non si trova
+        }
 
         Label lblPrezzo = new Label(String.format("Totale: € %.2f", ordine.getTotale()));
         lblPrezzo.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 
-        // --- BOTTONE DETTAGLI ---
         Button btnDettagli = new Button("Dettagli");
         btnDettagli.getStyleClass().add("bottone-giallo");
-        // Ora chiama il metodo che apre il nuovo FXML dettagliato
         btnDettagli.setOnAction(e -> mostraDettagli(ordine));
 
         Button btnPronto = new Button("Merce Pronta");
@@ -119,33 +149,26 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
         tilePaneOrdini.getChildren().add(card);
     }
 
-    // --- LOGICA DI BUSINESS UI ---
-
     private void gestisciOrdinePronto(int idOrdine, VBox cardGrafica) {
         try {
             appController.confermaRitiroMerce(idOrdine);
             tilePaneOrdini.getChildren().remove(cardGrafica);
-            // Uso una notifica info semplice qui, o il popup se preferisci coerenza
             mostraInfo("Successo", "Stato aggiornato e cliente notificato.");
         } catch (DAOException e) {
             mostraErrore("Errore", e.getMessage());
         }
     }
 
-    /**
-     * Apre il file ordineCommessoView.fxml come popup modale.
-     */
     private void mostraDettagli(OrdineBean ordine) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/main/resources/view/ordineCommessoView.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/ordineCommessoView.fxml"));
             Parent root = loader.load();
 
-            // Passaggio dati al controller del dettaglio
             OrdineCommessoGraphicController controller = loader.getController();
-            controller.initData(ordine, this); // 'this' serve se vuoi ricaricare la lista alla chiusura
+            controller.initData(ordine, this);
 
             Stage stage = new Stage();
-            stage.initModality(Modality.APPLICATION_MODAL); // Blocca la finestra sotto
+            stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle("Dettaglio Ordine #" + ordine.getId());
             stage.setScene(new Scene(root));
             stage.show();
@@ -156,27 +179,21 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
         }
     }
 
-    /**
-     * Apre il file notificaView.fxml come popup di avviso.
-     */
     private void apriPopupNotifica(String titolo, String messaggio) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/main/resources/view/notificaView.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/notificaView.fxml"));
             Parent root = loader.load();
 
-            // Configura il controller della notifica
             NotificaGraphicController notificaController = loader.getController();
             notificaController.setMessaggio(titolo, messaggio);
 
             Stage stage = new Stage();
-            stage.initModality(Modality.APPLICATION_MODAL); // Finestra modale (importante per attirare l'attenzione)
+            stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle(titolo);
             stage.setScene(new Scene(root));
             stage.show();
 
         } catch (IOException e) {
-            System.err.println("Errore caricamento notificaView.fxml: " + e.getMessage());
-            // Fallback su alert standard se fallisce il caricamento FXML
             mostraInfo(titolo, messaggio);
         }
     }
@@ -184,16 +201,12 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
     @Override
     public void update(Object data) {
         Platform.runLater(() -> {
-            // Caso 1: Nuovo ordine creato (Oggetto Ordine)
             if (data instanceof Ordine) {
                 caricaOrdini();
                 apriPopupNotifica("Nuovo Ordine", "È arrivato un nuovo ordine da gestire!");
-            }
-            // Caso 2: Messaggio specifico (Stringa)
-            else if (data instanceof String) {
+            } else if (data instanceof String) {
                 String msg = (String) data;
                 if (msg.contains("CLIENTE_IN_NEGOZIO")) {
-                    // Ricarica la lista per mostrare eventuali cambiamenti di stato e apre il popup
                     caricaOrdini();
                     apriPopupNotifica("Cliente Arrivato", msg);
                 }
@@ -205,12 +218,14 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
     public void onLogoutClick() {
         onClose();
         Stage stage = (Stage) tilePaneOrdini.getScene().getWindow();
-        ViewSwitcher.switchTo("Login.fxml", null, stage);
+        // Nota: Assicurati che Login.fxml sia nel percorso corretto
+        ViewSwitcher.switchTo("/view/Login.fxml", null, stage);
     }
 
     private void mostraErrore(String titolo, String testo) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(titolo);
+        alert.setHeaderText(null);
         alert.setContentText(testo);
         alert.show();
     }
@@ -218,6 +233,7 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
     private void mostraInfo(String titolo, String testo) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(titolo);
+        alert.setHeaderText(null);
         alert.setContentText(testo);
         alert.show();
     }

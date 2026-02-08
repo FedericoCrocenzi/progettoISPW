@@ -29,7 +29,9 @@ public class NotificaGraphicController implements ControllerGraficoBase, Observe
     @Override
     public void initData(String sessionId) {
         this.sessionId = sessionId;
-        this.appController = new AcquistaArticoloControllerApplicativo(sessionId);
+
+        // CORREZIONE 1: Costruttore vuoto (Stateless)
+        this.appController = new AcquistaArticoloControllerApplicativo();
 
         // Recupero sessione per capire chi è l'utente
         Session session = SessionManager.getInstance().getSession(sessionId);

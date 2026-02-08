@@ -4,7 +4,6 @@ import it.ispw.project.applicationController.AcquistaArticoloControllerApplicati
 import it.ispw.project.bean.ArticoloBean;
 import it.ispw.project.exception.DAOException;
 import it.ispw.project.exception.QuantitaInsufficienteException;
-import it.ispw.project.view.ViewSwitcher; // Assicurati di avere questa classe o simile per la navigazione
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -36,24 +35,27 @@ public class ArticoloViewGraphicController {
     public void setDatiArticolo(ArticoloBean articolo, String sessionId) {
         this.articoloCorrente = articolo;
         this.sessionId = sessionId;
-        this.appController = new AcquistaArticoloControllerApplicativo(sessionId);
+
+        // CORREZIONE 1: Il costruttore ora è vuoto (Stateless)
+        this.appController = new AcquistaArticoloControllerApplicativo();
 
         // Popolamento UI
-        lblTitolo.setText(articolo.getDescrizione()); // O getNome() se presente nel Bean
+        lblTitolo.setText(articolo.getDescrizione());
         lblPrezzo.setText(String.format("€ %.2f", articolo.getPrezzo()));
-        lblDescrizione.setText(articolo.getDescrizione()); // O campo descrizione estesa
+        lblDescrizione.setText(articolo.getDescrizione());
         lblQuantita.setText(String.valueOf(quantitaSelezionata));
 
         // Gestione Immagine
         try {
             if (articolo.getImmaginePath() != null) {
+                // Nota: assicurati che il path sia gestito correttamente come risorsa o file
                 imgProdotto.setImage(new Image(getClass().getResourceAsStream(articolo.getImmaginePath())));
             }
         } catch (Exception e) {
             System.err.println("Immagine non trovata: " + articolo.getImmaginePath());
         }
 
-        // Gestione Patentino (mostra solo se necessario)
+        // Gestione Patentino
         if ("FITOFARMACO".equals(articolo.getType()) && articolo.isServePatentino()) {
             lblPatentino.setVisible(true);
         } else {
@@ -63,7 +65,6 @@ public class ArticoloViewGraphicController {
 
     @FXML
     public void aumentaQuantita() {
-        // Qui potresti controllare la scorta massima dal bean se disponibile
         quantitaSelezionata++;
         lblQuantita.setText(String.valueOf(quantitaSelezionata));
     }
@@ -79,9 +80,10 @@ public class ArticoloViewGraphicController {
     @FXML
     public void aggiungiAlCarrello() {
         try {
-            appController.aggiungiArticoloAlCarrello(articoloCorrente, quantitaSelezionata);
+            // CORREZIONE 2: Passiamo sessionId al metodo, perché il controller non lo conserva
+            appController.aggiungiArticoloAlCarrello(sessionId, articoloCorrente, quantitaSelezionata);
+
             mostraMessaggio("Successo", "Articolo aggiunto al carrello!", Alert.AlertType.INFORMATION);
-            // Opzionale: Tornare al catalogo dopo l'aggiunta?
             chiudiScheda();
         } catch (QuantitaInsufficienteException e) {
             mostraMessaggio("Attenzione", e.getMessage(), Alert.AlertType.WARNING);
@@ -93,8 +95,7 @@ public class ArticoloViewGraphicController {
     @FXML
     public void acquistaSubito() {
         aggiungiAlCarrello();
-        // Logica per andare direttamente al carrello
-        // ViewSwitcher.switchTo(ViewSwitcher.CARRELLO, sessionId, ...);
+        // Logica futura per switch view
     }
 
     /**
@@ -103,14 +104,12 @@ public class ArticoloViewGraphicController {
     @FXML
     public void chiudiScheda() {
         try {
-            // Ricarica la vista del Catalogo
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/main/resources/view/CatalogoView.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/CatalogoView.fxml"));
             Parent catalogoNode = loader.load();
 
             CatalogoGraphicController controller = loader.getController();
             controller.initData(sessionId);
 
-            // Trova il BorderPane principale (MainView) e imposta il centro
             BorderPane mainLayout = (BorderPane) lblTitolo.getScene().lookup("#rootLayout");
             if (mainLayout != null) {
                 mainLayout.setCenter(catalogoNode);

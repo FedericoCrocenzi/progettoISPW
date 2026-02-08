@@ -2,7 +2,7 @@ package it.ispw.project.graphicController;
 
 import it.ispw.project.applicationController.AcquistaArticoloControllerApplicativo;
 import it.ispw.project.bean.ArticoloBean;
-import it.ispw.project.bean.RicercaArticoloBean; // IMPORT NECESSARIO
+import it.ispw.project.bean.RicercaArticoloBean;
 import it.ispw.project.exception.DAOException;
 import it.ispw.project.exception.QuantitaInsufficienteException;
 import javafx.fxml.FXML;
@@ -32,36 +32,26 @@ public class CatalogoGraphicController implements ControllerGraficoBase {
     private AcquistaArticoloControllerApplicativo appController;
     private String sessionId;
 
-    // Campo per memorizzare il filtro di ricerca corrente
     private RicercaArticoloBean filtroCorrente;
-
-    // --- METODI INIT DATA ---
 
     @Override
     public void initData(String sessionId) {
-        // Chiama la versione con filtro null (mostra tutto)
         initData(sessionId, null);
     }
 
-    /**
-     * NUOVO METODO: Inizializza il controller con un filtro di ricerca specifico.
-     */
     public void initData(String sessionId, RicercaArticoloBean filtro) {
         this.sessionId = sessionId;
-        this.appController = new AcquistaArticoloControllerApplicativo(sessionId);
-        this.filtroCorrente = filtro; // Salva il filtro
+        // CORREZIONE 1: Costruttore vuoto (Stateless)
+        this.appController = new AcquistaArticoloControllerApplicativo();
+        this.filtroCorrente = filtro;
         caricaProdotti();
     }
-
-    // --- CARICAMENTO PRODOTTI ---
 
     private void caricaProdotti() {
         try {
             tilePaneCatalogo.getChildren().clear();
             List<ArticoloBean> listaArticoli;
 
-            // LOGICA DI FILTRO:
-            // Se esiste un filtro con testo valido, usa la ricerca. Altrimenti scarica tutto il catalogo.
             if (filtroCorrente != null && filtroCorrente.getTestoRicerca() != null && !filtroCorrente.getTestoRicerca().isEmpty()) {
                 listaArticoli = appController.ricercaArticoli(filtroCorrente);
             } else {
@@ -82,8 +72,6 @@ public class CatalogoGraphicController implements ControllerGraficoBase {
             mostraMessaggio("Errore", "Impossibile caricare il catalogo: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
-
-    // --- CREAZIONE GRAFICA CARD (Invariato rispetto alla tua versione corretta) ---
 
     private VBox creaCardArticolo(ArticoloBean articolo) {
         VBox card = new VBox(5);
@@ -106,9 +94,8 @@ public class CatalogoGraphicController implements ControllerGraficoBase {
         try {
             String imagePath = articolo.getImmaginePath();
             if (imagePath == null || imagePath.isEmpty()) {
-                imagePath = "/Image/logo1.png"; // Path corretto per risorse compilate
+                imagePath = "/Image/logo1.png";
             }
-            // Prova a caricare risorsa
             InputStream is = getClass().getResourceAsStream(imagePath);
             if (is != null) {
                 imgView.setImage(new Image(is));
@@ -167,7 +154,10 @@ public class CatalogoGraphicController implements ControllerGraficoBase {
         result.ifPresent(qtyStr -> {
             try {
                 int qta = Integer.parseInt(qtyStr);
-                appController.aggiungiArticoloAlCarrello(articolo, qta);
+
+                // CORREZIONE 2: Passaggio di sessionId
+                appController.aggiungiArticoloAlCarrello(sessionId, articolo, qta);
+
                 mostraMessaggio("Successo", "Articolo aggiunto al carrello!", Alert.AlertType.INFORMATION);
 
             } catch (NumberFormatException e) {

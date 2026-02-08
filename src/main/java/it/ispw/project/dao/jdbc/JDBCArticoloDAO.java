@@ -20,7 +20,8 @@ public class JDBCArticoloDAO implements ArticoloDAO {
 
     @Override
     public Articolo selectArticoloById(int id) {
-        Connection conn = DBConnection.getConnection();
+        // MODIFICA QUI: Uso del Singleton
+        Connection conn = DBConnection.getInstance().getConnection();
         if (conn == null) return null;
 
         try (PreparedStatement stmt = conn.prepareStatement(
@@ -36,116 +37,105 @@ public class JDBCArticoloDAO implements ArticoloDAO {
                 }
             }
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Errore durante il recupero dell'articolo per ID: " + id, e);
+            logger.log(Level.SEVERE, "Errore durante il recupero articolo per ID", e);
         }
         return null;
     }
 
     @Override
     public List<Articolo> selectAllArticoli() {
-        List<Articolo> catalogo = new ArrayList<>();
-        Connection conn = DBConnection.getConnection();
-        if (conn == null) return catalogo;
+        // MODIFICA QUI: Uso del Singleton
+        Connection conn = DBConnection.getInstance().getConnection();
+        List<Articolo> lista = new ArrayList<>();
+        if (conn == null) return lista;
 
-        try (PreparedStatement stmt = conn.prepareStatement(
-                Queries.SELECT_ALL_ARTICOLI,
-                ResultSet.TYPE_SCROLL_INSENSITIVE,
-                ResultSet.CONCUR_READ_ONLY);
-             ResultSet rs = stmt.executeQuery()
-        ) {
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(Queries.SELECT_ALL_ARTICOLI)) {
+
             while (rs.next()) {
-                Articolo art = istanziaArticoloDaResultSet(rs);
-                if (art != null) {
-                    catalogo.add(art);
+                Articolo a = istanziaArticoloDaResultSet(rs);
+                if (a != null) lista.add(a);
+            }
+
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Errore durante il recupero del catalogo", e);
+        }
+        return lista;
+    }
+
+    @Override
+    public List<Articolo> selectByFilter(String testo, String tipo, Double prezzoMin, Double prezzoMax) {
+        // MODIFICA QUI: Uso del Singleton
+        Connection conn = DBConnection.getInstance().getConnection();
+        List<Articolo> lista = new ArrayList<>();
+        if (conn == null) return lista;
+
+        StringBuilder queryBuilder = new StringBuilder(Queries.SELECT_ARTICOLO_BASE);
+        List<Object> params = new ArrayList<>();
+
+        // Costruzione dinamica della query
+        if (testo != null && !testo.isEmpty()) {
+            queryBuilder.append(" AND descrizione LIKE ?");
+            params.add("%" + testo + "%");
+        }
+        if (tipo != null && !tipo.isEmpty() && !"TUTTI".equalsIgnoreCase(tipo)) {
+            queryBuilder.append(" AND tipo = ?");
+            params.add(tipo);
+        }
+        if (prezzoMin != null) {
+            queryBuilder.append(" AND prezzo >= ?");
+            params.add(prezzoMin);
+        }
+        if (prezzoMax != null) {
+            queryBuilder.append(" AND prezzo <= ?");
+            params.add(prezzoMax);
+        }
+
+        try (PreparedStatement stmt = conn.prepareStatement(queryBuilder.toString())) {
+            // Impostazione parametri
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Articolo a = istanziaArticoloDaResultSet(rs);
+                    if (a != null) lista.add(a);
                 }
             }
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Errore durante il recupero del catalogo completo", e);
+            logger.log(Level.SEVERE, "Errore durante la ricerca filtrata", e);
         }
-        return catalogo;
+        return lista;
     }
 
     @Override
     public void updateScorta(Articolo articolo) {
-        Connection conn = DBConnection.getConnection();
+        // MODIFICA QUI: Uso del Singleton
+        Connection conn = DBConnection.getInstance().getConnection();
         if (conn == null) return;
 
-        try (PreparedStatement stmt = conn.prepareStatement(
-                Queries.UPDATE_ARTICOLO_SCORTA,
-                ResultSet.TYPE_SCROLL_INSENSITIVE,
-                ResultSet.CONCUR_READ_ONLY)
-        ) {
+        try (PreparedStatement stmt = conn.prepareStatement(Queries.UPDATE_ARTICOLO_SCORTA)) {
             stmt.setInt(1, articolo.ottieniScorta());
             stmt.setInt(2, articolo.leggiId());
 
-            int result = stmt.executeUpdate();
-
-            if (result > 0) {
-                logger.log(Level.INFO, "Scorta aggiornata per Articolo ID: " + articolo.leggiId());
-            } else {
-                logger.log(Level.WARNING, "Nessun articolo aggiornato. ID potrebbe non esistere: " + articolo.leggiId());
-            }
-
+            stmt.executeUpdate();
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Errore aggiornamento scorta articolo ID: " + articolo.leggiId(), e);
+            logger.log(Level.SEVERE, "Errore aggiornamento scorta articolo " + articolo.leggiId(), e);
         }
     }
 
-    @Override
-    public List<Articolo> selectByFilter(String descrizione, String tipo, Double min, Double max) {
-        List<Articolo> risultati = new ArrayList<>();
-        Connection conn = DBConnection.getConnection();
-        if (conn == null) return risultati;
-
-        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM articolo WHERE 1=1");
-
-        if (descrizione != null && !descrizione.isEmpty()) queryBuilder.append(" AND descrizione LIKE ?");
-        if (tipo != null && !tipo.isEmpty()) queryBuilder.append(" AND tipo = ?");
-        if (min != null) queryBuilder.append(" AND prezzo >= ?");
-        if (max != null) queryBuilder.append(" AND prezzo <= ?");
-
-        try (PreparedStatement stmt = conn.prepareStatement(
-                queryBuilder.toString(),
-                ResultSet.TYPE_SCROLL_INSENSITIVE,
-                ResultSet.CONCUR_READ_ONLY)
-        ) {
-            int index = 1;
-
-            if (descrizione != null && !descrizione.isEmpty()) stmt.setString(index++, "%" + descrizione + "%");
-            if (tipo != null && !tipo.isEmpty()) stmt.setString(index++, tipo);
-            if (min != null) stmt.setDouble(index++, min);
-            if (max != null) stmt.setDouble(index++, max);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    risultati.add(istanziaArticoloDaResultSet(rs));
-                }
-            }
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Errore nella ricerca filtrata articoli", e);
-        }
-        return risultati;
-    }
-
-    // --- METODO PRIVATO DI SUPPORTO ---
-
-    /**
-     * Legge i dati dal ResultSet, inclusa l'immagine, e crea l'oggetto specifico.
-     */
+    // Metodo helper privato (rimane invariato)
     private Articolo istanziaArticoloDaResultSet(ResultSet rs) throws SQLException {
-        // 1. Lettura colonne comuni
         int id = rs.getInt("id");
         String desc = rs.getString("descrizione");
         double prezzo = rs.getDouble("prezzo");
         int scorta = rs.getInt("scorta");
         String tipo = rs.getString("tipo");
-
-        // NUOVO: Lettura del percorso immagine
         String imgPath = rs.getString("immagine_path");
 
         Articolo articolo = null;
 
-        // 2. Istanziazione della sottoclasse corretta
         switch (tipo) {
             case "MANGIME":
                 java.sql.Date sqlDate = rs.getDate("data_scadenza");
@@ -168,9 +158,7 @@ public class JDBCArticoloDAO implements ArticoloDAO {
                 return null;
         }
 
-        // 3. Impostazione dell'immagine
         if (articolo != null) {
-            // Se il DB ritorna null o stringa vuota, usiamo un default di sicurezza
             if (imgPath == null || imgPath.trim().isEmpty()) {
                 imgPath = "/Image/default.png";
             }

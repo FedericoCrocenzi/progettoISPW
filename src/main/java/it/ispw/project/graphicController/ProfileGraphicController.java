@@ -23,7 +23,9 @@ public class ProfileGraphicController implements ControllerGraficoBase {
     @Override
     public void initData(String sessionId) {
         this.sessionId = sessionId;
-        this.appController = new AcquistaArticoloControllerApplicativo(sessionId);
+
+        // CORREZIONE: Costruttore vuoto (Stateless)
+        this.appController = new AcquistaArticoloControllerApplicativo();
 
         // Recupero i dati dalla sessione
         Session session = SessionManager.getInstance().getSession(sessionId);
@@ -35,11 +37,10 @@ public class ProfileGraphicController implements ControllerGraficoBase {
 
             // Tentativo di recuperare dati completi dal DB tramite Controller Applicativo
             try {
-                // Nota: Assumiamo che session.getUserId() esista.
-                // Se non esiste, dovresti aggiungerlo alla classe Session.
-                // Altrimenti usiamo dati simulati come fallback.
-                if (session.getUserId() > 0) {
-                    UtenteBean utenteBean = appController.recuperaDatiCliente(session.getUserId());
+                // Nota: recuperaDatiCliente accetta l'ID (int), quindi è corretto passare session.getUserId()
+                UtenteBean utenteBean = appController.recuperaDatiCliente(session.getUserId());
+
+                if (utenteBean != null) {
                     txtEmail.setText(utenteBean.getEmail());
                     txtIndirizzo.setText(utenteBean.getIndirizzo());
                 } else {

@@ -2,12 +2,10 @@ package it.ispw.project.graphicController;
 
 import it.ispw.project.applicationController.AcquistaArticoloControllerApplicativo;
 import it.ispw.project.bean.CarrelloBean;
-import it.ispw.project.bean.OrdineBean;
 import it.ispw.project.bean.PagamentoBean;
-import it.ispw.project.bean.UtenteBean;
 import it.ispw.project.exception.DAOException;
 import it.ispw.project.exception.PaymentException;
-import it.ispw.project.view.ViewSwitcher; // Import necessario
+import it.ispw.project.view.ViewSwitcher;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -38,7 +36,8 @@ public class PaymentGraphicController implements ControllerGraficoBase {
     @Override
     public void initData(String sessionId) {
         this.sessionId = sessionId;
-        this.appController = new AcquistaArticoloControllerApplicativo(sessionId);
+        // CORREZIONE 1: Costruttore vuoto (Stateless)
+        this.appController = new AcquistaArticoloControllerApplicativo();
     }
 
     @FXML
@@ -46,7 +45,7 @@ public class PaymentGraphicController implements ControllerGraficoBase {
         try {
             PagamentoBean pagamentoBean = new PagamentoBean();
 
-            // 1. Logica popolamento bean (identica a prima)
+            // 1. Logica popolamento bean
             if (rbCarta != null && rbCarta.isSelected()) {
                 pagamentoBean.setMetodoPagamento("CARTA_CREDITO");
                 pagamentoBean.setNumeroCarta(txtNumeroCarta.getText());
@@ -61,18 +60,16 @@ public class PaymentGraphicController implements ControllerGraficoBase {
                 pagamentoBean.setMetodoPagamento("CARTA_CREDITO");
             }
 
-            CarrelloBean carrelloTmp = appController.visualizzaCarrello();
+            // CORREZIONE 2: Passaggio di sessionId per visualizzare il totale corretto
+            CarrelloBean carrelloTmp = appController.visualizzaCarrello(sessionId);
             pagamentoBean.setImportoDaPagare(carrelloTmp.getTotale());
 
-            // 2. Esecuzione Pagamento
-            appController.completaAcquisto(pagamentoBean, carrelloTmp, new UtenteBean());
+            // CORREZIONE 3: Nuova firma (sessionId, pagamentoBean).
+            // Non passiamo più carrelloBean o UtenteBean dal client, li recupera il controller dalla sessione.
+            appController.completaAcquisto(sessionId, pagamentoBean);
 
-            // 3. Navigazione verso NOTIFICA (con ViewSwitcher)
+            // 3. Navigazione verso NOTIFICA
             Stage stage = (Stage) btnConferma.getScene().getWindow();
-            // Assicurati che il percorso sia corretto.
-            // notificaView ora apparirà come schermata intera o popup gestito dal main?
-            // Se notificaView è pensata come popup, qui potresti voler tornare alla Home e POI aprire il popup.
-            // Ma per ora usiamo switch diretto:
             ViewSwitcher.switchTo("/view/notificaView.fxml", sessionId, stage);
 
         } catch (PaymentException e) {
@@ -88,12 +85,8 @@ public class PaymentGraphicController implements ControllerGraficoBase {
 
     @FXML
     public void tornaAlCarrello() {
-        // Torna alla MainView (che si aprirà sulla Home/Catalogo di default)
         Stage stage = (Stage) btnIndietro.getScene().getWindow();
         ViewSwitcher.switchTo("/view/MainView.fxml", sessionId, stage);
-
-        // Se volessi riaprire esattamente il carrello, dovresti modificare il MainGraphicController
-        // per accettare un parametro "initialView" nell'initData, ma per ora il ritorno alla Home è standard.
     }
 
     private void mostraMessaggio(String titolo, String testo, Alert.AlertType type) {

@@ -3,7 +3,7 @@ package it.ispw.project.dao.jdbc;
 import it.ispw.project.dao.OrdineDAO;
 import it.ispw.project.dao.dbConnection.DBConnection;
 import it.ispw.project.dao.dbConnection.Queries;
-// import it.ispw.project.exception.DAOException; // Rimuovi se non usato altrove
+// import it.ispw.project.exception.DAOException;
 import it.ispw.project.model.Articolo;
 import it.ispw.project.model.Ordine;
 import it.ispw.project.model.Utente;
@@ -23,7 +23,8 @@ public class JDBCOrdineDAO implements OrdineDAO {
 
     @Override
     public void insertOrdine(Ordine ordine) {
-        Connection conn = DBConnection.getConnection();
+        // MODIFICA QUI: Accesso tramite Singleton
+        Connection conn = DBConnection.getInstance().getConnection();
         if (conn == null) {
             logger.log(Level.WARNING, "Connessione al DB fallita.");
             return;
@@ -87,8 +88,11 @@ public class JDBCOrdineDAO implements OrdineDAO {
 
     @Override
     public Ordine selectOrdineById(int id) {
-        Connection conn = DBConnection.getConnection();
+        // MODIFICA QUI: Accesso tramite Singleton
+        Connection conn = DBConnection.getInstance().getConnection();
         Ordine ordine = null;
+
+        if (conn == null) return null;
 
         try (PreparedStatement stmt = conn.prepareStatement(Queries.SELECT_ORDINE_BY_ID)) {
             stmt.setInt(1, id);
@@ -105,8 +109,11 @@ public class JDBCOrdineDAO implements OrdineDAO {
 
     @Override
     public List<Ordine> findAll() {
-        Connection conn = DBConnection.getConnection();
+        // MODIFICA QUI: Accesso tramite Singleton
+        Connection conn = DBConnection.getInstance().getConnection();
         List<Ordine> lista = new ArrayList<>();
+
+        if (conn == null) return lista;
 
         try (PreparedStatement stmt = conn.prepareStatement(Queries.SELECT_ALL_ORDINI);
              ResultSet rs = stmt.executeQuery()) {
@@ -123,7 +130,11 @@ public class JDBCOrdineDAO implements OrdineDAO {
 
     @Override
     public void updateStato(Ordine ordine) {
-        Connection conn = DBConnection.getConnection();
+        // MODIFICA QUI: Accesso tramite Singleton
+        Connection conn = DBConnection.getInstance().getConnection();
+
+        if (conn == null) return;
+
         try (PreparedStatement stmt = conn.prepareStatement(Queries.UPDATE_ORDINE_STATO)) {
             stmt.setString(1, ordine.getStato());
             stmt.setInt(2, ordine.leggiId());
@@ -137,10 +148,6 @@ public class JDBCOrdineDAO implements OrdineDAO {
     // HELPER METHODS (Private)
     // =================================================================
 
-    /**
-     * MODIFICATO: Rimossa gestione DAOException non necessaria.
-     * Se findById lancia SQLException, viene propagata perché il metodo dichiara "throws SQLException".
-     */
     private Ordine mapRowToOrdine(ResultSet rs) throws SQLException {
         int id = rs.getInt("id");
         Timestamp data = rs.getTimestamp("data_creazione");
@@ -150,14 +157,11 @@ public class JDBCOrdineDAO implements OrdineDAO {
 
         // 1. Recupero Utente
         JDBCUtenteDAO utenteDAO = new JDBCUtenteDAO();
-        // Chiamata diretta senza try-catch per DAOException
         Utente cliente = null;
         try {
+            // Nota: Anche JDBCUtenteDAO dovrà usare il Singleton al suo interno
             cliente = utenteDAO.findById(idCliente);
-        } catch (Exception e) { // Catch generico o SQLException se necessario, altrimenti togli il try
-            // Se UtenteDAO lancia SQLException, questo catch la intercetta se vuoi loggare,
-            // oppure rimuovi il try-catch e lascia propagare l'errore.
-            // Qui assumiamo che se fallisce, l'ordine non può essere creato correttamente.
+        } catch (Exception e) {
             throw new SQLException("Errore recupero cliente per ordine " + id, e);
         }
 
@@ -169,12 +173,12 @@ public class JDBCOrdineDAO implements OrdineDAO {
         return o;
     }
 
-    /**
-     * MODIFICATO: Rimossa gestione DAOException non necessaria.
-     */
     private Map<Articolo, Integer> getRigheOrdine(int idOrdine) {
         Map<Articolo, Integer> mappa = new HashMap<>();
-        Connection conn = DBConnection.getConnection();
+        // MODIFICA QUI: Accesso tramite Singleton
+        Connection conn = DBConnection.getInstance().getConnection();
+
+        if (conn == null) return mappa;
 
         try (PreparedStatement stmt = conn.prepareStatement(Queries.SELECT_RIGHE_BY_ORDINE)) {
             stmt.setInt(1, idOrdine);
@@ -185,9 +189,8 @@ public class JDBCOrdineDAO implements OrdineDAO {
                     int idArticolo = rs.getInt("id_articolo");
                     int qta = rs.getInt("quantita");
 
-                    // Chiamata diretta. Se selectArticoloById fallisce internamente
-                    // restituendo null, lo gestiamo. Se lancia eccezione, la catturiamo qui sotto.
                     try {
+                        // Nota: Anche JDBCArticoloDAO dovrà usare il Singleton al suo interno
                         Articolo a = articoloDAO.selectArticoloById(idArticolo);
                         if (a != null) {
                             mappa.put(a, qta);

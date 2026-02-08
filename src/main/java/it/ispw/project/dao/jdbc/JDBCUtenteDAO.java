@@ -20,7 +20,9 @@ public class JDBCUtenteDAO implements UtenteDAO {
         ResultSet rs = null;
 
         try {
-            conn = DBConnection.getConnection();
+            // MODIFICA QUI: Accesso tramite Singleton
+            conn = DBConnection.getInstance().getConnection();
+
             if (conn == null) {
                 throw new DAOException("Impossibile connettersi al database: Connessione null.");
             }
@@ -41,13 +43,11 @@ public class JDBCUtenteDAO implements UtenteDAO {
                 return mapRowToUtente(rs);
             }
 
-            return null; // Utente non trovato, ma non è un errore tecnico
+            return null; // Utente non trovato
 
         } catch (SQLException e) {
-            // Rilanciamo l'errore come DAOException
             throw new DAOException("Errore durante il login per l'utente: " + identifier, e);
         } finally {
-            // Chiusura risorse manuale (o usa try-with-resources se preferisci)
             closeResources(rs, stmt);
         }
     }
@@ -59,7 +59,9 @@ public class JDBCUtenteDAO implements UtenteDAO {
         ResultSet rs = null;
 
         try {
-            conn = DBConnection.getConnection();
+            // MODIFICA QUI: Accesso tramite Singleton
+            conn = DBConnection.getInstance().getConnection();
+
             if (conn == null) {
                 throw new DAOException("Impossibile connettersi al database: Connessione null.");
             }
@@ -92,7 +94,9 @@ public class JDBCUtenteDAO implements UtenteDAO {
         PreparedStatement stmt = null;
 
         try {
-            conn = DBConnection.getConnection();
+            // MODIFICA QUI: Accesso tramite Singleton
+            conn = DBConnection.getInstance().getConnection();
+
             if (conn == null) {
                 throw new DAOException("Impossibile connettersi al database: Connessione null.");
             }
@@ -134,10 +138,8 @@ public class JDBCUtenteDAO implements UtenteDAO {
         try {
             if (rs != null) rs.close();
             if (stmt != null) stmt.close();
-            // Nota: La connessione di solito non si chiude qui se usiamo un Pool o Singleton condiviso,
-            // ma se usi una connessione usa-e-getta dovresti chiudere anche conn.
+            // Non chiudiamo la connessione qui perché è gestita dal Singleton condiviso
         } catch (SQLException e) {
-            // Errori in chiusura sono spesso ignorabili o loggabili a basso livello
             e.printStackTrace();
         }
     }

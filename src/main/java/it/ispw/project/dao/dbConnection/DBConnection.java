@@ -11,12 +11,17 @@ import java.util.logging.Logger;
 
 public class DBConnection {
 
-    private static Connection connection;
+    private static DBConnection instance = null; // L'istanza Singleton (Lazy)
+    private Connection connection = null;        // L'oggetto Connection gestito dall'istanza
+    private final Properties properties = new Properties();
     private static final Logger logger = Logger.getLogger(DBConnection.class.getName());
-    private static final Properties properties = new Properties();
 
-    // 1. Caricamento statico delle configurazioni (avviene una sola volta all'avvio)
-    static {
+    /**
+     * Costruttore privato.
+     * Viene chiamato SOLO quando si invoca getInstance() per la prima volta.
+     * Qui spostiamo la logica di caricamento delle configurazioni.
+     */
+    private DBConnection() {
         try (InputStream input = DBConnection.class.getClassLoader().getResourceAsStream("config.properties")) {
             if (input == null) {
                 logger.log(Level.SEVERE, "Spiacente, impossibile trovare config.properties");
@@ -24,22 +29,33 @@ public class DBConnection {
                 properties.load(input);
             }
 
-            // Caricamento driver (opzionale ma consigliato per compatibilità)
+            // Caricamento driver
             String driverClass = properties.getProperty("driverClassName");
-            if (driverClass != null) Class.forName(driverClass);
+            if (driverClass != null) {
+                Class.forName(driverClass);
+            }
 
         } catch (IOException | ClassNotFoundException e) {
             logger.log(Level.SEVERE, "Errore nel caricamento della configurazione DB", e);
         }
     }
 
-    private DBConnection() {}
+    /**
+     * Metodo statico per ottenere l'istanza Singleton (Lazy Initialization).
+     * @return l'istanza di DBConnection.
+     */
+    public static synchronized DBConnection getInstance() {
+        if (instance == null) {
+            instance = new DBConnection();
+        }
+        return instance;
+    }
 
     /**
-     * Restituisce l'istanza singleton della connessione.
-     * Se la connessione è chiusa o nulla, prova a riaprirla.
+     * Restituisce la connessione SQL gestita da questa istanza.
+     * Se è chiusa o nulla, la riapre.
      */
-    public static Connection getConnection() {
+    public Connection getConnection() {
         try {
             if (connection == null || connection.isClosed()) {
                 String dbUrl = properties.getProperty("dbUrl");
@@ -50,8 +66,7 @@ public class DBConnection {
             }
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Fallita la connessione al Database", e);
-            // Opzionale: return null o rilanciare un'eccezione custom
-            connection = null;
+            connection = null; // Reset in caso di errore
         }
         return connection;
     }
