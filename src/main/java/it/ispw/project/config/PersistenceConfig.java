@@ -4,7 +4,7 @@ import it.ispw.project.dao.DAOFactory;
 
 public class PersistenceConfig {
 
-    private static int persistenceType = DAOFactory.DEMO;
+    private static int persistenceType = DAOFactory.JDBC;
 
     private PersistenceConfig() {}
 

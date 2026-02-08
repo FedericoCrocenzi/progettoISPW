@@ -9,6 +9,7 @@ import it.ispw.project.view.ViewSwitcher;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
@@ -29,6 +30,9 @@ public class PaymentGraphicController implements ControllerGraficoBase {
 
     @FXML private Button btnConferma;
     @FXML private Button btnIndietro;
+    @FXML private Button btnCassa;      // <<< AGGIUNTO
+
+    @FXML private Label lblTotale;
 
     private AcquistaArticoloControllerApplicativo appController;
     private String sessionId;
@@ -36,21 +40,36 @@ public class PaymentGraphicController implements ControllerGraficoBase {
     @Override
     public void initData(String sessionId) {
         this.sessionId = sessionId;
-        // CORREZIONE 1: Costruttore vuoto (Stateless)
         this.appController = new AcquistaArticoloControllerApplicativo();
+        aggiornaTotaleOrdine();
     }
 
+    private void aggiornaTotaleOrdine() {
+        if (lblTotale == null) return;
+
+        try {
+            CarrelloBean carrello = appController.visualizzaCarrello(sessionId);
+            lblTotale.setText(String.format("€ %.2f", carrello.getTotale()));
+        } catch (Exception e) {
+            lblTotale.setText("€ 0.00");
+        }
+    }
+
+    /* =========================
+       PAGA ORA (pagamento classico)
+       ========================= */
     @FXML
     public void confermaPagamento() {
         try {
             PagamentoBean pagamentoBean = new PagamentoBean();
 
-            // 1. Logica popolamento bean
             if (rbCarta != null && rbCarta.isSelected()) {
                 pagamentoBean.setMetodoPagamento("CARTA_CREDITO");
                 pagamentoBean.setNumeroCarta(txtNumeroCarta.getText());
                 pagamentoBean.setIntestatario(txtIntestatario.getText());
-                pagamentoBean.setDataScadenza(txtScadenzaMese.getText() + "/" + txtScadenzaAnno.getText());
+                pagamentoBean.setDataScadenza(
+                        txtScadenzaMese.getText() + "/" + txtScadenzaAnno.getText()
+                );
                 pagamentoBean.setCvv(txtCvv.getText());
             } else if (rbPaypal != null && rbPaypal.isSelected()) {
                 pagamentoBean.setMetodoPagamento("PAYPAL");
@@ -60,27 +79,40 @@ public class PaymentGraphicController implements ControllerGraficoBase {
                 pagamentoBean.setMetodoPagamento("CARTA_CREDITO");
             }
 
-            // CORREZIONE 2: Passaggio di sessionId per visualizzare il totale corretto
             CarrelloBean carrelloTmp = appController.visualizzaCarrello(sessionId);
             pagamentoBean.setImportoDaPagare(carrelloTmp.getTotale());
 
-            // CORREZIONE 3: Nuova firma (sessionId, pagamentoBean).
-            // Non passiamo più carrelloBean o UtenteBean dal client, li recupera il controller dalla sessione.
             appController.completaAcquisto(sessionId, pagamentoBean);
 
-            // 3. Navigazione verso NOTIFICA
             Stage stage = (Stage) btnConferma.getScene().getWindow();
-            ViewSwitcher.switchTo("/view/notificaPagamentoEffettuttoView.fxml", sessionId, stage);
+            ViewSwitcher.switchTo("/view/notificaPagamentoEffettuatoView.fxml", sessionId, stage);
 
         } catch (PaymentException e) {
             mostraMessaggio("Errore Pagamento", e.getMessage(), Alert.AlertType.WARNING);
         } catch (DAOException e) {
-            mostraMessaggio("Errore Sistema", "Impossibile completare l'ordine: " + e.getMessage(), Alert.AlertType.ERROR);
-            e.printStackTrace();
+            mostraMessaggio(
+                    "Errore Sistema",
+                    "Impossibile completare l'ordine: " + e.getMessage(),
+                    Alert.AlertType.ERROR
+            );
         } catch (Exception e) {
             mostraMessaggio("Errore Imprevisto", e.getMessage(), Alert.AlertType.ERROR);
-            e.printStackTrace();
         }
+    }
+
+    /* =========================
+       PAGA IN CASSA
+       ========================= */
+    @FXML
+    public void pagaInCassa() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Pagamento in cassa");
+        alert.setHeaderText(null);
+        alert.setContentText("Ti aspettiamo in cassa!");
+        alert.showAndWait();
+
+        Stage stage = (Stage) btnCassa.getScene().getWindow();
+        ViewSwitcher.switchTo("/view/MainView.fxml", sessionId, stage);
     }
 
     @FXML

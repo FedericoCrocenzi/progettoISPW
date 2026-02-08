@@ -103,7 +103,7 @@ public class MainGraphicController implements ControllerGraficoBase {
 
     @FXML
     public void mostraCarrello() {
-        caricaVistaCentrale("/view/CarrelloView.fxml");
+        caricaVistaCentrale("/view/carrelloView.fxml");
         if (btnCarrello != null) btnCarrello.setSelected(true);
     }
 
