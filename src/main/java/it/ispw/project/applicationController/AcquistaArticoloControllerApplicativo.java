@@ -9,7 +9,7 @@ import it.ispw.project.exception.DAOException;
 import it.ispw.project.exception.PaymentException;
 import it.ispw.project.exception.QuantitaInsufficienteException;
 import it.ispw.project.model.*;
-import it.ispw.project.model.observer.Observer; // Import necessario per l'interfaccia
+import it.ispw.project.model.observer.Observer;
 import it.ispw.project.sessionManager.Session;
 import it.ispw.project.sessionManager.SessionManager;
 
@@ -20,7 +20,7 @@ import java.util.Map;
 
 /**
  * Controller Applicativo Stateless.
- * Gestisce la logica di acquisto e funge da ponte per il pattern Observer.
+ * Gestisce la logica di acquisto, coordina il Model (Magazzino/Carrello) e la persistenza (DAO).
  */
 public class AcquistaArticoloControllerApplicativo {
 
@@ -34,10 +34,6 @@ public class AcquistaArticoloControllerApplicativo {
     // GESTIONE OBSERVER (Il "Ponte" tra Boundary e Model)
     // -----------------------------------------------------------------
 
-    /**
-     * Collega un Observer (la View) al Carrello (il Model) corrente.
-     * La View passa se stessa come interfaccia 'Observer', senza conoscere la classe 'Carrello'.
-     */
     public void registraOsservatoreCarrello(String sessionId, Observer observer) {
         Carrello carrello = recuperaCarrelloDaSessione(sessionId);
         if (carrello != null) {
@@ -53,31 +49,55 @@ public class AcquistaArticoloControllerApplicativo {
     }
 
     // -----------------------------------------------------------------
-    // GESTIONE CATALOGO
+    // GESTIONE CATALOGO (CON INTEGRAZIONE MAGAZZINO/CACHE)
     // -----------------------------------------------------------------
 
     public List<ArticoloBean> visualizzaCatalogo() throws DAOException {
-        return ricercaArticoli(null);
+        Magazzino magazzino = Magazzino.getInstance();
+
+        // 1. Lazy Loading: Se la cache è vuota, carico i dati dal DB
+        if (magazzino.getCatalogo().isEmpty()) {
+            DAOFactory factory = DAOFactory.getDAOFactory(TIPO_PERSISTENZA);
+            ArticoloDAO articoloDAO = factory.getArticoloDAO();
+            List<Articolo> articoliDB = articoloDAO.selectAllArticoli();
+
+            // Popolo il Magazzino
+            for (Articolo a : articoliDB) {
+                magazzino.aggiungiArticolo(a);
+            }
+        }
+
+        // 2. Restituisco i dati leggendoli dalla memoria (Magazzino)
+        List<ArticoloBean> listaBean = new ArrayList<>();
+        for (Articolo a : magazzino.getCatalogo().values()) {
+            listaBean.add(convertiModelInBean(a));
+        }
+        return listaBean;
     }
 
     public List<ArticoloBean> ricercaArticoli(RicercaArticoloBean criteri) throws DAOException {
-        DAOFactory factory = DAOFactory.getDAOFactory(TIPO_PERSISTENZA);
-        ArticoloDAO articoloDAO = factory.getArticoloDAO();
-        List<Articolo> listaModel;
-
-        if (criteri == null) {
-            listaModel = articoloDAO.selectAllArticoli();
-        } else {
-            listaModel = articoloDAO.selectByFilter(
-                    criteri.getTestoRicerca(),
-                    criteri.getTipoArticolo(),
-                    criteri.getPrezzoMin(),
-                    criteri.getPrezzoMax()
-            );
+        // Se non ci sono filtri, uso il metodo ottimizzato con cache
+        if (criteri == null || (criteri.getTestoRicerca() == null && criteri.getTipoArticolo() == null)) {
+            return visualizzaCatalogo();
         }
 
+        // Se ci sono filtri, interrogo il DB per efficienza
+        DAOFactory factory = DAOFactory.getDAOFactory(TIPO_PERSISTENZA);
+        ArticoloDAO articoloDAO = factory.getArticoloDAO();
+
+        List<Articolo> listaModel = articoloDAO.selectByFilter(
+                criteri.getTestoRicerca(),
+                criteri.getTipoArticolo(),
+                criteri.getPrezzoMin(),
+                criteri.getPrezzoMax()
+        );
+
         List<ArticoloBean> listaBean = new ArrayList<>();
+        Magazzino magazzino = Magazzino.getInstance();
+
         for (Articolo a : listaModel) {
+            // Aggiorno/Aggiungo al Magazzino per coerenza (Identity Map pattern)
+            magazzino.aggiungiArticolo(a);
             listaBean.add(convertiModelInBean(a));
         }
         return listaBean;
@@ -93,10 +113,12 @@ public class AcquistaArticoloControllerApplicativo {
         if (quantita <= 0) throw new IllegalArgumentException("La quantità deve essere positiva.");
 
         Carrello carrello = recuperaCarrelloDaSessione(sessionId);
-
         Magazzino magazzino = Magazzino.getInstance();
+
+        // 1. Cerco prima in memoria (Cache)
         Articolo articoloModel = magazzino.trovaArticolo(articoloBean.getId());
 
+        // 2. Se non c'è in RAM, provo a recuperarlo dal DB
         if (articoloModel == null) {
             DAOFactory factory = DAOFactory.getDAOFactory(TIPO_PERSISTENZA);
             ArticoloDAO articoloDAO = factory.getArticoloDAO();
@@ -105,23 +127,24 @@ public class AcquistaArticoloControllerApplicativo {
             if (articoloModel == null) {
                 throw new IllegalArgumentException("Articolo non trovato.");
             }
+            // Lo aggiungo al Magazzino per usi futuri
             magazzino.aggiungiArticolo(articoloModel);
         }
 
+        // 3. Verifica disponibilità (usando il dato aggiornato)
         if (!magazzino.verificaDisponibilita(articoloModel.leggiId(), quantita)) {
             throw new QuantitaInsufficienteException(
                     "Quantità non disponibile. Scorta: " + articoloModel.ottieniScorta()
             );
         }
 
-        // Il carrello notificherà automaticamente gli observer dopo questa modifica
+        // 4. Aggiunta al carrello
         carrello.aggiungiArticolo(articoloModel, quantita);
     }
 
     public void rimuoviArticoloDalCarrello(String sessionId, ArticoloBean articoloBean) {
         Carrello carrello = recuperaCarrelloDaSessione(sessionId);
 
-        // Cerca l'articolo nel carrello usando l'ID
         Articolo articoloDaRimuovere = null;
         for (Articolo a : carrello.getListaArticoli().keySet()) {
             if (a.leggiId() == articoloBean.getId()) {
@@ -177,39 +200,46 @@ public class AcquistaArticoloControllerApplicativo {
         Utente utenteCorrente = session.getUtenteCorrente();
 
         if (datiPagamento == null) throw new PaymentException("Dati pagamento mancanti.");
-
         if (Math.abs(datiPagamento.getImportoDaPagare() - carrello.calcolaTotale()) > 0.01) {
             throw new PaymentException("Errore importo: Il totale è cambiato.");
         }
 
-        // Creazione Ordine
+        // 1. Creazione Ordine
         Ordine ordine = new Ordine(0, new Date(), utenteCorrente, carrello.getListaArticoli(), carrello.calcolaTotale());
         ordine.setStato("IN_ATTESA");
 
-        // Salvataggio
         DAOFactory factory = DAOFactory.getDAOFactory(TIPO_PERSISTENZA);
         OrdineDAO ordineDAO = factory.getOrdineDAO();
         ArticoloDAO articoloDAO = factory.getArticoloDAO();
+        Magazzino magazzino = Magazzino.getInstance();
 
+        // 2. Persistenza Ordine
         ordineDAO.insertOrdine(ordine);
 
-        Magazzino magazzino = Magazzino.getInstance();
+        // 3. Aggiornamento Scorte (RAM + DB)
         for (Map.Entry<Articolo, Integer> entry : carrello.getListaArticoli().entrySet()) {
             Articolo art = entry.getKey();
-            magazzino.scaricaMerce(art.leggiId(), entry.getValue());
+            int quantitaAcquistata = entry.getValue();
+
+            // A. Aggiorno il Singleton (RAM)
+            // Nota: art è un riferimento all'oggetto in memoria nel Magazzino (se caricato da lì)
+            magazzino.scaricaMerce(art.leggiId(), quantitaAcquistata);
+
+            // B. Aggiorno il Database
+            // Passo l'oggetto 'art' che ora ha la scorta aggiornata in RAM
             articoloDAO.updateScorta(art);
         }
 
+        // 4. Notifiche e Pulizia
         GestoreNotifiche.getInstance().inviaNotificaNuovoOrdine(ordine);
-
         session.setUltimoOrdineCreato(ordine);
-        carrello.svuota(); // Notificherà view vuota
+        carrello.svuota();
 
         return convertiOrdineInBean(ordine);
     }
 
     // -----------------------------------------------------------------
-    // UTILITY
+    // UTILITY E METODI COMMESSO
     // -----------------------------------------------------------------
 
     private Carrello recuperaCarrelloDaSessione(String sessionId) {
@@ -244,11 +274,9 @@ public class AcquistaArticoloControllerApplicativo {
         b.setDataCreazione(o.getDataCreazione());
         b.setTotale(o.getTotale());
         b.setStato(o.getStato());
-        // ... conversione lista articoli se serve ...
         return b;
     }
 
-    // Metodi per il commesso (rimasti invariati)
     public List<OrdineBean> recuperaOrdiniPendenti() throws DAOException {
         DAOFactory factory = DAOFactory.getDAOFactory(TIPO_PERSISTENZA);
         OrdineDAO ordineDAO = factory.getOrdineDAO();
