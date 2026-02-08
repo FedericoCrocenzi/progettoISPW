@@ -70,7 +70,7 @@ public class PaymentGraphicController implements ControllerGraficoBase {
 
             // 3. Navigazione verso NOTIFICA
             Stage stage = (Stage) btnConferma.getScene().getWindow();
-            ViewSwitcher.switchTo("/view/notificaView.fxml", sessionId, stage);
+            ViewSwitcher.switchTo("/view/notificaPagamentoEffettuttoView.fxml", sessionId, stage);
 
         } catch (PaymentException e) {
             mostraMessaggio("Errore Pagamento", e.getMessage(), Alert.AlertType.WARNING);

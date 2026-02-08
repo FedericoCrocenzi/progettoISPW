@@ -18,20 +18,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Controller Applicativo Stateless.
- * Gestisce la logica di acquisto, coordina il Model (Magazzino/Carrello) e la persistenza (DAO).
- */
-public class AcquistaArticoloControllerApplicativo {
 
-    private static final int TIPO_PERSISTENZA = DAOFactory.JDBC;
+public class AcquistaArticoloControllerApplicativo {
 
     public AcquistaArticoloControllerApplicativo() {
         // Costruttore vuoto (Stateless)
     }
 
     // -----------------------------------------------------------------
-    // GESTIONE OBSERVER (Il "Ponte" tra Boundary e Model)
+    // GESTIONE OBSERVER
     // -----------------------------------------------------------------
 
     public void registraOsservatoreCarrello(String sessionId, Observer observer) {
@@ -49,25 +44,23 @@ public class AcquistaArticoloControllerApplicativo {
     }
 
     // -----------------------------------------------------------------
-    // GESTIONE CATALOGO (CON INTEGRAZIONE MAGAZZINO/CACHE)
+    // GESTIONE CATALOGO
     // -----------------------------------------------------------------
 
     public List<ArticoloBean> visualizzaCatalogo() throws DAOException {
         Magazzino magazzino = Magazzino.getInstance();
 
-        // 1. Lazy Loading: Se la cache è vuota, carico i dati dal DB
+        // Lazy loading del catalogo
         if (magazzino.getCatalogo().isEmpty()) {
-            DAOFactory factory = DAOFactory.getDAOFactory(TIPO_PERSISTENZA);
+            DAOFactory factory = DAOFactory.getDAOFactory();
             ArticoloDAO articoloDAO = factory.getArticoloDAO();
             List<Articolo> articoliDB = articoloDAO.selectAllArticoli();
 
-            // Popolo il Magazzino
             for (Articolo a : articoliDB) {
                 magazzino.aggiungiArticolo(a);
             }
         }
 
-        // 2. Restituisco i dati leggendoli dalla memoria (Magazzino)
         List<ArticoloBean> listaBean = new ArrayList<>();
         for (Articolo a : magazzino.getCatalogo().values()) {
             listaBean.add(convertiModelInBean(a));
@@ -76,13 +69,12 @@ public class AcquistaArticoloControllerApplicativo {
     }
 
     public List<ArticoloBean> ricercaArticoli(RicercaArticoloBean criteri) throws DAOException {
-        // Se non ci sono filtri, uso il metodo ottimizzato con cache
-        if (criteri == null || (criteri.getTestoRicerca() == null && criteri.getTipoArticolo() == null)) {
+        if (criteri == null ||
+                (criteri.getTestoRicerca() == null && criteri.getTipoArticolo() == null)) {
             return visualizzaCatalogo();
         }
 
-        // Se ci sono filtri, interrogo il DB per efficienza
-        DAOFactory factory = DAOFactory.getDAOFactory(TIPO_PERSISTENZA);
+        DAOFactory factory = DAOFactory.getDAOFactory();
         ArticoloDAO articoloDAO = factory.getArticoloDAO();
 
         List<Articolo> listaModel = articoloDAO.selectByFilter(
@@ -96,7 +88,6 @@ public class AcquistaArticoloControllerApplicativo {
         Magazzino magazzino = Magazzino.getInstance();
 
         for (Articolo a : listaModel) {
-            // Aggiorno/Aggiungo al Magazzino per coerenza (Identity Map pattern)
             magazzino.aggiungiArticolo(a);
             listaBean.add(convertiModelInBean(a));
         }
@@ -110,35 +101,31 @@ public class AcquistaArticoloControllerApplicativo {
     public void aggiungiArticoloAlCarrello(String sessionId, ArticoloBean articoloBean, int quantita)
             throws IllegalArgumentException, DAOException, QuantitaInsufficienteException {
 
-        if (quantita <= 0) throw new IllegalArgumentException("La quantità deve essere positiva.");
+        if (quantita <= 0)
+            throw new IllegalArgumentException("La quantità deve essere positiva.");
 
         Carrello carrello = recuperaCarrelloDaSessione(sessionId);
         Magazzino magazzino = Magazzino.getInstance();
 
-        // 1. Cerco prima in memoria (Cache)
         Articolo articoloModel = magazzino.trovaArticolo(articoloBean.getId());
 
-        // 2. Se non c'è in RAM, provo a recuperarlo dal DB
         if (articoloModel == null) {
-            DAOFactory factory = DAOFactory.getDAOFactory(TIPO_PERSISTENZA);
+            DAOFactory factory = DAOFactory.getDAOFactory();
             ArticoloDAO articoloDAO = factory.getArticoloDAO();
             articoloModel = articoloDAO.selectArticoloById(articoloBean.getId());
 
             if (articoloModel == null) {
                 throw new IllegalArgumentException("Articolo non trovato.");
             }
-            // Lo aggiungo al Magazzino per usi futuri
             magazzino.aggiungiArticolo(articoloModel);
         }
 
-        // 3. Verifica disponibilità (usando il dato aggiornato)
         if (!magazzino.verificaDisponibilita(articoloModel.leggiId(), quantita)) {
             throw new QuantitaInsufficienteException(
                     "Quantità non disponibile. Scorta: " + articoloModel.ottieniScorta()
             );
         }
 
-        // 4. Aggiunta al carrello
         carrello.aggiungiArticolo(articoloModel, quantita);
     }
 
@@ -176,7 +163,7 @@ public class AcquistaArticoloControllerApplicativo {
     // -----------------------------------------------------------------
 
     public UtenteBean recuperaDatiCliente(int idCliente) throws DAOException {
-        DAOFactory factory = DAOFactory.getDAOFactory(TIPO_PERSISTENZA);
+        DAOFactory factory = DAOFactory.getDAOFactory();
         UtenteDAO utenteDAO = factory.getUtenteDAO();
         Utente utente = utenteDAO.findById(idCliente);
 
@@ -194,43 +181,42 @@ public class AcquistaArticoloControllerApplicativo {
             throws DAOException, PaymentException {
 
         Session session = SessionManager.getInstance().getSession(sessionId);
-        if (session == null) throw new IllegalStateException("Sessione scaduta.");
+        if (session == null)
+            throw new IllegalStateException("Sessione scaduta.");
 
         Carrello carrello = session.getCarrelloCorrente();
         Utente utenteCorrente = session.getUtenteCorrente();
 
-        if (datiPagamento == null) throw new PaymentException("Dati pagamento mancanti.");
-        if (Math.abs(datiPagamento.getImportoDaPagare() - carrello.calcolaTotale()) > 0.01) {
-            throw new PaymentException("Errore importo: Il totale è cambiato.");
-        }
+        if (datiPagamento == null)
+            throw new PaymentException("Dati pagamento mancanti.");
 
-        // 1. Creazione Ordine
-        Ordine ordine = new Ordine(0, new Date(), utenteCorrente, carrello.getListaArticoli(), carrello.calcolaTotale());
+        if (Math.abs(datiPagamento.getImportoDaPagare() - carrello.calcolaTotale()) > 0.01)
+            throw new PaymentException("Errore importo: il totale è cambiato.");
+
+        Ordine ordine = new Ordine(
+                0,
+                new Date(),
+                utenteCorrente,
+                carrello.getListaArticoli(),
+                carrello.calcolaTotale()
+        );
         ordine.setStato("IN_ATTESA");
 
-        DAOFactory factory = DAOFactory.getDAOFactory(TIPO_PERSISTENZA);
+        DAOFactory factory = DAOFactory.getDAOFactory();
         OrdineDAO ordineDAO = factory.getOrdineDAO();
         ArticoloDAO articoloDAO = factory.getArticoloDAO();
         Magazzino magazzino = Magazzino.getInstance();
 
-        // 2. Persistenza Ordine
         ordineDAO.insertOrdine(ordine);
 
-        // 3. Aggiornamento Scorte (RAM + DB)
         for (Map.Entry<Articolo, Integer> entry : carrello.getListaArticoli().entrySet()) {
             Articolo art = entry.getKey();
             int quantitaAcquistata = entry.getValue();
 
-            // A. Aggiorno il Singleton (RAM)
-            // Nota: art è un riferimento all'oggetto in memoria nel Magazzino (se caricato da lì)
             magazzino.scaricaMerce(art.leggiId(), quantitaAcquistata);
-
-            // B. Aggiorno il Database
-            // Passo l'oggetto 'art' che ora ha la scorta aggiornata in RAM
             articoloDAO.updateScorta(art);
         }
 
-        // 4. Notifiche e Pulizia
         GestoreNotifiche.getInstance().inviaNotificaNuovoOrdine(ordine);
         session.setUltimoOrdineCreato(ordine);
         carrello.svuota();
@@ -239,7 +225,49 @@ public class AcquistaArticoloControllerApplicativo {
     }
 
     // -----------------------------------------------------------------
-    // UTILITY E METODI COMMESSO
+    // METODI COMMESSO
+    // -----------------------------------------------------------------
+
+    public List<OrdineBean> recuperaOrdiniPendenti() throws DAOException {
+        DAOFactory factory = DAOFactory.getDAOFactory();
+        OrdineDAO ordineDAO = factory.getOrdineDAO();
+        List<Ordine> ordini = ordineDAO.findAll();
+
+        List<OrdineBean> beans = new ArrayList<>();
+        for (Ordine o : ordini) {
+            beans.add(convertiOrdineInBean(o));
+        }
+        return beans;
+    }
+
+    public void segnalaClienteInNegozio(int idOrdine) throws DAOException {
+        DAOFactory factory = DAOFactory.getDAOFactory();
+        OrdineDAO ordineDAO = factory.getOrdineDAO();
+        Ordine ordine = ordineDAO.selectOrdineById(idOrdine);
+
+        if (ordine != null) {
+            ordine.setStato("CLIENTE_IN_NEGOZIO");
+            ordineDAO.updateStato(ordine);
+            GestoreNotifiche.getInstance()
+                    .inviaMessaggio("CLIENTE_IN_NEGOZIO: Ordine #" + idOrdine);
+        }
+    }
+
+    public void confermaRitiroMerce(int idOrdine) throws DAOException {
+        DAOFactory factory = DAOFactory.getDAOFactory();
+        OrdineDAO ordineDAO = factory.getOrdineDAO();
+        Ordine ordine = ordineDAO.selectOrdineById(idOrdine);
+
+        if (ordine != null) {
+            ordine.setStato("PRONTO");
+            ordineDAO.updateStato(ordine);
+            GestoreNotifiche.getInstance()
+                    .inviaMessaggio("MERCE_PRONTA: Ordine #" + idOrdine);
+        }
+    }
+
+    // -----------------------------------------------------------------
+    // METODI DI SUPPORTO
     // -----------------------------------------------------------------
 
     private Carrello recuperaCarrelloDaSessione(String sessionId) {
@@ -275,36 +303,5 @@ public class AcquistaArticoloControllerApplicativo {
         b.setTotale(o.getTotale());
         b.setStato(o.getStato());
         return b;
-    }
-
-    public List<OrdineBean> recuperaOrdiniPendenti() throws DAOException {
-        DAOFactory factory = DAOFactory.getDAOFactory(TIPO_PERSISTENZA);
-        OrdineDAO ordineDAO = factory.getOrdineDAO();
-        List<Ordine> ordini = ordineDAO.findAll();
-        List<OrdineBean> beans = new ArrayList<>();
-        for (Ordine o : ordini) beans.add(convertiOrdineInBean(o));
-        return beans;
-    }
-
-    public void segnalaClienteInNegozio(int idOrdine) throws DAOException {
-        DAOFactory factory = DAOFactory.getDAOFactory(TIPO_PERSISTENZA);
-        OrdineDAO ordineDAO = factory.getOrdineDAO();
-        Ordine ordine = ordineDAO.selectOrdineById(idOrdine);
-        if (ordine != null) {
-            ordine.setStato("CLIENTE_IN_NEGOZIO");
-            ordineDAO.updateStato(ordine);
-            GestoreNotifiche.getInstance().inviaMessaggio("CLIENTE_IN_NEGOZIO: Ordine #" + idOrdine);
-        }
-    }
-
-    public void confermaRitiroMerce(int idOrdine) throws DAOException {
-        DAOFactory factory = DAOFactory.getDAOFactory(TIPO_PERSISTENZA);
-        OrdineDAO ordineDAO = factory.getOrdineDAO();
-        Ordine ordine = ordineDAO.selectOrdineById(idOrdine);
-        if (ordine != null) {
-            ordine.setStato("PRONTO");
-            ordineDAO.updateStato(ordine);
-            GestoreNotifiche.getInstance().inviaMessaggio("MERCE_PRONTA: Ordine #" + idOrdine);
-        }
     }
 }
