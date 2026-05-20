@@ -34,6 +34,19 @@ public class Carrello extends Subject {
         }
     }
 
+    public void diminuisciQuantita(Articolo articolo, int quantita) {
+        if (articolo == null || quantita <= 0 || !contenuto.containsKey(articolo)) return;
+
+        int nuovaQuantita = contenuto.get(articolo) - quantita;
+        if (nuovaQuantita <= 0) {
+            contenuto.remove(articolo);
+        } else {
+            contenuto.put(articolo, nuovaQuantita);
+        }
+
+        super.notifyObservers(this);
+    }
+
     // --- CORREZIONE 1: Rinominato da svuotaCarrello() a svuota() ---
     // Questo combacia con la chiamata "this.carrello.svuota()" del Controller
     public void svuota() {

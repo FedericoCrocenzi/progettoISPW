@@ -46,6 +46,17 @@ public class MemoryOrdineDAO implements OrdineDAO {
     }
 
     @Override
+    public List<Ordine> findByStato(String stato) {
+        List<Ordine> ordini = new ArrayList<>();
+        for (Ordine ordine : tabellaOrdini) {
+            if (stato != null && stato.equals(ordine.getStato())) {
+                ordini.add(ordine);
+            }
+        }
+        return ordini;
+    }
+
+    @Override
     public void updateStato(Ordine ordine) {
         // In memoria (passaggio per riferimento), l'oggetto 'ordine' passato
         // è lo stesso che sta nella lista 'tabellaOrdini'.

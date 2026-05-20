@@ -2,6 +2,7 @@ package it.ispw.project.bean;
 
 public class UtenteBean {
 
+    private int id;
     private String username;
     private String password; // Necessaria in fase di Login
     private String ruolo;    // "CLIENTE" o "COMMESSO"
@@ -14,6 +15,9 @@ public class UtenteBean {
     public UtenteBean() {}
 
     // --- Getters & Setters ---
+
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }

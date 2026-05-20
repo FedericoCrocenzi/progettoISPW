@@ -10,16 +10,26 @@ import it.ispw.project.model.Utensile;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class JDBCArticoloDAO implements ArticoloDAO {
 
     private final Logger logger = Logger.getLogger(JDBCArticoloDAO.class.getName());
+    private final Map<Integer, Articolo> articoliById = new HashMap<>();
 
     @Override
     public Articolo selectArticoloById(int id) {
+        synchronized (articoliById) {
+            Articolo articoloInCache = articoliById.get(id);
+            if (articoloInCache != null) {
+                return articoloInCache;
+            }
+        }
+
         // MODIFICA QUI: Uso del Singleton
         Connection conn = DBConnection.getInstance().getConnection();
         if (conn == null) return null;
@@ -33,7 +43,9 @@ public class JDBCArticoloDAO implements ArticoloDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return istanziaArticoloDaResultSet(rs);
+                    Articolo articolo = istanziaArticoloDaResultSet(rs);
+                    cacheArticolo(articolo);
+                    return articolo;
                 }
             }
         } catch (SQLException e) {
@@ -54,7 +66,10 @@ public class JDBCArticoloDAO implements ArticoloDAO {
 
             while (rs.next()) {
                 Articolo a = istanziaArticoloDaResultSet(rs);
-                if (a != null) lista.add(a);
+                if (a != null) {
+                    cacheArticolo(a);
+                    lista.add(a);
+                }
             }
 
         } catch (SQLException e) {
@@ -100,7 +115,10 @@ public class JDBCArticoloDAO implements ArticoloDAO {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Articolo a = istanziaArticoloDaResultSet(rs);
-                    if (a != null) lista.add(a);
+                    if (a != null) {
+                        cacheArticolo(a);
+                        lista.add(a);
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -110,18 +128,31 @@ public class JDBCArticoloDAO implements ArticoloDAO {
     }
 
     @Override
-    public void updateScorta(Articolo articolo) {
+    public boolean updateScorta(Articolo articolo) {
+        if (articolo == null) {
+            return false;
+        }
+
         // MODIFICA QUI: Uso del Singleton
         Connection conn = DBConnection.getInstance().getConnection();
-        if (conn == null) return;
+        if (conn == null) return false;
 
         try (PreparedStatement stmt = conn.prepareStatement(Queries.UPDATE_ARTICOLO_SCORTA)) {
             stmt.setInt(1, articolo.ottieniScorta());
             stmt.setInt(2, articolo.leggiId());
 
-            stmt.executeUpdate();
+            int righeAggiornate = stmt.executeUpdate();
+            if (righeAggiornate > 0) {
+                cacheArticolo(articolo);
+                return true;
+            } else {
+                invalidaArticolo(articolo.leggiId());
+                return false;
+            }
         } catch (SQLException e) {
+            invalidaArticolo(articolo.leggiId());
             logger.log(Level.SEVERE, "Errore aggiornamento scorta articolo " + articolo.leggiId(), e);
+            return false;
         }
     }
 
@@ -166,5 +197,19 @@ public class JDBCArticoloDAO implements ArticoloDAO {
         }
 
         return articolo;
+    }
+
+    private void cacheArticolo(Articolo articolo) {
+        if (articolo != null) {
+            synchronized (articoliById) {
+                articoliById.put(articolo.leggiId(), articolo);
+            }
+        }
+    }
+
+    private void invalidaArticolo(int id) {
+        synchronized (articoliById) {
+            articoliById.remove(id);
+        }
     }
 }

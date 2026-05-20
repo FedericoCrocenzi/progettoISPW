@@ -10,8 +10,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class JDBCUtenteDAO implements UtenteDAO {
+
+    private final Map<Integer, Utente> utentiById = new HashMap<>();
 
     @Override
     public Utente checkCredentials(String identifier, String password) throws DAOException {
@@ -40,7 +44,9 @@ public class JDBCUtenteDAO implements UtenteDAO {
             rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return mapRowToUtente(rs);
+                Utente utente = mapRowToUtente(rs);
+                cacheUtente(utente);
+                return utente;
             }
 
             return null; // Utente non trovato
@@ -54,6 +60,13 @@ public class JDBCUtenteDAO implements UtenteDAO {
 
     @Override
     public Utente findById(int id) throws DAOException {
+        synchronized (utentiById) {
+            Utente utenteInCache = utentiById.get(id);
+            if (utenteInCache != null) {
+                return utenteInCache;
+            }
+        }
+
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -76,7 +89,9 @@ public class JDBCUtenteDAO implements UtenteDAO {
             rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return mapRowToUtente(rs);
+                Utente utente = mapRowToUtente(rs);
+                cacheUtente(utente);
+                return utente;
             }
 
             return null;
@@ -132,6 +147,14 @@ public class JDBCUtenteDAO implements UtenteDAO {
                 rs.getString("email"),
                 rs.getString("indirizzo")
         );
+    }
+
+    private void cacheUtente(Utente utente) {
+        if (utente != null) {
+            synchronized (utentiById) {
+                utentiById.put(utente.ottieniId(), utente);
+            }
+        }
     }
 
     private void closeResources(ResultSet rs, PreparedStatement stmt) {

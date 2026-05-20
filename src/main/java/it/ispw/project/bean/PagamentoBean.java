@@ -12,6 +12,8 @@ public class PagamentoBean {
     private String intestatario;
     private String dataScadenza; // Formato stringa "MM/YY" è spesso sufficiente per il bean
     private String cvv;
+    private String emailPaypal;
+    private String confermaEmailPaypal;
 
     // Costruttore vuoto
     public PagamentoBean() {}
@@ -35,4 +37,10 @@ public class PagamentoBean {
 
     public String getCvv() { return cvv; }
     public void setCvv(String cvv) { this.cvv = cvv; }
+
+    public String getEmailPaypal() { return emailPaypal; }
+    public void setEmailPaypal(String emailPaypal) { this.emailPaypal = emailPaypal; }
+
+    public String getConfermaEmailPaypal() { return confermaEmailPaypal; }
+    public void setConfermaEmailPaypal(String confermaEmailPaypal) { this.confermaEmailPaypal = confermaEmailPaypal; }
 }

@@ -72,7 +72,11 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
     }
 
     @Override
-    public void updateScorta(Articolo articoloModificato) {
+    public boolean updateScorta(Articolo articoloModificato) {
+        if (articoloModificato == null) {
+            return false;
+        }
+
         // Logica FileSystem: Leggo tutto in RAM, aggiorno l'oggetto, riscrivo tutto il file.
         List<Articolo> catalogo = selectAllArticoli();
         boolean trovato = false;
@@ -88,8 +92,9 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
         }
 
         if (trovato) {
-            riscriviFile(catalogo);
+            return riscriviFile(catalogo);
         }
+        return false;
     }
 
     @Override
@@ -121,7 +126,7 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
     }
 
     // Metodo helper per salvare le modifiche
-    private void riscriviFile(List<Articolo> lista) {
+    private boolean riscriviFile(List<Articolo> lista) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(CSV_FILE_NAME))) {
             for (Articolo a : lista) {
                 StringBuilder sb = new StringBuilder();
@@ -154,8 +159,10 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
                 bw.write(sb.toString());
                 bw.newLine();
             }
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
     }
 }

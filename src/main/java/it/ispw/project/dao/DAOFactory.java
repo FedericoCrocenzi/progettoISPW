@@ -17,6 +17,10 @@ public abstract class DAOFactory {
     public static final int FILESYSTEM = 2;
     public static final int DEMO = 3;
 
+    private static final DAOFactory JDBC_FACTORY = new JDBCDAOFactory();
+    private static final DAOFactory FILESYSTEM_FACTORY = new FileSystemDAOFactory();
+    private static final DAOFactory DEMO_FACTORY = new DemoDAOFactory();
+
     // Metodi astratti
     public abstract ArticoloDAO getArticoloDAO();
     public abstract OrdineDAO getOrdineDAO();
@@ -33,11 +37,11 @@ public abstract class DAOFactory {
 
         switch (whichFactory) {
             case JDBC:
-                return new JDBCDAOFactory();
+                return JDBC_FACTORY;
             case FILESYSTEM:
-                return new FileSystemDAOFactory();
+                return FILESYSTEM_FACTORY;
             case DEMO:
-                return new DemoDAOFactory();
+                return DEMO_FACTORY;
             default:
                 throw new IllegalStateException(
                         "Tipo di persistenza non valido: " + whichFactory

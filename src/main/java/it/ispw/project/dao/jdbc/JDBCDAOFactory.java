@@ -7,18 +7,30 @@ import it.ispw.project.dao.UtenteDAO;
 
 public class JDBCDAOFactory extends DAOFactory {
 
+    private static final ArticoloDAO ARTICOLO_DAO = new JDBCArticoloDAO();
+    private static final UtenteDAO UTENTE_DAO = new JDBCUtenteDAO();
+    private static final OrdineDAO ORDINE_DAO = new JDBCOrdineDAO(UTENTE_DAO, ARTICOLO_DAO);
+
+    static ArticoloDAO getArticoloDAOCondiviso() {
+        return ARTICOLO_DAO;
+    }
+
+    static UtenteDAO getUtenteDAOCondiviso() {
+        return UTENTE_DAO;
+    }
+
     @Override
     public ArticoloDAO getArticoloDAO() {
-        return new JDBCArticoloDAO(); // La classe che abbiamo scritto prima
+        return ARTICOLO_DAO;
     }
 
     @Override
     public OrdineDAO getOrdineDAO() {
-        return new JDBCOrdineDAO();
+        return ORDINE_DAO;
     }
 
     @Override
     public UtenteDAO getUtenteDAO() {
-        return new JDBCUtenteDAO();
+        return UTENTE_DAO;
     }
 }

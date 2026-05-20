@@ -10,9 +10,12 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ViewSwitcher {
 
+    private static final Logger LOGGER = Logger.getLogger(ViewSwitcher.class.getName());
     private static ViewSwitcher instance;
     private BorderPane mainPane;
 
@@ -48,8 +51,7 @@ public class ViewSwitcher {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Errore switchView: " + fxmlPath);
+            LOGGER.log(Level.SEVERE, "Errore caricamento vista centrale: " + fxmlPath, e);
         }
     }
 
@@ -62,6 +64,10 @@ public class ViewSwitcher {
             // 1. SALVA LO STATO ATTUALE PRIMA DI CAMBIARE SCENA
             boolean wasFullScreen = stage.isFullScreen();
             boolean wasMaximized = stage.isMaximized();
+            double previousWidth = stage.getWidth();
+            double previousHeight = stage.getHeight();
+            double previousX = stage.getX();
+            double previousY = stage.getY();
 
             // Gestione percorso file
             String path = fxmlFileName.startsWith("/") ? fxmlFileName : "/view/" + fxmlFileName;
@@ -100,11 +106,15 @@ public class ViewSwitcher {
             } else if (wasMaximized) {
                 // Se non era full screen, controlliamo se era almeno massimizzata
                 stage.setMaximized(true);
+            } else {
+                stage.setX(previousX);
+                stage.setY(previousY);
+                stage.setWidth(previousWidth);
+                stage.setHeight(previousHeight);
             }
 
         } catch (IOException e) {
-            System.err.println("Errore critico cambio scena: " + fxmlFileName);
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore critico cambio scena: " + fxmlFileName, e);
         }
     }
 

@@ -54,6 +54,7 @@ public class LoginControllerApplicativo {
 
         // 5. Creazione Bean di risposta
         UtenteBean outBean = new UtenteBean();
+        outBean.setId(utenteTrovato.ottieniId());
         outBean.setUsername(utenteTrovato.leggiUsername());
         outBean.setRuolo(utenteTrovato.scopriRuolo());
         outBean.setEmail(utenteTrovato.leggiEmail());

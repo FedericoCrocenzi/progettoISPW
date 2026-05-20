@@ -4,7 +4,7 @@ import it.ispw.project.applicationController.AcquistaArticoloControllerApplicati
 import it.ispw.project.bean.ArticoloBean;
 import it.ispw.project.bean.CarrelloBean;
 import it.ispw.project.exception.QuantitaInsufficienteException;
-import it.ispw.project.model.observer.Observer; // Importa solo l'interfaccia, NON l'Entity Carrello
+import it.ispw.project.model.observer.Observer;
 import it.ispw.project.view.ViewSwitcher;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -20,8 +20,12 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class CarrelloGraphicController implements ControllerGraficoBase, Observer {
+
+    private static final Logger LOGGER = Logger.getLogger(CarrelloGraphicController.class.getName());
 
     @FXML private VBox vboxCarrello;
     @FXML private Label lblTotale;
@@ -29,42 +33,22 @@ public class CarrelloGraphicController implements ControllerGraficoBase, Observe
     private AcquistaArticoloControllerApplicativo appController;
     private String sessionId;
 
-    // NOTA: Nessun attributo 'private Carrello carrelloModel' qui. La Boundary non deve conoscerlo.
-
     @Override
     public void initData(String sessionId) {
         this.sessionId = sessionId;
-
-        // 1. Istanziamo il Controller Applicativo (Stateless)
         this.appController = new AcquistaArticoloControllerApplicativo();
-
-        // 2. Registrazione Observer tramite il Controller Applicativo
-        // Deleghiamo al controller il compito di fare "attach" sul model reale.
         this.appController.registraOsservatoreCarrello(sessionId, this);
-
-        // 3. Prima visualizzazione
         aggiornaVista();
     }
 
-    /**
-     * Metodo chiamato dal Subject (Carrello) quando cambia stato.
-     * @param subject L'oggetto che ha generato la notifica.
-     */
     @Override
     public void update(Object subject) {
-        // ARCHITETTURA: Ignoriamo il parametro 'subject' per non doverlo castare a Carrello (Entity).
-        // Sappiamo che qualcosa è cambiato, quindi scateniamo un "Pull" dei dati aggiornati tramite il Controller.
         Platform.runLater(this::aggiornaVista);
     }
 
-    /**
-     * Metodo privato che recupera lo stato aggiornato sotto forma di BEAN e aggiorna la UI.
-     */
     private void aggiornaVista() {
-        // PULL DATI: Chiediamo al controller applicativo il Bean del carrello
         CarrelloBean carrelloBean = appController.visualizzaCarrello(sessionId);
 
-        // Pulizia e ricostruzione UI
         vboxCarrello.getChildren().clear();
 
         if (carrelloBean.getListaArticoli().isEmpty()) {
@@ -73,19 +57,20 @@ public class CarrelloGraphicController implements ControllerGraficoBase, Observe
             vboxCarrello.getChildren().add(emptyLabel);
         } else {
             for (ArticoloBean art : carrelloBean.getListaArticoli()) {
-                AnchorPane card = creaCardProdotto(art);
-                vboxCarrello.getChildren().add(card);
+                vboxCarrello.getChildren().add(creaCardProdotto(art));
             }
         }
 
-        // Aggiornamento Totale
-        lblTotale.setText(String.format("€ %.2f", carrelloBean.getTotale()));
+        lblTotale.setText(String.format("EUR %.2f", carrelloBean.getTotale()));
     }
 
     @FXML
     public void procediAlPagamento() {
-        if (vboxCarrello.getChildren().isEmpty() || lblTotale.getText().equals("€ 0.00")) {
-            mostraMessaggio("Carrello Vuoto", "Non puoi procedere al pagamento con il carrello vuoto.", Alert.AlertType.WARNING);
+        CarrelloBean carrelloBean = appController.visualizzaCarrello(sessionId);
+        if (carrelloBean.getListaArticoli().isEmpty()) {
+            mostraMessaggio("Carrello Vuoto",
+                    "Il carrello è vuoto. Aggiungi almeno un articolo prima di procedere al pagamento.",
+                    Alert.AlertType.WARNING);
             return;
         }
 
@@ -111,7 +96,7 @@ public class CarrelloGraphicController implements ControllerGraficoBase, Observe
         lblNome.setLayoutY(17.0);
         lblNome.setStyle("-fx-font-size: 14px;");
 
-        Label lblPrezzo = new Label(String.format("€ %.2f", art.getPrezzo()));
+        Label lblPrezzo = new Label(String.format("EUR %.2f", art.getPrezzo()));
         lblPrezzo.setLayoutX(93.0);
         lblPrezzo.setLayoutY(53.0);
         lblPrezzo.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
@@ -125,24 +110,14 @@ public class CarrelloGraphicController implements ControllerGraficoBase, Observe
 
         Button btnMinus = new Button("-");
         btnMinus.setStyle("-fx-font-weight: bold; -fx-background-color: transparent; -fx-cursor: hand;");
-        btnMinus.setOnAction(e -> mostraMessaggio("Info", "Usa il tasto cestino per rimuovere l'articolo.", Alert.AlertType.INFORMATION));
+        btnMinus.setOnAction(e -> diminuisciQuantita(art));
 
         Label lblQty = new Label(String.valueOf(art.getQuantita()));
         lblQty.setStyle("-fx-font-weight: bold;");
 
         Button btnPlus = new Button("+");
         btnPlus.setStyle("-fx-font-weight: bold; -fx-background-color: transparent; -fx-cursor: hand;");
-        btnPlus.setOnAction(e -> {
-            try {
-                // Modifica tramite Controller. Non chiamiamo aggiornaVista() manualmente qui
-                // perché ci penserà l'update() scatenato dal model.
-                appController.aggiungiArticoloAlCarrello(sessionId, art, 1);
-            } catch (QuantitaInsufficienteException ex) {
-                mostraMessaggio("Scorta Insufficiente", ex.getMessage(), Alert.AlertType.WARNING);
-            } catch (Exception ex) {
-                mostraMessaggio("Errore", ex.getMessage(), Alert.AlertType.ERROR);
-            }
-        });
+        btnPlus.setOnAction(e -> aumentaQuantita(art));
 
         hBoxQty.getChildren().addAll(btnMinus, lblQty, btnPlus);
 
@@ -150,13 +125,36 @@ public class CarrelloGraphicController implements ControllerGraficoBase, Observe
         btnTrash.setLayoutX(285.0);
         btnTrash.setLayoutY(3.0);
         btnTrash.setStyle("-fx-background-color: transparent; -fx-text-fill: red; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;");
-        btnTrash.setOnAction(e -> {
-            // Modifica tramite Controller. L'aggiornamento grafico avverrà via Observer.
-            appController.rimuoviArticoloDalCarrello(sessionId, art);
-        });
+        btnTrash.setOnAction(e -> appController.rimuoviArticoloDalCarrello(sessionId, art));
 
         card.getChildren().addAll(imgView, lblNome, lblPrezzo, hBoxQty, btnTrash);
         return card;
+    }
+
+    private void aumentaQuantita(ArticoloBean art) {
+        try {
+            appController.aggiungiArticoloAlCarrello(sessionId, art, 1);
+        } catch (QuantitaInsufficienteException ex) {
+            mostraMessaggio("Scorta Insufficiente", ex.getMessage(), Alert.AlertType.WARNING);
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "Errore durante l'aumento della quantita nel carrello.", ex);
+            mostraMessaggio("Errore",
+                    "Impossibile aggiornare il carrello. Riprova più tardi.",
+                    Alert.AlertType.ERROR);
+        }
+    }
+
+    private void diminuisciQuantita(ArticoloBean art) {
+        try {
+            appController.diminuisciQuantitaArticoloDalCarrello(sessionId, art, 1);
+        } catch (IllegalArgumentException ex) {
+            mostraMessaggio("Quantita non valida", ex.getMessage(), Alert.AlertType.WARNING);
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "Errore durante la diminuzione della quantita nel carrello.", ex);
+            mostraMessaggio("Errore",
+                    "Impossibile aggiornare il carrello. Riprova più tardi.",
+                    Alert.AlertType.ERROR);
+        }
     }
 
     private void caricaImmagine(ImageView imgView, String path) {
@@ -165,8 +163,8 @@ public class CarrelloGraphicController implements ControllerGraficoBase, Observe
             InputStream is = getClass().getResourceAsStream(path);
             if (is == null) is = getClass().getResourceAsStream("/Image/logo1.png");
             if (is != null) imgView.setImage(new Image(is));
-        } catch (Exception e) {
-            // Ignora eccezioni caricamento img
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.FINE, "Immagine carrello non disponibile.", e);
         }
     }
 
@@ -178,9 +176,6 @@ public class CarrelloGraphicController implements ControllerGraficoBase, Observe
         alert.showAndWait();
     }
 
-    /**
-     * Opzionale: Deregistrazione quando si chiude la finestra o si cambia vista.
-     */
     public void onClose() {
         if (appController != null) {
             appController.rimuoviOsservatoreCarrello(sessionId, this);

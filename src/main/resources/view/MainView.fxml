@@ -42,7 +42,7 @@
                         <Font name="System Bold" size="24.0" />
                     </font>
                 </Label>
-                <Button alignment="BOTTOM_CENTER" contentDisplay="TOP" layoutX="346.0" layoutY="40.0" mnemonicParsing="false" prefHeight="55.0" prefWidth="125.0" styleClass="btn-scanner" stylesheets="@../style.css" text="SCANNERIZZA BARcode" textAlignment="CENTER" textFill="WHITE" wrapText="true" AnchorPane.topAnchor="40.0">
+                <Button alignment="BOTTOM_CENTER" contentDisplay="TOP" layoutX="346.0" layoutY="40.0" mnemonicParsing="false" onAction="#scannerizzaBarcode" prefHeight="55.0" prefWidth="125.0" styleClass="btn-scanner" stylesheets="@../style.css" text="SCANNERIZZA BARcode" textAlignment="CENTER" textFill="WHITE" wrapText="true" AnchorPane.topAnchor="40.0">
                     <font>
                         <Font size="8.0" />
                     </font>

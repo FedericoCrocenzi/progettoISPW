@@ -1,12 +1,9 @@
 package it.ispw.project.graphicController;
 
 import it.ispw.project.applicationController.AcquistaArticoloControllerApplicativo;
-import it.ispw.project.bean.ArticoloBean;
 import it.ispw.project.bean.OrdineBean;
 import it.ispw.project.exception.DAOException;
-import it.ispw.project.model.Articolo;
 import it.ispw.project.model.GestoreNotifiche;
-import it.ispw.project.model.Ordine;
 import it.ispw.project.model.observer.Observer;
 import it.ispw.project.view.ViewSwitcher;
 import javafx.application.Platform;
@@ -30,10 +27,17 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class CommessoGraphicController implements ControllerGraficoBase, Observer {
+
+    private static final Logger LOGGER = Logger.getLogger(CommessoGraphicController.class.getName());
+    private static final Map<Integer, OrdineBean> nuoviOrdiniInAttesa = new LinkedHashMap<>();
+    private static boolean commessoGraficoAttivo;
 
     @FXML private TilePane tilePaneOrdini;
     @FXML private ToggleGroup menuGroup;
@@ -41,6 +45,7 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
 
     private String sessionId;
     private AcquistaArticoloControllerApplicativo appController;
+    private boolean popupLoginMostrato;
 
     @FXML
     public void initialize() {
@@ -49,7 +54,7 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
                 if (newVal != null) {
                     ToggleButton selected = (ToggleButton) newVal;
                     if ("Profilo".equals(selected.getText())) {
-                        mostraInfo("Funzionalità Non Disponibile", "La schermata Profilo non è stata ancora implementata.");
+                        mostraInfo("Funzionalita Non Disponibile", "La schermata Profilo non e' stata ancora implementata.");
                     }
                 }
             });
@@ -59,25 +64,54 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
     @Override
     public void initData(String sessionId) {
         this.sessionId = sessionId;
-        // Inizializza il controller applicativo
         this.appController = new AcquistaArticoloControllerApplicativo();
 
-        // REGISTRAZIONE OBSERVER: Si mette in ascolto per i nuovi ordini
+        setCommessoGraficoAttivo(true);
         GestoreNotifiche.getInstance().attach(this);
 
-        // Carica lo stato attuale
-        caricaOrdini();
+        List<OrdineBean> ordiniCorrenti = caricaOrdini();
+        Platform.runLater(() -> {
+            boolean notificheMostrate = mostraNuoviOrdiniInAttesa();
+            if (!notificheMostrate) {
+                mostraPopupLoginSeNecessario(ordiniCorrenti);
+            }
+        });
     }
 
     /**
-     * Importante: deregistrarsi quando si chiude/logout per evitare memory leak.
+     * Deregistra l'observer grafico quando il commesso esce dalla schermata.
      */
     public void onClose() {
+        setCommessoGraficoAttivo(false);
         GestoreNotifiche.getInstance().detach(this);
     }
 
-    public void caricaOrdini() {
-        if (tilePaneOrdini == null) return;
+    public static synchronized boolean isCommessoGraficoAttivo() {
+        return commessoGraficoAttivo;
+    }
+
+    public static synchronized void registraNuovoOrdineInAttesa(OrdineBean ordineBean) {
+        if (ordineBean != null && ordineBean.getId() > 0 && "IN_ATTESA".equals(ordineBean.getStato())) {
+            nuoviOrdiniInAttesa.putIfAbsent(ordineBean.getId(), ordineBean);
+        }
+    }
+
+    private static synchronized void rimuoviNuovoOrdineInAttesa(int idOrdine) {
+        nuoviOrdiniInAttesa.remove(idOrdine);
+    }
+
+    private static synchronized void setCommessoGraficoAttivo(boolean attivo) {
+        commessoGraficoAttivo = attivo;
+    }
+
+    private static synchronized List<OrdineBean> prelevaNuoviOrdiniInAttesa() {
+        List<OrdineBean> ordini = new ArrayList<>(nuoviOrdiniInAttesa.values());
+        nuoviOrdiniInAttesa.clear();
+        return ordini;
+    }
+
+    public List<OrdineBean> caricaOrdini() {
+        if (tilePaneOrdini == null) return new ArrayList<>();
 
         try {
             tilePaneOrdini.getChildren().clear();
@@ -85,15 +119,19 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
 
             if (ordini.isEmpty()) {
                 tilePaneOrdini.getChildren().add(new Label("Nessun ordine da evadere."));
-                return;
+                return ordini;
             }
 
             for (OrdineBean ordine : ordini) {
                 aggiungiCardOrdine(ordine);
             }
 
+            return ordini;
+
         } catch (DAOException e) {
-            mostraErrore("Errore Sistema", "Impossibile caricare gli ordini: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Errore caricamento ordini pendenti.", e);
+            mostraErrore("Errore Sistema", "Impossibile caricare gli ordini. Riprova piu' tardi.");
+            return new ArrayList<>();
         }
     }
 
@@ -104,7 +142,7 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
         card.setStyle("-fx-background-color: #F5F5F5; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5);");
         card.setPadding(new Insets(10));
 
-        Label lblId = new Label("Ordine n° " + ordine.getId());
+        Label lblId = new Label("Ordine n. " + ordine.getId());
         lblId.setStyle("-fx-font-size: 14px;");
 
         ImageView imgView = new ImageView();
@@ -112,11 +150,12 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
         imgView.setFitWidth(80);
         imgView.setPreserveRatio(true);
         try {
-            // Assicurati che l'immagine esista o gestisci l'eccezione come fatto qui
             imgView.setImage(new Image(getClass().getResourceAsStream("/Image/icons-logistica.png")));
-        } catch (Exception e) { /* Ignora se immagine non trovata */ }
+        } catch (RuntimeException e) {
+            imgView.setImage(null);
+        }
 
-        Label lblPrezzo = new Label(String.format("Totale: € %.2f", ordine.getTotale()));
+        Label lblPrezzo = new Label(String.format("Totale: EUR %.2f", ordine.getTotale()));
         lblPrezzo.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 
         Button btnDettagli = new Button("Dettagli");
@@ -134,16 +173,18 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
     private void gestisciOrdinePronto(int idOrdine, VBox cardGrafica) {
         try {
             appController.confermaRitiroMerce(idOrdine);
+            rimuoviNuovoOrdineInAttesa(idOrdine);
             tilePaneOrdini.getChildren().remove(cardGrafica);
+            if (tilePaneOrdini.getChildren().isEmpty()) {
+                tilePaneOrdini.getChildren().add(new Label("Nessun ordine da evadere."));
+            }
             mostraInfo("Successo", "Stato aggiornato e cliente notificato.");
         } catch (DAOException e) {
-            mostraErrore("Errore", e.getMessage());
+            LOGGER.log(Level.SEVERE, "Errore durante aggiornamento stato ordine.", e);
+            mostraErrore("Errore", "Impossibile aggiornare l'ordine. Riprova piu' tardi.");
         }
     }
 
-    /**
-     * Metodo pubblico usato anche dal Popup Notifica per aprire i dettagli.
-     */
     public void apriDettaglioOrdine(OrdineBean ordine) {
         mostraDettagli(ordine);
     }
@@ -153,106 +194,127 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/ordineCommessoView.fxml"));
             Parent root = loader.load();
 
-            // Passiamo i dati al controller della view di dettaglio
             OrdineCommessoGraphicController controller = loader.getController();
             controller.initData(ordine, this);
 
             Stage stage = new Stage();
+            if (tilePaneOrdini.getScene() != null) {
+                stage.initOwner(tilePaneOrdini.getScene().getWindow());
+            }
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setTitle("Dettaglio Ordine #" + ordine.getId());
+            stage.setTitle("Dettaglio Ordine");
             stage.setScene(new Scene(root));
-            stage.show();
-
+            stage.showAndWait();
         } catch (IOException e) {
-            mostraErrore("Errore GUI", "Impossibile aprire il dettaglio ordine: " + e.getMessage());
-            e.printStackTrace();
+            mostraErrore("Errore", "Impossibile aprire il dettaglio ordine.");
         }
     }
 
-    // --- GESTIONE POPUP (Usa NotificaCommessoGraphicController) ---
-
     private void apriPopupNotifica(OrdineBean ordineBean, String titolo, String messaggio) {
+        Runnable azione = ordineBean != null ? () -> apriDettaglioOrdine(ordineBean) : null;
+        String testoPulsante = ordineBean != null ? "Visualizza Ordine" : "Chiudi";
+        String testoMessaggio = messaggio != null ? messaggio : "E' arrivato un nuovo ordine da preparare.";
+        apriPopupNotifica(ordineBean, titolo, testoMessaggio, testoPulsante, "/Image/order-purchase.png", azione);
+    }
+
+    private void apriPopupNotifica(OrdineBean ordineBean,
+                                   String titolo,
+                                   String messaggio,
+                                   String testoPulsante,
+                                   String iconaPath,
+                                   Runnable azione) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/notificaCommessoView.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/notificaOrdinePronto.fxml"));
             Parent root = loader.load();
 
-            // Recuperiamo il controller DEDICATO al popup
-            NotificaCommessoGraphicController popupController = loader.getController();
-
-            // Inizializziamo il popup passando:
-            // 1. Il Bean dell'ordine (se presente)
-            // 2. Un riferimento a 'this' (il padre) per permettere al popup di richiamare apriDettaglioOrdine
-            if (ordineBean != null) {
-                popupController.initData(ordineBean, this);
-            } else {
-                // Caso messaggio generico
-                popupController.setMessaggioSemplice(titolo, messaggio);
-            }
+            NotificaOrdineProntoGraphicController popupController = loader.getController();
+            popupController.configura(ordineBean, titolo, messaggio, testoPulsante, iconaPath, azione);
 
             Stage stage = new Stage();
-            stage.initModality(Modality.APPLICATION_MODAL); // Blocca l'interazione sotto
+            if (tilePaneOrdini.getScene() != null) {
+                stage.initOwner(tilePaneOrdini.getScene().getWindow());
+            }
+            stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle(titolo);
             stage.setScene(new Scene(root));
             stage.show();
 
         } catch (IOException e) {
-            System.err.println("Errore caricamento popup: " + e.getMessage());
-            mostraInfo(titolo, messaggio); // Fallback
+            LOGGER.log(Level.SEVERE, "Errore caricamento popup notifica commesso.", e);
+            mostraInfo(titolo, messaggio);
         }
+    }
+
+    private void mostraPopupLoginSeNecessario(List<OrdineBean> ordini) {
+        if (popupLoginMostrato || ordini == null || ordini.isEmpty()) {
+            return;
+        }
+
+        popupLoginMostrato = true;
+        OrdineBean ordine = ordini.get(0);
+        apriPopupNotifica(
+                ordine,
+                "Nuovo Ordine!",
+                "Ordine pendente da preparare.",
+                "Visualizza Ordine",
+                "/Image/order-purchase.png",
+                () -> apriDettaglioOrdine(ordine)
+        );
+    }
+
+    private boolean mostraNuoviOrdiniInAttesa() {
+        List<OrdineBean> ordini = prelevaNuoviOrdiniInAttesa();
+        if (ordini.isEmpty()) {
+            return false;
+        }
+
+        popupLoginMostrato = true;
+        for (OrdineBean ordine : ordini) {
+            apriPopupNotifica(
+                    ordine,
+                    "Nuovo Ordine!",
+                    "E' arrivato un nuovo ordine con la lista articoli completa.",
+                    "Visualizza Ordine",
+                    "/Image/order-purchase.png",
+                    () -> apriDettaglioOrdine(ordine)
+            );
+        }
+        return true;
     }
 
     @Override
     public void update(Object data) {
         Platform.runLater(() -> {
-            if (data instanceof Ordine) {
-                // 1. Aggiorna la dashboard per mostrare la nuova card in griglia
+            if (data instanceof OrdineBean) {
+                OrdineBean bean = (OrdineBean) data;
+                if (!"IN_ATTESA".equals(bean.getStato())) {
+                    return;
+                }
+
                 caricaOrdini();
 
-                // 2. Prepara i dati per il popup
-                Ordine nuovoOrdine = (Ordine) data;
-                OrdineBean bean = convertiToBean(nuovoOrdine);
-
-                // 3. Mostra il popup usando il controller dedicato
-                apriPopupNotifica(bean, "Nuovo Ordine!", null);
+                apriPopupNotifica(
+                        bean,
+                        "Nuovo Ordine!",
+                        "E' arrivato un nuovo ordine con la lista articoli completa.",
+                        "Visualizza Ordine",
+                        "/Image/order-purchase.png",
+                        () -> apriDettaglioOrdine(bean)
+                );
 
             } else if (data instanceof String) {
                 String msg = (String) data;
                 if (msg.contains("CLIENTE_IN_NEGOZIO")) {
                     caricaOrdini();
-                    // Popup generico informativo
                     apriPopupNotifica(null, "Cliente Arrivato", msg);
                 }
             }
         });
     }
 
-    // Helper per convertire Model -> Bean
-    private OrdineBean convertiToBean(Ordine o) {
-        OrdineBean b = new OrdineBean();
-        b.setId(o.leggiId());
-        b.setTotale(o.getTotale());
-        b.setStato(o.getStato());
-        b.setDataCreazione(o.getDataCreazione());
-
-        List<ArticoloBean> articoliBean = new ArrayList<>();
-        if (o.getArticoli() != null) {
-            for (Map.Entry<Articolo, Integer> entry : o.getArticoli().entrySet()) {
-                Articolo a = entry.getKey();
-                ArticoloBean ab = new ArticoloBean();
-                ab.setId(a.leggiId());
-                ab.setDescrizione(a.leggiDescrizione());
-                ab.setPrezzo(a.ottieniPrezzo());
-                ab.setQuantita(entry.getValue()); // Quantità nell'ordine
-                articoliBean.add(ab);
-            }
-        }
-        b.setArticoli(articoliBean);
-        return b;
-    }
-
     @FXML
     public void onLogoutClick() {
-        onClose(); // Deregistra l'observer
+        onClose();
         Stage stage = (Stage) tilePaneOrdini.getScene().getWindow();
         ViewSwitcher.switchTo("/view/Login.fxml", null, stage);
     }

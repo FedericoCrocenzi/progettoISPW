@@ -1,6 +1,7 @@
 package it.ispw.project.dao.fileSystem;
 
 import it.ispw.project.dao.OrdineDAO;
+import it.ispw.project.exception.DAOException;
 import it.ispw.project.model.Articolo;
 import it.ispw.project.model.Ordine;
 import it.ispw.project.model.Utente;
@@ -11,14 +12,17 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FileSystemOrdineDAO implements OrdineDAO {
 
+    private static final Logger LOGGER = Logger.getLogger(FileSystemOrdineDAO.class.getName());
     private static final String CSV_FILE_NAME = "ordini.csv";
     private static final String SEPARATOR = ";";
 
     @Override
-    public void insertOrdine(Ordine ordine) {
+    public void insertOrdine(Ordine ordine) throws DAOException {
         File file = new File(CSV_FILE_NAME);
         int nuovoId = 1;
 
@@ -38,7 +42,8 @@ public class FileSystemOrdineDAO implements OrdineDAO {
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.log(Level.SEVERE, "Errore lettura file ordini.", e);
+                throw new DAOException("Errore durante il salvataggio dell'ordine.", e);
             }
         }
 
@@ -71,16 +76,16 @@ public class FileSystemOrdineDAO implements OrdineDAO {
             bw.write(sb.toString());
 
             // Aggiorniamo l'ID dell'oggetto in memoria per coerenza con la sessione
-            // (Richiede che Ordine abbia un modo per settare l'ID o usare reflection,
-            // ma per ora lo lasciamo gestire al ricaricamento)
+            ordine.registraIdGenerato(nuovoId);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore scrittura file ordini.", e);
+            throw new DAOException("Errore durante il salvataggio dell'ordine.", e);
         }
     }
 
     @Override
-    public List<Ordine> findAll() {
+    public List<Ordine> findAll() throws DAOException {
         List<Ordine> ordini = new ArrayList<>();
         File file = new File(CSV_FILE_NAME);
         if (!file.exists()) return ordini;
@@ -96,13 +101,25 @@ public class FileSystemOrdineDAO implements OrdineDAO {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore lettura file ordini.", e);
+            throw new DAOException("Errore durante il recupero degli ordini.", e);
         }
         return ordini;
     }
 
     @Override
-    public Ordine selectOrdineById(int id) {
+    public List<Ordine> findByStato(String stato) throws DAOException {
+        List<Ordine> ordini = new ArrayList<>();
+        for (Ordine ordine : findAll()) {
+            if (stato != null && stato.equals(ordine.getStato())) {
+                ordini.add(ordine);
+            }
+        }
+        return ordini;
+    }
+
+    @Override
+    public Ordine selectOrdineById(int id) throws DAOException {
         File file = new File(CSV_FILE_NAME);
         if (!file.exists()) return null;
 
@@ -119,13 +136,14 @@ public class FileSystemOrdineDAO implements OrdineDAO {
                 }
             }
         } catch (IOException | NumberFormatException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore lettura ordine da file.", e);
+            throw new DAOException("Errore durante il recupero dell'ordine.", e);
         }
         return null;
     }
 
     @Override
-    public void updateStato(Ordine ordine) {
+    public void updateStato(Ordine ordine) throws DAOException {
         File file = new File(CSV_FILE_NAME);
         List<String> lines = new ArrayList<>();
         boolean updated = false;
@@ -152,7 +170,8 @@ public class FileSystemOrdineDAO implements OrdineDAO {
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.log(Level.SEVERE, "Errore lettura file ordini.", e);
+                throw new DAOException("Errore durante l'aggiornamento dello stato ordine.", e);
             }
         }
 
@@ -166,7 +185,8 @@ public class FileSystemOrdineDAO implements OrdineDAO {
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.log(Level.SEVERE, "Errore scrittura file ordini.", e);
+                throw new DAOException("Errore durante l'aggiornamento dello stato ordine.", e);
             }
         }
     }
@@ -177,7 +197,7 @@ public class FileSystemOrdineDAO implements OrdineDAO {
      * Converte una riga CSV in un oggetto Ordine.
      * Richiede l'accesso ai DAO di Utente e Articolo per ricostruire le dipendenze.
      */
-    private Ordine parseLineToOrdine(String line) {
+    private Ordine parseLineToOrdine(String line) throws DAOException {
         try {
             String[] parts = line.split(SEPARATOR);
             // Formato: ID;TIMESTAMP;TOTALE;STATO;ID_CLIENTE;LISTA_ARTICOLI
@@ -217,9 +237,8 @@ public class FileSystemOrdineDAO implements OrdineDAO {
             return o;
 
         } catch (Exception e) {
-            System.err.println("Errore parsing riga ordine: " + line);
-            e.printStackTrace();
-            return null;
+            LOGGER.log(Level.SEVERE, "Errore parsing riga ordine.", e);
+            throw new DAOException("Errore durante la lettura dell'ordine.", e);
         }
     }
 

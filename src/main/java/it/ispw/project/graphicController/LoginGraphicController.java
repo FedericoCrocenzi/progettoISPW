@@ -13,7 +13,12 @@ import javafx.scene.control.TextField;
 import javafx.scene.Node;
 import javafx.stage.Stage;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class LoginGraphicController {
+
+    private static final Logger LOGGER = Logger.getLogger(LoginGraphicController.class.getName());
 
     @FXML private TextField txtUsername;
     @FXML private TextField txtPassword;
@@ -64,13 +69,13 @@ public class LoginGraphicController {
 
         } catch (DAOException e) {
             // Caso: Database giù o errore SQL (Popup Rosso/Error)
-            mostraAlert("Errore Sistema", "Impossibile contattare il server: " + e.getMessage(), Alert.AlertType.ERROR);
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore tecnico durante il login.", e);
+            mostraAlert("Errore Sistema", "Impossibile completare il login. Riprova piu' tardi.", Alert.AlertType.ERROR);
 
         } catch (Exception e) {
             // Caso imprevisto (es. NullPointerException o errori JavaFX)
-            mostraAlert("Errore Imprevisto", e.getMessage(), Alert.AlertType.ERROR);
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore imprevisto durante il login.", e);
+            mostraAlert("Errore Imprevisto", "Si e' verificato un errore imprevisto. Riprova piu' tardi.", Alert.AlertType.ERROR);
         }
     }
 

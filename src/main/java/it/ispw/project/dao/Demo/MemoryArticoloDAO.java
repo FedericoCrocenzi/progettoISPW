@@ -48,7 +48,11 @@ public class MemoryArticoloDAO implements ArticoloDAO {
     }
 
     @Override
-    public void updateScorta(Articolo articolo) {
+    public boolean updateScorta(Articolo articolo) {
+        if (articolo == null) {
+            return false;
+        }
+
         // In modalità DEMO (tutto in RAM), l'oggetto 'articolo' passato dal Controller
         // è ESATTAMENTE lo stesso oggetto che sta dentro la Map del Magazzino (Java lavora per riferimento).
         // Quindi, se il Controller ha fatto: magazzino.scaricaMerce(id, qta),
@@ -57,6 +61,7 @@ public class MemoryArticoloDAO implements ArticoloDAO {
         // Qui non dobbiamo fare nulla di pratico, ma per simulare un DAO reale potremmo fare:
         Magazzino.getInstance().aggiungiArticolo(articolo); // Sovrascrive/Conferma
         System.out.println("DEMO: Scorta salvata (in RAM) per articolo " + articolo.leggiId());
+        return true;
     }
 
     @Override

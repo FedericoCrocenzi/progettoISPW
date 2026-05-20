@@ -15,6 +15,7 @@ import it.ispw.project.sessionManager.SessionManager;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -145,6 +146,26 @@ public class AcquistaArticoloControllerApplicativo {
         }
     }
 
+    public void diminuisciQuantitaArticoloDalCarrello(String sessionId, ArticoloBean articoloBean, int quantita) {
+        if (articoloBean == null || quantita <= 0) {
+            throw new IllegalArgumentException("Quantita non valida.");
+        }
+
+        Carrello carrello = recuperaCarrelloDaSessione(sessionId);
+
+        Articolo articoloDaDiminuire = null;
+        for (Articolo a : carrello.getListaArticoli().keySet()) {
+            if (a.leggiId() == articoloBean.getId()) {
+                articoloDaDiminuire = a;
+                break;
+            }
+        }
+
+        if (articoloDaDiminuire != null) {
+            carrello.diminuisciQuantita(articoloDaDiminuire, quantita);
+        }
+    }
+
     public CarrelloBean visualizzaCarrello(String sessionId) {
         Carrello carrello = recuperaCarrelloDaSessione(sessionId);
 
@@ -187,8 +208,14 @@ public class AcquistaArticoloControllerApplicativo {
         Carrello carrello = session.getCarrelloCorrente();
         Utente utenteCorrente = session.getUtenteCorrente();
 
+        if (carrello.getListaArticoli().isEmpty()) {
+            throw new PaymentException("Il carrello è vuoto.");
+        }
+
         if (datiPagamento == null)
             throw new PaymentException("Dati pagamento mancanti.");
+
+        validaDatiPagamento(datiPagamento);
 
         if (Math.abs(datiPagamento.getImportoDaPagare() - carrello.calcolaTotale()) > 0.01)
             throw new PaymentException("Errore importo: il totale è cambiato.");
@@ -197,7 +224,7 @@ public class AcquistaArticoloControllerApplicativo {
                 0,
                 new Date(),
                 utenteCorrente,
-                carrello.getListaArticoli(),
+                new HashMap<>(carrello.getListaArticoli()),
                 carrello.calcolaTotale()
         );
         ordine.setStato("IN_ATTESA");
@@ -207,21 +234,102 @@ public class AcquistaArticoloControllerApplicativo {
         ArticoloDAO articoloDAO = factory.getArticoloDAO();
         Magazzino magazzino = Magazzino.getInstance();
 
-        ordineDAO.insertOrdine(ordine);
-
-        for (Map.Entry<Articolo, Integer> entry : carrello.getListaArticoli().entrySet()) {
-            Articolo art = entry.getKey();
-            int quantitaAcquistata = entry.getValue();
-
-            magazzino.scaricaMerce(art.leggiId(), quantitaAcquistata);
-            articoloDAO.updateScorta(art);
+        if (!magazzino.verificaCoperturaOrdine(ordine)) {
+            throw new PaymentException("Scorte insufficienti per completare l'acquisto.");
         }
 
-        GestoreNotifiche.getInstance().inviaNotificaNuovoOrdine(ordine);
+        ordineDAO.insertOrdine(ordine);
+        magazzino.scaricaMerceOrdine(ordine);
+
+        // Il Magazzino applica la regola di dominio; il DAO persiste lo stato risultante.
+        List<Articolo> articoliPersistiti = new ArrayList<>();
+        for (Articolo art : ordine.getArticoli().keySet()) {
+            boolean scortaAggiornata;
+            try {
+                scortaAggiornata = articoloDAO.updateScorta(art);
+            } catch (RuntimeException e) {
+                magazzino.ripristinaMerceOrdine(ordine);
+                ripristinaScortePersistite(articoloDAO, articoliPersistiti);
+                throw new DAOException("Errore durante l'aggiornamento delle scorte.", e);
+            }
+
+            if (!scortaAggiornata) {
+                magazzino.ripristinaMerceOrdine(ordine);
+                ripristinaScortePersistite(articoloDAO, articoliPersistiti);
+                throw new DAOException("Aggiornamento scorte non riuscito. Acquisto annullato.");
+            }
+            articoliPersistiti.add(art);
+        }
+
+        OrdineBean ordineBean = convertiOrdineInBean(ordine);
+        GestoreNotifiche.getInstance().inviaNotificaNuovoOrdine(ordineBean);
         session.setUltimoOrdineCreato(ordine);
         carrello.svuota();
 
-        return convertiOrdineInBean(ordine);
+        return ordineBean;
+    }
+
+    private void ripristinaScortePersistite(ArticoloDAO articoloDAO, List<Articolo> articoliPersistiti)
+            throws DAOException {
+        for (Articolo art : articoliPersistiti) {
+            if (!articoloDAO.updateScorta(art)) {
+                throw new DAOException("Rollback persistente delle scorte non riuscito.");
+            }
+        }
+    }
+
+    private void validaDatiPagamento(PagamentoBean datiPagamento) throws PaymentException {
+        String metodo = datiPagamento.getMetodoPagamento();
+        if (metodo == null || metodo.isBlank()) {
+            throw new PaymentException("Seleziona un metodo di pagamento.");
+        }
+
+        if ("CARTA_CREDITO".equals(metodo)) {
+            if (isBlank(datiPagamento.getIntestatario())
+                    || isBlank(datiPagamento.getNumeroCarta())
+                    || isBlank(datiPagamento.getDataScadenza())
+                    || isBlank(datiPagamento.getCvv())) {
+                throw new PaymentException("Inserisci tutti i dati della carta.");
+            }
+
+            String numeroCarta = datiPagamento.getNumeroCarta().replaceAll("\\s+", "");
+            if (!numeroCarta.matches("\\d{13,19}")) {
+                throw new PaymentException("Numero carta non valido.");
+            }
+
+            if (!datiPagamento.getDataScadenza().matches("(0[1-9]|1[0-2])/\\d{2}")) {
+                throw new PaymentException("Data di scadenza non valida.");
+            }
+
+            if (!datiPagamento.getCvv().matches("\\d{3,4}")) {
+                throw new PaymentException("CVV non valido.");
+            }
+        } else if ("PAYPAL".equals(metodo)) {
+            validaDatiPaypal(datiPagamento);
+        } else if (!"CONTANTI_CONSEGNA".equals(metodo)) {
+            throw new PaymentException("Metodo di pagamento non valido.");
+        }
+    }
+
+    private void validaDatiPaypal(PagamentoBean datiPagamento) throws PaymentException {
+        String email = datiPagamento.getEmailPaypal();
+        String confermaEmail = datiPagamento.getConfermaEmailPaypal();
+
+        if (isBlank(email) || isBlank(confermaEmail)) {
+            throw new PaymentException("Inserisci e conferma l'email PayPal.");
+        }
+
+        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            throw new PaymentException("Email PayPal non valida.");
+        }
+
+        if (!email.equalsIgnoreCase(confermaEmail)) {
+            throw new PaymentException("Le email PayPal non coincidono.");
+        }
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     // -----------------------------------------------------------------
@@ -231,7 +339,7 @@ public class AcquistaArticoloControllerApplicativo {
     public List<OrdineBean> recuperaOrdiniPendenti() throws DAOException {
         DAOFactory factory = DAOFactory.getDAOFactory();
         OrdineDAO ordineDAO = factory.getOrdineDAO();
-        List<Ordine> ordini = ordineDAO.findAll();
+        List<Ordine> ordini = ordineDAO.findByStato("IN_ATTESA");
 
         List<OrdineBean> beans = new ArrayList<>();
         for (Ordine o : ordini) {
@@ -258,12 +366,32 @@ public class AcquistaArticoloControllerApplicativo {
         OrdineDAO ordineDAO = factory.getOrdineDAO();
         Ordine ordine = ordineDAO.selectOrdineById(idOrdine);
 
-        if (ordine != null) {
-            ordine.setStato("PRONTO");
-            ordineDAO.updateStato(ordine);
-            GestoreNotifiche.getInstance()
-                    .inviaMessaggio("MERCE_PRONTA: Ordine #" + idOrdine);
+        if (ordine == null || !"IN_ATTESA".equals(ordine.getStato())) {
+            return;
         }
+
+        ordine.setStato("PRONTO");
+        ordineDAO.updateStato(ordine);
+        GestoreNotifiche.getInstance().inviaNotificaMercePronta(creaNotificaOrdine(ordine));
+    }
+
+    public List<NotificaOrdineBean> recuperaNotificheMercePronta(String sessionId) {
+        Session session = SessionManager.getInstance().getSession(sessionId);
+        if (session == null) {
+            return new ArrayList<>();
+        }
+        return GestoreNotifiche.getInstance().getNotificheMerceProntaPerCliente(session.getUserId());
+    }
+
+    public boolean notificaDestinataAllaSessione(String sessionId, NotificaOrdineBean notifica) {
+        Session session = SessionManager.getInstance().getSession(sessionId);
+        return session != null
+                && notifica != null
+                && session.getUserId() == notifica.getIdCliente();
+    }
+
+    public void confermaLetturaNotificaMercePronta(int idOrdine) {
+        GestoreNotifiche.getInstance().rimuoviNotificaMercePronta(idOrdine);
     }
 
     // -----------------------------------------------------------------
@@ -302,6 +430,37 @@ public class AcquistaArticoloControllerApplicativo {
         b.setDataCreazione(o.getDataCreazione());
         b.setTotale(o.getTotale());
         b.setStato(o.getStato());
+
+        if (o.getCliente() != null) {
+            UtenteBean clienteBean = new UtenteBean();
+            clienteBean.setId(o.getCliente().ottieniId());
+            clienteBean.setUsername(o.getCliente().leggiUsername());
+            clienteBean.setEmail(o.getCliente().leggiEmail());
+            clienteBean.setIndirizzo(o.getCliente().leggiIndirizzo());
+            clienteBean.setRuolo(o.getCliente().scopriRuolo());
+            b.setCliente(clienteBean);
+        }
+
+        List<ArticoloBean> articoliBean = new ArrayList<>();
+        if (o.getArticoli() != null) {
+            for (Map.Entry<Articolo, Integer> entry : o.getArticoli().entrySet()) {
+                ArticoloBean articoloBean = convertiModelInBean(entry.getKey());
+                articoloBean.setQuantita(entry.getValue());
+                articoliBean.add(articoloBean);
+            }
+        }
+        b.setArticoli(articoliBean);
         return b;
+    }
+
+    private NotificaOrdineBean creaNotificaOrdine(Ordine ordine) {
+        NotificaOrdineBean notifica = new NotificaOrdineBean();
+        notifica.setIdOrdine(ordine.leggiId());
+        notifica.setStato(ordine.getStato());
+        if (ordine.getCliente() != null) {
+            notifica.setIdCliente(ordine.getCliente().ottieniId());
+        }
+        notifica.setOrdine(convertiOrdineInBean(ordine));
+        return notifica;
     }
 }

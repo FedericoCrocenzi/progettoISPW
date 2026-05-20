@@ -1,13 +1,14 @@
 package it.ispw.project.dao;
 
+import it.ispw.project.exception.DAOException;
 import it.ispw.project.model.Ordine;
-import java.util.List; // Importa List
+import java.util.List;
 
 public interface OrdineDAO {
-    void insertOrdine(Ordine ordine);
-    Ordine selectOrdineById(int id);
-    void updateStato(Ordine ordine);
+    void insertOrdine(Ordine ordine) throws DAOException;
+    Ordine selectOrdineById(int id) throws DAOException;
+    void updateStato(Ordine ordine) throws DAOException;
 
-    // --- NUOVO METODO ---
-    List<Ordine> findAll();
+    List<Ordine> findAll() throws DAOException;
+    List<Ordine> findByStato(String stato) throws DAOException;
 }

@@ -9,35 +9,83 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+<AnchorPane xmlns="http://javafx.com/javafx/25"
+            xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="it.ispw.project.graphicController.OrdineCommessoGraphicController">
+
     <children>
-        <AnchorPane prefHeight="400.0" prefWidth="500.0" style="-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-background-radius: 15; -fx-background-color: #f8f9fa;"
-                    AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <AnchorPane prefHeight="400.0"
+                    prefWidth="500.0"
+                    style="-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
+                           -fx-background-radius: 15;
+                           -fx-background-color: #f8f9fa;"
+                    AnchorPane.topAnchor="0.0"
+                    AnchorPane.bottomAnchor="0.0"
+                    AnchorPane.leftAnchor="0.0"
+                    AnchorPane.rightAnchor="0.0">
+
             <children>
-                <Label fx:id="lblTitoloOrdine" layoutX="14.0" layoutY="14.0" text=" ORDINE N°" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0">
+
+                <!-- Titolo -->
+                <Label fx:id="lblTitoloOrdine"
+                       text=" ORDINE N°"
+                       AnchorPane.leftAnchor="10.0"
+                       AnchorPane.topAnchor="10.0">
                     <font>
-                        <Font name="System Bold" size="24.0" />
+                        <Font name="System Bold" size="24.0"/>
                     </font>
                 </Label>
 
-                <ScrollPane fitToWidth="true" layoutX="11.2" layoutY="66.0" prefHeight="274.0" prefWidth="439.0" AnchorPane.bottomAnchor="75.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="50.0">
+                <!-- Lista articoli -->
+                <ScrollPane fitToWidth="true"
+                            AnchorPane.topAnchor="50.0"
+                            AnchorPane.bottomAnchor="75.0"
+                            AnchorPane.leftAnchor="10.0"
+                            AnchorPane.rightAnchor="10.0">
+
                     <content>
-                        <VBox fx:id="vboxArticoli" prefHeight="294.0" prefWidth="450.0" spacing="15.0">
+                        <VBox fx:id="vboxArticoli"
+                              spacing="15.0"
+                              prefWidth="450.0">
                             <padding>
-                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
                             </padding>
                         </VBox>
                     </content>
                 </ScrollPane>
 
-                <Button fx:id="btnChiudi" onAction="#onChiudiClick" layoutX="444.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="42.0" style="-fx-background-color: trasparent; -fx-font-weight: bold; -fx-text-fill: #999999; -fx-font-size: 18; -fx-cursor: hand;" text="X" textFill="#125332" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                <!-- Bottone Chiudi -->
+                <Button fx:id="btnChiudi"
+                        text="X"
+                        onAction="#onChiudiClick"
+                        prefHeight="26.0"
+                        prefWidth="42.0"
+                        AnchorPane.topAnchor="0.0"
+                        AnchorPane.rightAnchor="0.0"
+                        style="
+                            -fx-background-color: transparent;
+                            -fx-font-weight: bold;
+                            -fx-text-fill: #999999;
+                            -fx-font-size: 18;
+                            -fx-cursor: hand;
+                        "/>
 
-                <StackPane layoutX="14.0" layoutY="362.0" prefHeight="64.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                <!-- Bottone Ordine Pronto -->
+                <StackPane prefHeight="64.0"
+                           AnchorPane.bottomAnchor="0.0"
+                           AnchorPane.leftAnchor="0.0"
+                           AnchorPane.rightAnchor="0.0">
+
                     <children>
-                        <Button fx:id="btnOrdinePronto" onAction="#onOrdineProntoClick" mnemonicParsing="false" styleClass="bottone-giallo" stylesheets="@../style.css" text="Ordine Pronto" />
+                        <Button fx:id="btnOrdinePronto"
+                                text="Ordine Pronto"
+                                onAction="#onOrdineProntoClick"
+                                mnemonicParsing="false"
+                                styleClass="bottone-giallo"
+                                stylesheets="@../style.css"/>
                     </children>
                 </StackPane>
+
             </children>
         </AnchorPane>
     </children>

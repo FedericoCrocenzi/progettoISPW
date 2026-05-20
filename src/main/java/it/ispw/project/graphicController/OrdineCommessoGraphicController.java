@@ -17,7 +17,12 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class OrdineCommessoGraphicController {
+
+    private static final Logger LOGGER = Logger.getLogger(OrdineCommessoGraphicController.class.getName());
 
     @FXML
     private Label lblTitoloOrdine;
@@ -148,11 +153,16 @@ public class OrdineCommessoGraphicController {
             // 2. Mostra feedback
             mostraInfo("Ordine Aggiornato", "L'ordine #" + ordineCorrente.getId() + " è pronto e il cliente è stato notificato.");
 
+            if (parentController != null) {
+                parentController.caricaOrdini();
+            }
+
             // 3. Chiudi la finestra
             chiudiFinestra();
 
         } catch (DAOException e) {
-            mostraErrore("Errore", "Impossibile aggiornare l'ordine: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Errore durante aggiornamento stato ordine da dettaglio.", e);
+            mostraErrore("Errore", "Impossibile aggiornare l'ordine. Riprova piu' tardi.");
         }
     }
 

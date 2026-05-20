@@ -63,4 +63,7 @@ public class Queries {
             "SELECT * FROM riga_ordine WHERE id_ordine = ?";
     public static final String SELECT_ALL_ORDINI =
             "SELECT * FROM ordine ORDER BY data_creazione DESC";
+
+    public static final String SELECT_ORDINI_BY_STATO =
+            "SELECT * FROM ordine WHERE stato = ? ORDER BY data_creazione DESC";
 }
