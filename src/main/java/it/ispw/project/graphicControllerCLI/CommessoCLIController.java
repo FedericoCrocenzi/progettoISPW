@@ -8,12 +8,11 @@ import java.util.List;
 
 public class CommessoCLIController extends CLIControllerBase {
 
-    private String sessionId;
     private AcquistaArticoloControllerApplicativo appController;
 
     @Override
     public void initData(String sessionId) {
-        this.sessionId = sessionId;
+        super.initData(sessionId);
         this.appController = new AcquistaArticoloControllerApplicativo();
     }
 

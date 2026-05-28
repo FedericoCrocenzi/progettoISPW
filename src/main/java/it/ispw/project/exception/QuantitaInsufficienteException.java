@@ -6,8 +6,4 @@ public class QuantitaInsufficienteException extends Exception {
         super(message);
     }
 
-    // Costruttore opzionale per passare anche i dettagli
-    public QuantitaInsufficienteException(String message, Throwable cause) {
-        super(message, cause);
-    }
 }
