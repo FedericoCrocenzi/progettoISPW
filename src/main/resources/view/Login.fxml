@@ -2,7 +2,6 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
@@ -11,10 +10,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-            prefHeight="400.0" prefWidth="600.0"
-            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="it.ispw.project.graphicController.LoginGraphicController">
+<AnchorPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.ispw.project.graphicController.LoginGraphicController">
 
     <children>
         <ImageView fitHeight="${rootPane.height}" fitWidth="${rootPane.width}" preserveRatio="false" smooth="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -28,35 +24,24 @@
                 <AnchorPane maxHeight="400.0" maxWidth="600.0" prefHeight="400.0" prefWidth="600.0">
                     <children>
 
-                        <TextField fx:id="txtUsername" layoutX="149.0" layoutY="149.0" prefHeight="38.0" prefWidth="302.0"
-                                   promptText="Indirizzo email" style="-fx-background-radius: 15;"
-                                   AnchorPane.bottomAnchor="212.79999999999998" AnchorPane.leftAnchor="149.0" AnchorPane.rightAnchor="148.8" AnchorPane.topAnchor="149.0" />
+                        <TextField fx:id="txtUsername" layoutX="149.0" layoutY="149.0" prefHeight="38.0" prefWidth="302.0" promptText="Indirizzo email" style="-fx-background-radius: 15;" AnchorPane.bottomAnchor="212.79999999999998" AnchorPane.leftAnchor="149.0" AnchorPane.rightAnchor="148.8" AnchorPane.topAnchor="149.0" />
 
-                        <Label layoutX="149.0" layoutY="245.0" text="Hai dimenticato la password?"
-                               textFill="IVORY" underline="true" AnchorPane.bottomAnchor="135.2" AnchorPane.leftAnchor="149.0" AnchorPane.rightAnchor="257.6" AnchorPane.topAnchor="245.0">
-                            <font>
-                                <Font name="System Bold" size="14.0" />
-                            </font>
-                        </Label>
-
-                        <PasswordField fx:id="txtPassword" layoutX="149.0" layoutY="200.0" prefHeight="38.0" prefWidth="302.0"
-                                       promptText="Password" style="-fx-background-radius: 15;"
-                                       AnchorPane.bottomAnchor="161.6" AnchorPane.leftAnchor="148.8" AnchorPane.rightAnchor="148.8" AnchorPane.topAnchor="200.0" />
+                        <PasswordField fx:id="txtPassword" layoutX="149.0" layoutY="200.0" prefHeight="38.0" prefWidth="302.0" promptText="Password" style="-fx-background-radius: 15;" AnchorPane.bottomAnchor="161.6" AnchorPane.leftAnchor="148.8" AnchorPane.rightAnchor="148.8" AnchorPane.topAnchor="200.0" />
+                  <Button graphicTextGap="1.0" layoutX="149.0" layoutY="242.0" mnemonicParsing="false" onAction="#onPasswordDimenticataClick" prefHeight="30.0" prefWidth="222.0" styleClass="login-link" stylesheets="@../style.css" text="Hai dimenticato la password?" underline="true" AnchorPane.bottomAnchor="128.0" AnchorPane.leftAnchor="149.0" AnchorPane.rightAnchor="229.0" AnchorPane.topAnchor="242.0">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Button>
+                  <Button graphicTextGap="1.0" layoutX="149.0" layoutY="323.0" mnemonicParsing="false" onAction="#onRegistratiClick" styleClass="login-link" stylesheets="@../style.css" text="Non hai un account? Registrati" underline="true">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Button>
 
                     </children>
                 </AnchorPane>
 
-                <Label text="Non hai un account? Registrati" textFill="IVORY" underline="true">
-                    <StackPane.margin>
-                        <Insets right="100.0" top="260.0" />
-                    </StackPane.margin>
-                    <font>
-                        <Font name="System Bold" size="14.0" />
-                    </font>
-                </Label>
-
-                <Button onAction="#onLoginClick" mnemonicParsing="false" prefHeight="20.0" prefWidth="302.0"
-                        styleClass="bottone-giallo" stylesheets="@../style.css" text="Accedi">
+                <Button mnemonicParsing="false" onAction="#onLoginClick" prefHeight="20.0" prefWidth="302.0" styleClass="bottone-giallo" stylesheets="@../style.css" text="Accedi">
                     <StackPane.margin>
                         <Insets top="200.0" />
                     </StackPane.margin>

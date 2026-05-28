@@ -27,7 +27,15 @@ public class ArticoloCLIController extends CLIControllerBase {
         }
 
         System.out.print("Quantità da aggiungere: ");
-        int qta = Integer.parseInt(scanner.nextLine());
+        int qta;
+        try {
+            qta = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Inserisci un numero valido.");
+            waitForEnter();
+            show();
+            return;
+        }
 
         try {
             AcquistaArticoloControllerApplicativo controller =

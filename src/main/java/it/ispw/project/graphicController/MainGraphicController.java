@@ -233,7 +233,7 @@ public class MainGraphicController implements ControllerGraficoBase, Observer {
                     "Merce Pronta",
                     "Il tuo ordine e' pronto per il ritiro.",
                     "Sono Qui",
-                    "/Image/icons-logistica.png",
+                    "/Image/order-purchase.png",
                     () -> appController.confermaLetturaNotificaMercePronta(notifica.getIdOrdine())
             );
 

@@ -13,13 +13,13 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="rootLayout" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="539.0" prefWidth="474.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.ispw.project.graphicController.MainGraphicController">
+<BorderPane fx:id="rootLayout" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="539.0" prefWidth="474.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.ispw.project.graphicController.MainGraphicController">
     <top>
-        <AnchorPane prefHeight="100.0" prefWidth="600.0" style="-fx-background-color: #125332; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5);" BorderPane.alignment="CENTER">
+        <AnchorPane prefHeight="125.0" prefWidth="474.0" style="-fx-background-color: #125332; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5);" BorderPane.alignment="CENTER">
             <children>
                 <AnchorPane layoutX="6.0" layoutY="64.0" prefHeight="30.0" prefWidth="326.0">
                     <children>
-                        <TextField fx:id="txtRicerca" layoutY="4.0" onAction="#cercaProdotti" prefHeight="31.0" prefWidth="332.0" promptText="Cerca prodotti agricoli, mangimi..." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <TextField fx:id="txtRicerca" layoutY="-0.19999999999999996" onAction="#cercaProdotti" prefHeight="31.0" prefWidth="332.0" promptText="Cerca prodotti agricoli, mangimi..." AnchorPane.bottomAnchor="0.1999999999999993" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-0.19999999999999996" />
 
                         <Button alignment="CENTER" contentDisplay="CENTER" layoutX="291.0" layoutY="2.0" mnemonicParsing="false" onAction="#cercaProdotti" prefHeight="28.0" prefWidth="40.0" styleClass="bottone-ricerca" stylesheets="@../style.css" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                             <graphic>
@@ -42,7 +42,7 @@
                         <Font name="System Bold" size="24.0" />
                     </font>
                 </Label>
-                <Button alignment="BOTTOM_CENTER" contentDisplay="TOP" layoutX="346.0" layoutY="40.0" mnemonicParsing="false" onAction="#scannerizzaBarcode" prefHeight="55.0" prefWidth="125.0" styleClass="btn-scanner" stylesheets="@../style.css" text="SCANNERIZZA BARcode" textAlignment="CENTER" textFill="WHITE" wrapText="true" AnchorPane.topAnchor="40.0">
+                <Button alignment="BOTTOM_CENTER" contentDisplay="TOP" layoutX="346.0" layoutY="57.0" mnemonicParsing="false" onAction="#scannerizzaBarcode" prefHeight="55.0" prefWidth="125.0" styleClass="btn-scanner" stylesheets="@../style.css" text="SCANNERIZZA BARcode" textAlignment="CENTER" textFill="WHITE" wrapText="true" AnchorPane.rightAnchor="9.0" AnchorPane.topAnchor="57.0">
                     <font>
                         <Font size="8.0" />
                     </font>
@@ -54,7 +54,7 @@
                         </ImageView>
                     </graphic>
                 </Button>
-                <Button contentDisplay="GRAPHIC_ONLY" layoutX="425.0" layoutY="4.0" mnemonicParsing="false" onAction="#logout" prefHeight="22.0" prefWidth="30.0" styleClass="btn-scanner" stylesheets="@../style.css" AnchorPane.rightAnchor="8.59999999999998" AnchorPane.topAnchor="4.0">
+                <Button contentDisplay="TOP" layoutX="425.0" layoutY="4.0" mnemonicParsing="false" onAction="#logout" prefHeight="42.0" prefWidth="62.0" styleClass="btn-scanner" stylesheets="@../style.css" text="Logout" AnchorPane.rightAnchor="9.0" AnchorPane.topAnchor="4.0">
                     <graphic>
                         <ImageView fitHeight="20.0" fitWidth="23.0">
                             <image>
@@ -62,6 +62,9 @@
                             </image>
                         </ImageView>
                     </graphic>
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
                 </Button>
             </children>
         </AnchorPane>

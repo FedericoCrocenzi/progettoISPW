@@ -2,9 +2,8 @@ package it.ispw.project.main;
 
 import it.ispw.project.config.PersistenceConfig;
 import it.ispw.project.dao.DAOFactory;
+import it.ispw.project.graphicControllerCLI.CLIControllerBase;
 import it.ispw.project.graphicControllerCLI.CLIViewNavigator;
-
-import java.util.Scanner;
 
 public class MainCLI {
 
@@ -16,8 +15,18 @@ public class MainCLI {
         System.out.println("2 - File System");
         System.out.println("3 - Demo (In memoria)");
 
-        Scanner scanner = new Scanner(System.in);
-        int choice = scanner.nextInt();
+        String input = CLIControllerBase.leggiLinea();
+        if (input == null) {
+            System.out.println("Chiusura applicazione.");
+            return;
+        }
+
+        int choice;
+        try {
+            choice = Integer.parseInt(input);
+        } catch (NumberFormatException e) {
+            choice = 3;
+        }
 
         switch (choice) {
             case 1:

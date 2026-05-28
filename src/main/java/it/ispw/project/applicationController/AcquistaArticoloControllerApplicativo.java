@@ -14,6 +14,7 @@ import it.ispw.project.sessionManager.Session;
 import it.ispw.project.sessionManager.SessionManager;
 
 import java.util.ArrayList;
+import java.time.YearMonth;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -121,13 +122,24 @@ public class AcquistaArticoloControllerApplicativo {
             magazzino.aggiungiArticolo(articoloModel);
         }
 
-        if (!magazzino.verificaDisponibilita(articoloModel.leggiId(), quantita)) {
+        int quantitaTotaleRichiesta = calcolaQuantitaNelCarrello(carrello, articoloModel.leggiId()) + quantita;
+        if (!magazzino.verificaDisponibilita(articoloModel.leggiId(), quantitaTotaleRichiesta)) {
             throw new QuantitaInsufficienteException(
                     "Quantità non disponibile. Scorta: " + articoloModel.ottieniScorta()
             );
         }
 
         carrello.aggiungiArticolo(articoloModel, quantita);
+    }
+
+    private int calcolaQuantitaNelCarrello(Carrello carrello, int idArticolo) {
+        int quantita = 0;
+        for (Map.Entry<Articolo, Integer> entry : carrello.getListaArticoli().entrySet()) {
+            if (entry.getKey().leggiId() == idArticolo) {
+                quantita += entry.getValue();
+            }
+        }
+        return quantita;
     }
 
     public void rimuoviArticoloDalCarrello(String sessionId, ArticoloBean articoloBean) {
@@ -285,29 +297,54 @@ public class AcquistaArticoloControllerApplicativo {
         }
 
         if ("CARTA_CREDITO".equals(metodo)) {
-            if (isBlank(datiPagamento.getIntestatario())
-                    || isBlank(datiPagamento.getNumeroCarta())
-                    || isBlank(datiPagamento.getDataScadenza())
-                    || isBlank(datiPagamento.getCvv())) {
-                throw new PaymentException("Inserisci tutti i dati della carta.");
-            }
-
-            String numeroCarta = datiPagamento.getNumeroCarta().replaceAll("\\s+", "");
-            if (!numeroCarta.matches("\\d{13,19}")) {
-                throw new PaymentException("Numero carta non valido.");
-            }
-
-            if (!datiPagamento.getDataScadenza().matches("(0[1-9]|1[0-2])/\\d{2}")) {
-                throw new PaymentException("Data di scadenza non valida.");
-            }
-
-            if (!datiPagamento.getCvv().matches("\\d{3,4}")) {
-                throw new PaymentException("CVV non valido.");
-            }
+            validaDatiCarta(datiPagamento);
         } else if ("PAYPAL".equals(metodo)) {
             validaDatiPaypal(datiPagamento);
         } else if (!"CONTANTI_CONSEGNA".equals(metodo)) {
             throw new PaymentException("Metodo di pagamento non valido.");
+        }
+    }
+
+    private void validaDatiCarta(PagamentoBean datiPagamento) throws PaymentException {
+        if (isBlank(datiPagamento.getIntestatario())
+                || isBlank(datiPagamento.getNumeroCarta())
+                || isBlank(datiPagamento.getDataScadenza())
+                || isBlank(datiPagamento.getCvv())) {
+            throw new PaymentException("Inserisci tutti i dati della carta.");
+        }
+
+        if (!datiPagamento.getIntestatario().trim().matches("^[\\p{L}][\\p{L}\\s'\\-]*$")) {
+            throw new PaymentException("Intestatario carta non valido.");
+        }
+
+        String numeroCarta = datiPagamento.getNumeroCarta().replaceAll("\\s+", "");
+        if (!numeroCarta.matches("\\d{13,19}")) {
+            throw new PaymentException("Numero carta non valido.");
+        }
+
+        validaScadenzaCarta(datiPagamento.getDataScadenza());
+
+        if (!datiPagamento.getCvv().matches("\\d{3,4}")) {
+            throw new PaymentException("CVV non valido.");
+        }
+    }
+
+    // Supporta i formati MM/YY e MM/YYYY.
+    private void validaScadenzaCarta(String dataScadenza) throws PaymentException {
+        if (!dataScadenza.matches("(0[1-9]|1[0-2])/(\\d{2}|\\d{4})")) {
+            throw new PaymentException("Data di scadenza non valida. Usa MM/YY o MM/YYYY.");
+        }
+
+        String[] parti = dataScadenza.split("/");
+        int mese = Integer.parseInt(parti[0]);
+        int anno = Integer.parseInt(parti[1]);
+        if (parti[1].length() == 2) {
+            anno += 2000;
+        }
+
+        YearMonth scadenza = YearMonth.of(anno, mese);
+        if (scadenza.isBefore(YearMonth.now())) {
+            throw new PaymentException("La carta risulta scaduta.");
         }
     }
 

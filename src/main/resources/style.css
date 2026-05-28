@@ -8,6 +8,22 @@
     -fx-cursor: hand;
 }
 
+.login-link {
+    -fx-background-color: transparent;
+    -fx-text-fill: ivory;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+
+.login-link:hover {
+    -fx-text-fill: #e8dfc8;
+}
+
+.login-link:pressed {
+    -fx-text-fill: #d6c89f;
+    -fx-translate-y: 1;
+}
+
 /* Stato QUANDO PASSI SOPRA (Hover) */
 .bottone-giallo:hover {
     -fx-background-color: #ffffa8; /* Un po' più chiaro */

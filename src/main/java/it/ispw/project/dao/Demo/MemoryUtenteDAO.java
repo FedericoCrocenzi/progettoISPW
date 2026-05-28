@@ -20,13 +20,13 @@ public class MemoryUtenteDAO implements UtenteDAO {
         // Utente 1: CLIENTE (Mario Rossi)
         // Login: "cliente" / "123"
         tabellaUtenti.add(new Utente(
-                1, "cliente", "123", "CLIENTE", "mario.rossi@email.it", "Via Roma 1"
+                1, "cliente", "123", "CLIENTE", "mario.rossi@gmail.com", "Via Roma 1"
         ));
 
         // Utente 2: COMMESSO (Luigi Verdi)
         // Login: "commesso" / "123"
         tabellaUtenti.add(new Utente(
-                2, "commesso", "123", "COMMESSO", "luigi.verdi@store.it", "Via Magazzino 4"
+                2, "commesso", "123", "COMMESSO", "luca.store@agricola.it", "None"
         ));
     }
 

@@ -150,7 +150,7 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
         imgView.setFitWidth(80);
         imgView.setPreserveRatio(true);
         try {
-            imgView.setImage(new Image(getClass().getResourceAsStream("/Image/icons-logistica.png")));
+            imgView.setImage(new Image(getClass().getResourceAsStream("/Image/order-purchase.png")));
         } catch (RuntimeException e) {
             imgView.setImage(null);
         }

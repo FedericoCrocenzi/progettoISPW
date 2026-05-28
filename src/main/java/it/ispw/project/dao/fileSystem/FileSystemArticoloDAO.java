@@ -12,9 +12,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FileSystemArticoloDAO implements ArticoloDAO {
 
+    private static final Logger LOGGER = Logger.getLogger(FileSystemArticoloDAO.class.getName());
     private static final String CSV_FILE_NAME = "articoli.csv";
     private static final SimpleDateFormat DATE_FMT = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -39,7 +42,7 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] d = line.split(";");
-                // Formato base: id;TIPO;descrizione;prezzo;scorta;[extra]
+                // Formato: id;TIPO;descrizione;prezzo;scorta;extra;[immagine_path]
 
                 int id = Integer.parseInt(d[0]);
                 String tipo = d[1];
@@ -63,10 +66,15 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
                         break;
                 }
 
-                if (art != null) catalogo.add(art);
+                if (art != null) {
+                    if (d.length > 6 && !d[6].isBlank()) {
+                        art.setImmaginePath(d[6]);
+                    }
+                    catalogo.add(art);
+                }
             }
         } catch (IOException | ParseException | NumberFormatException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore lettura file articoli.", e);
         }
         return catalogo;
     }
@@ -156,12 +164,15 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
                     sb.append(((Fitofarmaco) a).isRichiedePatentino());
                 }
 
+                sb.append(";");
+                sb.append(a.getImmaginePath() != null ? a.getImmaginePath() : "");
+
                 bw.write(sb.toString());
                 bw.newLine();
             }
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore scrittura file articoli.", e);
             return false;
         }
     }

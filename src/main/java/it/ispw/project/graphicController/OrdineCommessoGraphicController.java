@@ -17,6 +17,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -90,14 +91,7 @@ public class OrdineCommessoGraphicController {
         imgView.setLayoutX(5.0);
         imgView.setLayoutY(6.0);
         imgView.setPreserveRatio(true);
-        // Carica immagine o placeholder
-        try {
-            // Se nel bean c'è un path immagine, usalo, altrimenti usa default
-            // String path = articolo.getImmaginePath() != null ? articolo.getImmaginePath() : "/Image/logo1.png";
-            imgView.setImage(new Image(getClass().getResourceAsStream("/Image/logo1.png")));
-        } catch (Exception e) {
-            // Ignora errori di caricamento immagine
-        }
+        caricaImmagineArticolo(imgView, articolo.getImmaginePath());
 
         // Nome Articolo
         Label lblNome = new Label(articolo.getDescrizione());
@@ -140,6 +134,21 @@ public class OrdineCommessoGraphicController {
         */
 
         return anchor;
+    }
+
+    private void caricaImmagineArticolo(ImageView imgView, String path) {
+        String imagePath = (path == null || path.isBlank()) ? "/Image/logo1.png" : path;
+        try {
+            InputStream is = getClass().getResourceAsStream(imagePath);
+            if (is == null) {
+                is = getClass().getResourceAsStream("/Image/logo1.png");
+            }
+            if (is != null) {
+                imgView.setImage(new Image(is));
+            }
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.FINE, "Immagine articolo ordine non disponibile.", e);
+        }
     }
 
     @FXML

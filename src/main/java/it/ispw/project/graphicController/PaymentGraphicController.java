@@ -22,6 +22,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.time.YearMonth;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -203,29 +204,54 @@ public class PaymentGraphicController implements ControllerGraficoBase {
         }
 
         if ("CARTA_CREDITO".equals(metodo)) {
-            if (isBlank(pagamentoBean.getIntestatario())
-                    || isBlank(pagamentoBean.getNumeroCarta())
-                    || isBlank(pagamentoBean.getDataScadenza())
-                    || isBlank(pagamentoBean.getCvv())) {
-                throw new PaymentException("Inserisci tutti i dati della carta.");
-            }
-
-            String numeroCarta = pagamentoBean.getNumeroCarta().replaceAll("\\s+", "");
-            if (!numeroCarta.matches("\\d{13,19}")) {
-                throw new PaymentException("Numero carta non valido.");
-            }
-
-            if (!pagamentoBean.getDataScadenza().matches("(0[1-9]|1[0-2])/\\d{2}")) {
-                throw new PaymentException("Data di scadenza non valida.");
-            }
-
-            if (!pagamentoBean.getCvv().matches("\\d{3,4}")) {
-                throw new PaymentException("CVV non valido.");
-            }
+            validaDatiCarta(pagamentoBean);
             return;
         }
 
         throw new PaymentException("Metodo di pagamento non valido.");
+    }
+
+    private void validaDatiCarta(PagamentoBean pagamentoBean) throws PaymentException {
+        if (isBlank(pagamentoBean.getIntestatario())
+                || isBlank(pagamentoBean.getNumeroCarta())
+                || isBlank(pagamentoBean.getDataScadenza())
+                || isBlank(pagamentoBean.getCvv())) {
+            throw new PaymentException("Inserisci tutti i dati della carta.");
+        }
+
+        if (!pagamentoBean.getIntestatario().trim().matches("^[\\p{L}][\\p{L}\\s'\\-]*$")) {
+            throw new PaymentException("Intestatario carta non valido.");
+        }
+
+        String numeroCarta = pagamentoBean.getNumeroCarta().replaceAll("\\s+", "");
+        if (!numeroCarta.matches("\\d{13,19}")) {
+            throw new PaymentException("Numero carta non valido.");
+        }
+
+        validaScadenzaCarta(pagamentoBean.getDataScadenza());
+
+        if (!pagamentoBean.getCvv().matches("\\d{3,4}")) {
+            throw new PaymentException("CVV non valido.");
+        }
+    }
+
+    // La UI invia la scadenza come MM/YY o MM/YYYY.
+    private void validaScadenzaCarta(String dataScadenza) throws PaymentException {
+        if (!dataScadenza.matches("(0[1-9]|1[0-2])/(\\d{2}|\\d{4})")) {
+            throw new PaymentException("Data di scadenza non valida. Usa MM/YY o MM/YYYY.");
+        }
+
+        String[] parti = dataScadenza.split("/");
+        int mese = Integer.parseInt(parti[0]);
+        int anno = Integer.parseInt(parti[1]);
+        if (parti[1].length() == 2) {
+            anno += 2000;
+        }
+
+        YearMonth scadenza = YearMonth.of(anno, mese);
+        if (scadenza.isBefore(YearMonth.now())) {
+            throw new PaymentException("La carta risulta scaduta.");
+        }
     }
 
     private void validaDatiPaypal(PagamentoBean pagamentoBean) throws PaymentException {

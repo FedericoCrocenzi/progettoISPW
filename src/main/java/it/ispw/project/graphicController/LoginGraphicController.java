@@ -89,8 +89,18 @@ public class LoginGraphicController {
     }
 
     @FXML
+    public void onPasswordDimenticataClick() {
+        mostraFunzionalitaNonImplementata();
+    }
+
+    @FXML
     public void onRegistratiClick() {
-        System.out.println("Navigazione verso registrazione (Non implementata)...");
-        // Qui potresti aggiungere: ViewSwitcher.switchTo("Registrazione.fxml", null, stage);
+        mostraFunzionalitaNonImplementata();
+    }
+
+    private void mostraFunzionalitaNonImplementata() {
+        mostraAlert("Funzionalita non disponibile",
+                "Funzionalità non ancora implementata.",
+                Alert.AlertType.INFORMATION);
     }
 }

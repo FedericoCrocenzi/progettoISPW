@@ -11,12 +11,21 @@ public class LoginCLIController extends CLIControllerBase {
     @Override
     public void show() {
         System.out.println("=== LOGIN ===");
+        System.out.println("0 - Esci");
 
         System.out.print("Username: ");
-        String username = scanner.nextLine();
+        String username = leggiLinea();
+        if (username == null || "0".equals(username.trim())) {
+            chiudiApplicazione();
+            return;
+        }
 
         System.out.print("Password: ");
-        String password = scanner.nextLine();
+        String password = leggiLinea();
+        if (password == null) {
+            chiudiApplicazione();
+            return;
+        }
 
         LoginBean bean = new LoginBean();
         bean.setUsername(username);
