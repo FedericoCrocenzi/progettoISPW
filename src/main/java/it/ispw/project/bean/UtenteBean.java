@@ -12,8 +12,6 @@ public class UtenteBean {
     private String indirizzo;
     private String sessionId;
 
-    public UtenteBean() {}
-
     // --- Getters & Setters ---
 
     public int getId() { return id; }

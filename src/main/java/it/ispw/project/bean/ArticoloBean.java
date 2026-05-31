@@ -24,9 +24,6 @@ public class ArticoloBean {
     // Appartiene a: Fitofarmaco
     private boolean servePatentino;
 
-    // --- Costruttore Vuoto (Best Practice per i Bean) ---
-    public ArticoloBean() {}
-
     // --- Getters e Setters ---
 
     public int getId() { return id; }

@@ -23,6 +23,8 @@ import java.util.Map;
 
 public class AcquistaArticoloControllerApplicativo {
 
+    private static final String STATO_ORDINE_IN_ATTESA = "IN_ATTESA";
+
     public AcquistaArticoloControllerApplicativo() {
         // Costruttore vuoto (Stateless)
     }
@@ -239,7 +241,7 @@ public class AcquistaArticoloControllerApplicativo {
                 new HashMap<>(carrello.getListaArticoli()),
                 carrello.calcolaTotale()
         );
-        ordine.setStato("IN_ATTESA");
+        ordine.setStato(STATO_ORDINE_IN_ATTESA);
 
         DAOFactory factory = DAOFactory.getDAOFactory();
         OrdineDAO ordineDAO = factory.getOrdineDAO();
@@ -372,7 +374,7 @@ public class AcquistaArticoloControllerApplicativo {
     public List<OrdineBean> recuperaOrdiniPendenti() throws DAOException {
         DAOFactory factory = DAOFactory.getDAOFactory();
         OrdineDAO ordineDAO = factory.getOrdineDAO();
-        List<Ordine> ordini = ordineDAO.findByStato("IN_ATTESA");
+        List<Ordine> ordini = ordineDAO.findByStato(STATO_ORDINE_IN_ATTESA);
 
         List<OrdineBean> beans = new ArrayList<>();
         for (Ordine o : ordini) {
@@ -399,7 +401,7 @@ public class AcquistaArticoloControllerApplicativo {
         OrdineDAO ordineDAO = factory.getOrdineDAO();
         Ordine ordine = ordineDAO.selectOrdineById(idOrdine);
 
-        if (ordine == null || !"IN_ATTESA".equals(ordine.getStato())) {
+        if (ordine == null || !STATO_ORDINE_IN_ATTESA.equals(ordine.getStato())) {
             return;
         }
 

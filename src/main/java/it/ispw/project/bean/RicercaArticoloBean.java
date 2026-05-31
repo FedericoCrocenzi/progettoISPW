@@ -12,8 +12,6 @@ public class RicercaArticoloBean {
     private Double prezzoMin;
     private Double prezzoMax;
 
-    public RicercaArticoloBean() {}
-
     // --- Getters & Setters ---
 
     public String getTestoRicerca() { return testoRicerca; }

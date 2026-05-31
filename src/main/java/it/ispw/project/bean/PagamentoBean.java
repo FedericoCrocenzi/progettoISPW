@@ -15,9 +15,6 @@ public class PagamentoBean {
     private String emailPaypal;
     private String passwordPaypal;
 
-    // Costruttore vuoto
-    public PagamentoBean() {}
-
     // --- Getters & Setters ---
 
     public String getMetodoPagamento() { return metodoPagamento; }

@@ -16,8 +16,6 @@ public class OrdineBean {
     // Cosa ha comprato?
     private List<ArticoloBean> articoli;
 
-    public OrdineBean() {}
-
     // --- Getters & Setters ---
 
     public int getId() { return id; }
