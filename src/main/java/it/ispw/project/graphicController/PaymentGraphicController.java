@@ -14,6 +14,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
@@ -36,7 +37,7 @@ public class PaymentGraphicController implements ControllerGraficoBase {
     @FXML private TextField txtScadenzaAnno;
     @FXML private TextField txtCvv;
     @FXML private TextField txtEmailPaypal;
-    @FXML private TextField txtConfermaEmailPaypal;
+    @FXML private PasswordField txtPasswordPaypal;
 
     @FXML private RadioButton rbCarta;
     @FXML private RadioButton rbPaypal;
@@ -98,7 +99,7 @@ public class PaymentGraphicController implements ControllerGraficoBase {
             } else if (rbPaypal.isSelected()) {
                 pagamentoBean.setMetodoPagamento("PAYPAL");
                 pagamentoBean.setEmailPaypal(testoCampo(txtEmailPaypal));
-                pagamentoBean.setConfermaEmailPaypal(testoCampo(txtConfermaEmailPaypal));
+                pagamentoBean.setPasswordPaypal(testoCampo(txtPasswordPaypal));
             } else {
                 pagamentoBean.setMetodoPagamento("CONTANTI_CONSEGNA");
             }
@@ -256,18 +257,14 @@ public class PaymentGraphicController implements ControllerGraficoBase {
 
     private void validaDatiPaypal(PagamentoBean pagamentoBean) throws PaymentException {
         String email = pagamentoBean.getEmailPaypal();
-        String confermaEmail = pagamentoBean.getConfermaEmailPaypal();
+        String password = pagamentoBean.getPasswordPaypal();
 
-        if (isBlank(email) || isBlank(confermaEmail)) {
-            throw new PaymentException("Inserisci e conferma l'email PayPal.");
+        if (isBlank(email) || isBlank(password)) {
+            throw new PaymentException("Inserisci email e password PayPal.");
         }
 
         if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
             throw new PaymentException("Email PayPal non valida.");
-        }
-
-        if (!email.equalsIgnoreCase(confermaEmail)) {
-            throw new PaymentException("Le email PayPal non coincidono.");
         }
     }
 

@@ -24,9 +24,9 @@
                 <AnchorPane maxHeight="400.0" maxWidth="600.0" prefHeight="400.0" prefWidth="600.0">
                     <children>
 
-                        <TextField fx:id="txtUsername" layoutX="149.0" layoutY="149.0" prefHeight="38.0" prefWidth="302.0" promptText="Indirizzo email" style="-fx-background-radius: 15;" AnchorPane.bottomAnchor="212.79999999999998" AnchorPane.leftAnchor="149.0" AnchorPane.rightAnchor="148.8" AnchorPane.topAnchor="149.0" />
+                        <TextField fx:id="txtUsername" layoutX="149.0" layoutY="149.0" onAction="#onLoginClick" prefHeight="38.0" prefWidth="302.0" promptText="Indirizzo email" style="-fx-background-radius: 15;" AnchorPane.bottomAnchor="212.79999999999998" AnchorPane.leftAnchor="149.0" AnchorPane.rightAnchor="148.8" AnchorPane.topAnchor="149.0" />
 
-                        <PasswordField fx:id="txtPassword" layoutX="149.0" layoutY="200.0" prefHeight="38.0" prefWidth="302.0" promptText="Password" style="-fx-background-radius: 15;" AnchorPane.bottomAnchor="161.6" AnchorPane.leftAnchor="148.8" AnchorPane.rightAnchor="148.8" AnchorPane.topAnchor="200.0" />
+                        <PasswordField fx:id="txtPassword" layoutX="149.0" layoutY="200.0" onAction="#onLoginClick" prefHeight="38.0" prefWidth="302.0" promptText="Password" style="-fx-background-radius: 15;" AnchorPane.bottomAnchor="161.6" AnchorPane.leftAnchor="148.8" AnchorPane.rightAnchor="148.8" AnchorPane.topAnchor="200.0" />
                   <Button graphicTextGap="1.0" layoutX="149.0" layoutY="242.0" mnemonicParsing="false" onAction="#onPasswordDimenticataClick" prefHeight="30.0" prefWidth="222.0" styleClass="login-link" stylesheets="@../style.css" text="Hai dimenticato la password?" underline="true" AnchorPane.bottomAnchor="128.0" AnchorPane.leftAnchor="149.0" AnchorPane.rightAnchor="229.0" AnchorPane.topAnchor="242.0">
                      <font>
                         <Font name="System Bold" size="14.0" />
@@ -41,7 +41,7 @@
                     </children>
                 </AnchorPane>
 
-                <Button mnemonicParsing="false" onAction="#onLoginClick" prefHeight="20.0" prefWidth="302.0" styleClass="bottone-giallo" stylesheets="@../style.css" text="Accedi">
+                <Button defaultButton="true" mnemonicParsing="false" onAction="#onLoginClick" prefHeight="20.0" prefWidth="302.0" styleClass="bottone-giallo" stylesheets="@../style.css" text="Accedi">
                     <StackPane.margin>
                         <Insets top="200.0" />
                     </StackPane.margin>

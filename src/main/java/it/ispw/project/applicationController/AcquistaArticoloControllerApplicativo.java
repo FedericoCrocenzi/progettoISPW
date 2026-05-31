@@ -350,18 +350,14 @@ public class AcquistaArticoloControllerApplicativo {
 
     private void validaDatiPaypal(PagamentoBean datiPagamento) throws PaymentException {
         String email = datiPagamento.getEmailPaypal();
-        String confermaEmail = datiPagamento.getConfermaEmailPaypal();
+        String password = datiPagamento.getPasswordPaypal();
 
-        if (isBlank(email) || isBlank(confermaEmail)) {
-            throw new PaymentException("Inserisci e conferma l'email PayPal.");
+        if (isBlank(email) || isBlank(password)) {
+            throw new PaymentException("Inserisci email e password PayPal.");
         }
 
         if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
             throw new PaymentException("Email PayPal non valida.");
-        }
-
-        if (!email.equalsIgnoreCase(confermaEmail)) {
-            throw new PaymentException("Le email PayPal non coincidono.");
         }
     }
 

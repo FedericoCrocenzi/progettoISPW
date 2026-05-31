@@ -37,7 +37,7 @@ public class Main extends Application {
 
         // 2 Traduzione scelta → costante DAO
         switch (result.get()) {
-            case "FILE_SYSTEM":
+            case "FILESYSTEM":
                 PersistenceConfig.setPersistenceType(DAOFactory.FILESYSTEM);
                 break;
             case "JDBC":

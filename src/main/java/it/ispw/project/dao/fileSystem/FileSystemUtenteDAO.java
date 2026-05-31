@@ -31,23 +31,28 @@ public class FileSystemUtenteDAO implements UtenteDAO {
     @Override
     public Utente checkCredentials(String identifier, String password) throws DAOException {
         File file = new File(CSV_FILE_NAME);
+        String identifierNormalizzato = normalizza(identifier);
+        String passwordNormalizzata = normalizza(password);
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
-                String[] dati = line.split(SEPARATOR);
+                if (line.isBlank()) {
+                    continue;
+                }
+                String[] dati = line.split(SEPARATOR, -1);
 
                 // Controllo robustezza riga
                 if (dati.length >= 4) {
-                    String userFile = dati[1];
-                    String passFile = dati[2];
-                    String emailFile = (dati.length > 4 && !dati[4].equals("null")) ? dati[4] : null;
+                    String userFile = normalizza(dati[1]);
+                    String passFile = normalizza(dati[2]);
+                    String emailFile = estraiCampoOpzionale(dati, 4);
 
                     // Verifica: (Username == Input OR Email == Input) AND Password == Input
-                    boolean matchIdentifier = userFile.equals(identifier) ||
-                            (emailFile != null && emailFile.equals(identifier));
+                    boolean matchIdentifier = userFile.equals(identifierNormalizzato) ||
+                            (emailFile != null && emailFile.equals(identifierNormalizzato));
 
-                    if (matchIdentifier && passFile.equals(password)) {
+                    if (matchIdentifier && passFile.equals(passwordNormalizzata)) {
                         return parseUtente(dati);
                     }
                 }
@@ -69,7 +74,10 @@ public class FileSystemUtenteDAO implements UtenteDAO {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
-                String[] dati = line.split(SEPARATOR);
+                if (line.isBlank()) {
+                    continue;
+                }
+                String[] dati = line.split(SEPARATOR, -1);
                 if (dati.length >= 1) {
                     try {
                         int currentId = Integer.parseInt(dati[0]);
@@ -147,14 +155,27 @@ public class FileSystemUtenteDAO implements UtenteDAO {
 
     // --- Helper Privato per evitare duplicazione codice ---
     private Utente parseUtente(String[] dati) {
-        int id = Integer.parseInt(dati[0]);
-        String username = dati[1];
-        String password = dati[2];
-        String ruolo = dati[3];
+        int id = Integer.parseInt(normalizza(dati[0]));
+        String username = normalizza(dati[1]);
+        String password = normalizza(dati[2]);
+        String ruolo = normalizza(dati[3]);
 
-        String email = (dati.length > 4 && !dati[4].equals("null")) ? dati[4] : null;
-        String indirizzo = (dati.length > 5 && !dati[5].equals("null")) ? dati[5] : null;
+        String email = estraiCampoOpzionale(dati, 4);
+        String indirizzo = estraiCampoOpzionale(dati, 5);
 
         return new Utente(id, username, password, ruolo, email, indirizzo);
+    }
+
+    private String normalizza(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private String estraiCampoOpzionale(String[] dati, int indice) {
+        if (dati.length <= indice) {
+            return null;
+        }
+
+        String valore = normalizza(dati[indice]);
+        return valore.isEmpty() || "null".equalsIgnoreCase(valore) ? null : valore;
     }
 }

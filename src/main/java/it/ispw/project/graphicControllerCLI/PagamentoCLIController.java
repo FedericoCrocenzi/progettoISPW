@@ -85,8 +85,8 @@ public class PagamentoCLIController extends CLIControllerBase {
                 pagamento.setMetodoPagamento("PAYPAL");
                 System.out.print("Email PayPal: ");
                 pagamento.setEmailPaypal(scanner.nextLine().trim());
-                System.out.print("Conferma email PayPal: ");
-                pagamento.setConfermaEmailPaypal(scanner.nextLine().trim());
+                System.out.print("Password PayPal: ");
+                pagamento.setPasswordPaypal(scanner.nextLine().trim());
                 return pagamento;
             case "3":
                 pagamento.setMetodoPagamento("CONTANTI_CONSEGNA");

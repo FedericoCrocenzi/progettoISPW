@@ -10,6 +10,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,8 +34,7 @@ public class ViewSwitcher {
     }
 
     /**
-     * Metodo per cambiare il contenuto centrale (per menu laterale all'interno di MainView).
-     * Questo metodo non influenza il Full Screen perché non cambia la Scena intera.
+     * Cambia il contenuto centrale senza sostituire la Scene principale.
      */
     public void switchView(String fxmlPath, String sessionId) {
         try {
@@ -56,62 +56,32 @@ public class ViewSwitcher {
     }
 
     /**
-     * Metodo per il cambio SCENA COMPLETA (Login -> MainView, MainView -> Payment, ecc.)
-     * Mantiene lo stato FullScreen tra una vista e l'altra.
+     * Cambia schermata riusando la Scene esistente quando possibile.
      */
     public static void switchTo(String fxmlFileName, String sessionId, Stage stage) {
         try {
-            // 1. SALVA LO STATO ATTUALE PRIMA DI CAMBIARE SCENA
-            boolean wasFullScreen = stage.isFullScreen();
-            boolean wasMaximized = stage.isMaximized();
-            double previousWidth = stage.getWidth();
-            double previousHeight = stage.getHeight();
-            double previousX = stage.getX();
-            double previousY = stage.getY();
-
-            // Gestione percorso file
             String path = fxmlFileName.startsWith("/") ? fxmlFileName : "/view/" + fxmlFileName;
 
             FXMLLoader loader = new FXMLLoader(ViewSwitcher.class.getResource(path));
             Parent root = loader.load();
 
-            // Passaggio dati al controller (Init Data)
             Object controller = loader.getController();
             if (controller instanceof ControllerGraficoBase) {
                 ((ControllerGraficoBase) controller).initData(sessionId);
             }
 
-            // Creazione nuova Scena
-            Scene scene = new Scene(root);
-
-            // Carica CSS (se presente)
-            try {
-                scene.getStylesheets().add(ViewSwitcher.class.getResource("/style.css").toExternalForm());
-            } catch (Exception e) {
-                // Ignora se non trova il css o se il percorso è diverso
-            }
-
-            // IMPORTANTE: Registra nuovamente il tasto F11 sulla NUOVA scena
-            // Altrimenti nella nuova schermata il tasto smette di funzionare.
-            registraTastoFullScreen(scene, stage);
-
-            // Cambio Scena effettivo
-            stage.setScene(scene);
-            stage.show();
-
-            // 2. RIPRISTINA LO STATO SALVATO
-            // Questo va fatto DOPO stage.show(), perché il cambio scena resetta i flag.
-            if (wasFullScreen) {
-                stage.setFullScreen(true);
-            } else if (wasMaximized) {
-                // Se non era full screen, controlliamo se era almeno massimizzata
-                stage.setMaximized(true);
+            Scene scene = stage.getScene();
+            if (scene == null) {
+                scene = new Scene(root);
+                applicaCss(scene);
+                registraTastoFullScreen(scene, stage);
+                stage.setScene(scene);
             } else {
-                stage.setX(previousX);
-                stage.setY(previousY);
-                stage.setWidth(previousWidth);
-                stage.setHeight(previousHeight);
+                scene.setRoot(root);
+                applicaCss(scene);
             }
+
+            stage.show();
 
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Errore critico cambio scena: " + fxmlFileName, e);
@@ -119,7 +89,7 @@ public class ViewSwitcher {
     }
 
     /**
-     * Metodo Helper: Attiva la logica F11 su qualsiasi scena
+     * Attiva la logica F11 su una Scene.
      */
     public static void registraTastoFullScreen(Scene scene, Stage stage) {
         scene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
@@ -127,5 +97,17 @@ public class ViewSwitcher {
                 stage.setFullScreen(!stage.isFullScreen());
             }
         });
+    }
+
+    private static void applicaCss(Scene scene) {
+        URL cssResource = ViewSwitcher.class.getResource("/style.css");
+        if (cssResource == null) {
+            return;
+        }
+
+        String css = cssResource.toExternalForm();
+        if (!scene.getStylesheets().contains(css)) {
+            scene.getStylesheets().add(css);
+        }
     }
 }
