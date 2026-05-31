@@ -15,13 +15,13 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="539.0" prefWidth="474.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.ispw.project.graphicController.CommessoGraphicController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="539.0" prefWidth="474.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.ispw.project.graphic_controller.CommessoGraphicController">
     <top>
         <AnchorPane prefHeight="124.0" prefWidth="474.0" style="-fx-background-color: #125332; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5);" BorderPane.alignment="CENTER">
             <children>
                 <ImageView fitHeight="53.0" fitWidth="47.0" layoutX="7.0" layoutY="4.0" AnchorPane.leftAnchor="7.0" AnchorPane.topAnchor="4.0">
                     <image>
-                        <Image url="@../Image/logo1.png" />
+                        <Image url="@../image/logo1.png" />
                     </image>
                 </ImageView>
                 <Label layoutX="64.0" layoutY="13.0" prefHeight="35.0" prefWidth="282.0" text="AGRICENTER  CROCENZI" textAlignment="JUSTIFY" textFill="WHITE" AnchorPane.leftAnchor="64.0" AnchorPane.topAnchor="13.0">
@@ -36,7 +36,7 @@
                     <graphic>
                         <ImageView fitHeight="25.0" fitWidth="30.0">
                             <image>
-                                <Image url="@../Image/icons8-barcode-scanner-100.png" />
+                                <Image url="@../image/icons8-barcode-scanner-100.png" />
                             </image>
                         </ImageView>
                     </graphic>
@@ -45,7 +45,7 @@
                     <graphic>
                         <ImageView fitHeight="20.0" fitWidth="23.0">
                             <image>
-                                <Image url="@../Image/logout.png" />
+                                <Image url="@../image/logout.png" />
                             </image>
                         </ImageView>
                     </graphic>
@@ -63,7 +63,7 @@
                     <graphic>
                         <ImageView fitHeight="50.0" fitWidth="50.0">
                             <image>
-                                <Image url="@../Image/white-user-member.png" />
+                                <Image url="@../image/white-user-member.png" />
                             </image>
                         </ImageView>
                     </graphic>
@@ -75,7 +75,7 @@
                     <graphic>
                         <ImageView fitHeight="50.0" fitWidth="50.0">
                             <image>
-                                <Image url="@../Image/icons-logistica.png" />
+                                <Image url="@../image/icons-logistica.png" />
                             </image>
                         </ImageView>
                     </graphic>
@@ -103,7 +103,7 @@
                                 </Label>
                                 <ImageView fitHeight="86.0" fitWidth="75.0" pickOnBounds="true" preserveRatio="true">
                            <image>
-                              <Image url="@../Image/order-purchase.png" />
+                              <Image url="@../image/order-purchase.png" />
                            </image></ImageView>
                                 <Label text="Prezzo">
                                     <font>

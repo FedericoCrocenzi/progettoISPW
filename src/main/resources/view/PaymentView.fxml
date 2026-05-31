@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="450.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.ispw.project.graphicController.PaymentGraphicController">
+<AnchorPane prefHeight="450.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.ispw.project.graphic_controller.PaymentGraphicController">
 
     <children>
         <VBox alignment="TOP_CENTER" layoutX="20.0" layoutY="6.0" prefHeight="437.0" prefWidth="560.0" spacing="10.0" style="-fx-background-radius: 15; -fx-background-color: #F5F5F5; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5);" AnchorPane.bottomAnchor="6.8" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="6.0">
@@ -36,7 +36,7 @@
                             <graphic>
                                 <ImageView fitHeight="27.0" fitWidth="48.0" preserveRatio="true">
                                     <image>
-                                        <Image url="@../Image/arrow_icon.png" />
+                                        <Image url="@../image/arrow_icon.png" />
                                     </image>
                                 </ImageView>
                             </graphic>
@@ -81,7 +81,7 @@
                      <graphic>
                         <ImageView fitHeight="27.0" fitWidth="27.0" pickOnBounds="true" preserveRatio="true">
                            <image>
-                              <Image url="@../Image/fronte-carta-di-credito.png" />
+                              <Image url="@../image/fronte-carta-di-credito.png" />
                            </image>
                         </ImageView>
                      </graphic>
@@ -94,7 +94,7 @@
                      <graphic>
                         <ImageView fitHeight="27.0" fitWidth="27.0" pickOnBounds="true" preserveRatio="true">
                            <image>
-                              <Image url="@../Image/paypall_icon.png" />
+                              <Image url="@../image/paypall_icon.png" />
                            </image>
                         </ImageView>
                      </graphic>

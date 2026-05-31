@@ -10,12 +10,12 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.ispw.project.graphicController.LoginGraphicController">
+<AnchorPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.ispw.project.graphic_controller.LoginGraphicController">
 
     <children>
         <ImageView fitHeight="${rootPane.height}" fitWidth="${rootPane.width}" preserveRatio="false" smooth="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <image>
-                <Image url="@../Image/temaAgricenter1.png" />
+                <Image url="@../image/temaAgricenter1.png" />
             </image>
         </ImageView>
 

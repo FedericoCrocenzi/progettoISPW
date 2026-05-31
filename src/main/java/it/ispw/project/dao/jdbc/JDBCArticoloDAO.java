@@ -1,8 +1,8 @@
 package it.ispw.project.dao.jdbc;
 
 import it.ispw.project.dao.ArticoloDAO;
-import it.ispw.project.dao.dbConnection.DBConnection;
-import it.ispw.project.dao.dbConnection.Queries;
+import it.ispw.project.dao.db_connection.DBConnection;
+import it.ispw.project.dao.db_connection.Queries;
 import it.ispw.project.model.Articolo;
 import it.ispw.project.model.Fitofarmaco;
 import it.ispw.project.model.Mangime;
@@ -191,7 +191,7 @@ public class JDBCArticoloDAO implements ArticoloDAO {
 
         if (articolo != null) {
             if (imgPath == null || imgPath.trim().isEmpty()) {
-                imgPath = "/Image/default.png";
+                imgPath = "/image/default.png";
             }
             articolo.setImmaginePath(imgPath);
         }

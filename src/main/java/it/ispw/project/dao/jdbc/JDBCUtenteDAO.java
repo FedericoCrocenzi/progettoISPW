@@ -1,8 +1,8 @@
 package it.ispw.project.dao.jdbc;
 
 import it.ispw.project.dao.UtenteDAO;
-import it.ispw.project.dao.dbConnection.DBConnection;
-import it.ispw.project.dao.dbConnection.Queries;
+import it.ispw.project.dao.db_connection.DBConnection;
+import it.ispw.project.dao.db_connection.Queries;
 import it.ispw.project.exception.DAOException;
 import it.ispw.project.model.Utente;
 

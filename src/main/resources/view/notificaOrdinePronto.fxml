@@ -13,7 +13,7 @@
 <AnchorPane prefHeight="360.0" prefWidth="560.0"
             xmlns="http://javafx.com/javafx/25"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="it.ispw.project.graphicController.NotificaOrdineProntoGraphicController">
+            fx:controller="it.ispw.project.graphic_controller.NotificaOrdineProntoGraphicController">
    <children>
       <VBox spacing="12.0"
             style="-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.24), 12, 0, 0, 5); -fx-background-radius: 10; -fx-background-color: #F5F5F5;"

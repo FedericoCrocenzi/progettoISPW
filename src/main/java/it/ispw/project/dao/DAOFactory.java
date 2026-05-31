@@ -1,7 +1,7 @@
 package it.ispw.project.dao;
 
-import it.ispw.project.dao.Demo.DemoDAOFactory;
-import it.ispw.project.dao.fileSystem.FileSystemDAOFactory;
+import it.ispw.project.dao.demo.DemoDAOFactory;
+import it.ispw.project.dao.file_system.FileSystemDAOFactory;
 import it.ispw.project.dao.jdbc.JDBCDAOFactory;
 import it.ispw.project.config.PersistenceConfig;
 

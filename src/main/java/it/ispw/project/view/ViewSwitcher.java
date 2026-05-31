@@ -1,6 +1,6 @@
 package it.ispw.project.view;
 
-import it.ispw.project.graphicController.ControllerGraficoBase;
+import it.ispw.project.graphic_controller.ControllerGraficoBase;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;

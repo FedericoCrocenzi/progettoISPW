@@ -2,9 +2,9 @@ package it.ispw.project.main;
 
 import it.ispw.project.config.PersistenceConfig;
 import it.ispw.project.dao.DAOFactory;
-import it.ispw.project.graphicControllerCLI.CLIControllerBase;
-import it.ispw.project.graphicControllerCLI.CLIPrinter;
-import it.ispw.project.graphicControllerCLI.CLIViewNavigator;
+import it.ispw.project.graphic_controller_cli.CLIControllerBase;
+import it.ispw.project.graphic_controller_cli.CLIPrinter;
+import it.ispw.project.graphic_controller_cli.CLIViewNavigator;
 
 public class MainCLI {
 
