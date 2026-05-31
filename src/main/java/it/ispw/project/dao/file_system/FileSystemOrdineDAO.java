@@ -162,7 +162,9 @@ public class FileSystemOrdineDAO implements OrdineDAO {
                 if (idLetto >= nuovoId) {
                     return idLetto + 1;
                 }
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) {
+                // Riga malformata: viene ignorata per mantenere la lettura degli ordini resiliente.
+            }
         }
         return nuovoId;
     }
@@ -246,7 +248,11 @@ public class FileSystemOrdineDAO implements OrdineDAO {
             FileSystemUtenteDAO utenteDAO = new FileSystemUtenteDAO();
             // Nota: qui serve gestione eccezioni se aggiungi throws ai metodi DAO
             Utente cliente = null;
-            try { cliente = utenteDAO.findById(idCliente); } catch (Exception e) {}
+            try {
+                cliente = utenteDAO.findById(idCliente);
+            } catch (Exception e) {
+                // Cliente non ricostruibile: l'ordine viene comunque letto con cliente nullo, come prima.
+            }
 
             // Ricostruzione Mappa Articoli
             Map<Articolo, Integer> mappaArticoli = new HashMap<>();

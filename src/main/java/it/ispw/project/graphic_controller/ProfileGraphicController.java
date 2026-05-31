@@ -60,9 +60,6 @@ public class ProfileGraphicController implements ControllerGraficoBase {
         String nuovaEmail = txtEmail.getText();
         String nuovoIndirizzo = txtIndirizzo.getText();
 
-        // Qui chiameresti un metodo del controller applicativo tipo:
-        // appController.aggiornaProfilo(nuovaEmail, nuovoIndirizzo);
-
         mostraMessaggio("Profilo Aggiornato",
                 "Le modifiche sono state salvate (Simulazione).\nNuova Email: " + nuovaEmail);
     }

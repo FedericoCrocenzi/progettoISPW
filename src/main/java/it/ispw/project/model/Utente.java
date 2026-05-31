@@ -41,6 +41,4 @@ public class Utente {
     public String leggiEmail() { return email; }
     public String leggiIndirizzo() { return indirizzo; }
 
-    // N.B. Se in futuro serve modificare l'email, creerai un metodo di business:
-    // public void aggiornaProfilo(String email, String indirizzo) { ... }
 }

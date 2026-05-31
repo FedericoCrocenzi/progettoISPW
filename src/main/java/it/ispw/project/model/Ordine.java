@@ -49,7 +49,6 @@ public class Ordine {
         if (this.id != 0) {
             // Se l'ID è già settato, evitiamo sovrascritture accidentali
             // (A meno che non sia una logica voluta, qui lancio eccezione per sicurezza)
-            // throw new IllegalStateException("L'ordine ha già un ID assegnato!");
         }
         this.id = id;
     }

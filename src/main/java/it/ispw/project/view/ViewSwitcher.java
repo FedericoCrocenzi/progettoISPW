@@ -11,6 +11,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,7 +52,8 @@ public class ViewSwitcher {
             }
 
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Errore caricamento vista centrale: " + fxmlPath, e);
+            LOGGER.log(Level.SEVERE, e,
+                    () -> MessageFormat.format("Errore caricamento vista centrale: {0}", fxmlPath));
         }
     }
 
@@ -84,7 +86,8 @@ public class ViewSwitcher {
             stage.show();
 
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Errore critico cambio scena: " + fxmlFileName, e);
+            LOGGER.log(Level.SEVERE, e,
+                    () -> MessageFormat.format("Errore critico cambio scena: {0}", fxmlFileName));
         }
     }
 

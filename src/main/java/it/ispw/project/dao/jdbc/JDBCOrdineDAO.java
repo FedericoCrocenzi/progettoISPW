@@ -10,6 +10,7 @@ import it.ispw.project.model.Articolo;
 import it.ispw.project.model.Ordine;
 import it.ispw.project.model.Utente;
 
+import java.text.MessageFormat;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -121,7 +122,8 @@ public class JDBCOrdineDAO implements OrdineDAO {
                 }
             }
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Errore selectOrdineById: " + id, e);
+            logger.log(Level.SEVERE, e,
+                    () -> MessageFormat.format("Errore selectOrdineById: {0}", id));
             throw new DAOException("Errore durante il recupero dell'ordine.", e);
         }
         return ordine;
@@ -239,12 +241,14 @@ public class JDBCOrdineDAO implements OrdineDAO {
                             mappa.put(a, qta);
                         }
                     } catch (Exception e) {
-                        logger.log(Level.WARNING, "Errore nel recupero articolo id=" + idArticolo, e);
+                        logger.log(Level.WARNING, e,
+                                () -> MessageFormat.format("Errore nel recupero articolo id={0}", idArticolo));
                     }
                 }
             }
         } catch (SQLException e) {
-            logger.log(Level.WARNING, "Errore SQL recupero righe ordine " + idOrdine, e);
+            logger.log(Level.WARNING, e,
+                    () -> MessageFormat.format("Errore SQL recupero righe ordine {0}", idOrdine));
         }
         return mappa;
     }

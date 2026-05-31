@@ -5,6 +5,7 @@ import it.ispw.project.model.Ordine;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MemoryOrdineDAO implements OrdineDAO {
@@ -29,7 +30,9 @@ public class MemoryOrdineDAO implements OrdineDAO {
         // 3. "Salvo" nella lista condivisa
         tabellaOrdini.add(ordine);
 
-        LOGGER.info("DEMO (RAM): Ordine salvato con ID " + nuovoId + " | Totale: " + ordine.getTotale());
+        LOGGER.log(Level.INFO,
+                "DEMO (RAM): Ordine salvato con ID {0} | Totale: {1}",
+                new Object[]{nuovoId, ordine.getTotale()});
     }
 
     @Override
@@ -70,8 +73,9 @@ public class MemoryOrdineDAO implements OrdineDAO {
             if (o.leggiId() == ordine.leggiId()) {
                 // In un DB vero faresti: UPDATE ... SET stato = ...
                 // Qui stampiamo solo un log di conferma
-                LOGGER.info("DEMO (RAM): Stato ordine #" + o.leggiId()
-                        + " aggiornato a: " + ordine.getStato());
+                LOGGER.log(Level.INFO,
+                        "DEMO (RAM): Stato ordine #{0} aggiornato a: {1}",
+                        new Object[]{o.leggiId(), ordine.getStato()});
                 return;
             }
         }

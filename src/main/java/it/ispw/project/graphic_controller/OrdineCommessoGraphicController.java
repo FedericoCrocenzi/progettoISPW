@@ -121,17 +121,6 @@ public class OrdineCommessoGraphicController {
         // Aggiunta figli all'AnchorPane
         anchor.getChildren().addAll(imgView, lblNome, lblPrezzo, hboxQta);
 
-        // Se richiede patentino (logica opzionale, esempio)
-        /*
-        if (articolo.richiedePatentino()) {
-            Label lblPatentino = new Label("Richiede Patentino");
-            lblPatentino.setStyle("-fx-text-fill: #c62828; -fx-background-color: #ffebee; -fx-background-radius: 5; -fx-padding: 5 10 5 10;");
-            lblPatentino.setLayoutX(95.0);
-            lblPatentino.setLayoutY(62.0);
-            anchor.getChildren().add(lblPatentino);
-        }
-        */
-
         return anchor;
     }
 

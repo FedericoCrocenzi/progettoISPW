@@ -110,7 +110,9 @@ public class CatalogoGraphicController implements ControllerGraficoBase {
         } catch (Exception e) {
             try {
                 imgView.setImage(new Image(getClass().getResourceAsStream(IMMAGINE_FALLBACK_PATH)));
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+                // Fallback immagine non disponibile: la card resta visibile senza immagine.
+            }
         }
 
         Label lblPrezzo = new Label("€ " + String.format("%.2f", articolo.getPrezzo()));

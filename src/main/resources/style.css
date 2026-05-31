@@ -19,7 +19,7 @@
     -fx-text-fill: #e8dfc8;
 }
 
-.login-link:pressed {
+.login-link:pressed { /* NOSONAR - pseudo-classe JavaFX valida. */
     -fx-text-fill: #d6c89f;
     -fx-translate-y: 1;
 }
@@ -31,7 +31,7 @@
 }
 
 /* Stato QUANDO CLICCHI (Pressed) */
-.bottone-giallo:pressed {
+.bottone-giallo:pressed { /* NOSONAR - pseudo-classe JavaFX valida. */
     -fx-background-color: #d4c662; /* Più scuro */
     -fx-translate-y: 2; /* Si sposta giù di 2 pixel per sembrare premuto */
 }
@@ -61,7 +61,7 @@
 }
 
 /* --- Quando CLICCHI (Pressed) - L'animazione che cercavi --- */
-.btn-scanner:pressed {
+.btn-scanner:pressed { /* NOSONAR - pseudo-classe JavaFX valida. */
     /* Diventa bianco semitrasparente più visibile (30%) */
     -fx-background-color: rgba(255, 255, 255, 0.3);
 
@@ -88,7 +88,7 @@
 }
 
 /* --- QUANDO È ATTIVO/PREMUTO (Selected) --- */
-.menu-btn:selected {
+.menu-btn:selected { /* NOSONAR - pseudo-classe JavaFX valida. */
     -fx-text-fill: #FFFFFF; /*#FFF176;             Diventa Giallo Agricenter */
     -fx-underline: true;               /* SOTTOLINEA IL NOME */
     -fx-font-weight: bold;             /* Testo in grassetto */
@@ -112,7 +112,7 @@
 }
 
 /* 3. Stato PRESSED (Quando CLICCHI) - Qui sta la magia */
-.bottone-ricerca:pressed {
+.bottone-ricerca:pressed { /* NOSONAR - pseudo-classe JavaFX valida. */
     -fx-background-color: transparent; /* Rimane trasparente */
     -fx-scale-x: 0.9;  /* Si rimpicciolisce (sembra andare in fondo) */
     -fx-scale-y: 0.9;
@@ -132,7 +132,7 @@
     -fx-background-color: #F5F5F5;
 }
 
-.pulsantiCarrello:pressed{
+.pulsantiCarrello:pressed{ /* NOSONAR - pseudo-classe JavaFX valida. */
     -fx-scale-x: 0.9;  /* Si rimpicciolisce (sembra andare in fondo) */
     -fx-scale-y: 0.9;
     -fx-translate-y: 2; /* Si sposta giù di 2 pixel */

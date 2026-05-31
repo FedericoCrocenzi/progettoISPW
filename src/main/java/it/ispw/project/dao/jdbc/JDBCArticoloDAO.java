@@ -8,6 +8,7 @@ import it.ispw.project.model.Fitofarmaco;
 import it.ispw.project.model.Mangime;
 import it.ispw.project.model.Utensile;
 
+import java.text.MessageFormat;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -151,7 +152,8 @@ public class JDBCArticoloDAO implements ArticoloDAO {
             }
         } catch (SQLException e) {
             invalidaArticolo(articolo.leggiId());
-            logger.log(Level.SEVERE, "Errore aggiornamento scorta articolo " + articolo.leggiId(), e);
+            logger.log(Level.SEVERE, e,
+                    () -> MessageFormat.format("Errore aggiornamento scorta articolo {0}", articolo.leggiId()));
             return false;
         }
     }
@@ -185,7 +187,7 @@ public class JDBCArticoloDAO implements ArticoloDAO {
                 break;
 
             default:
-                logger.log(Level.WARNING, "Tipo articolo sconosciuto nel DB: " + tipo);
+                logger.log(Level.WARNING, "Tipo articolo sconosciuto nel DB: {0}", tipo);
                 return null;
         }
 

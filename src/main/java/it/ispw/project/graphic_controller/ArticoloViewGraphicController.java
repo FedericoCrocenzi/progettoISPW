@@ -14,6 +14,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,7 +57,8 @@ public class ArticoloViewGraphicController {
                 imgProdotto.setImage(new Image(getClass().getResourceAsStream(articolo.getImmaginePath())));
             }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Immagine non trovata: " + articolo.getImmaginePath(), e);
+            LOGGER.log(Level.WARNING, e,
+                    () -> MessageFormat.format("Immagine non trovata: {0}", articolo.getImmaginePath()));
         }
 
         // Gestione Patentino

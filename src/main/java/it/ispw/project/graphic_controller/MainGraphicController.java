@@ -22,6 +22,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -110,7 +111,8 @@ public class MainGraphicController implements ControllerGraficoBase, Observer {
             rootLayout.setCenter(vista);
 
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Errore caricamento vista: " + fxmlPath, e);
+            LOGGER.log(Level.SEVERE, e,
+                    () -> MessageFormat.format("Errore caricamento vista: {0}", fxmlPath));
         }
     }
 
