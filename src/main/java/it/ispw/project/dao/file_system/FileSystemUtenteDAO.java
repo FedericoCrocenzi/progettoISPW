@@ -79,21 +79,27 @@ public class FileSystemUtenteDAO implements UtenteDAO {
                     continue;
                 }
                 String[] dati = line.split(SEPARATOR, -1);
-                if (dati.length >= 1) {
-                    try {
-                        int currentId = Integer.parseInt(dati[0]);
-                        if (currentId == id) {
-                            return parseUtente(dati);
-                        }
-                    } catch (NumberFormatException ignored) {
-                        // Salta righe malformate
-                    }
+                if (idCorrisponde(dati, id)) {
+                    return parseUtente(dati);
                 }
             }
         } catch (IOException e) {
             throw new DAOException("Errore ricerca utente per ID su file", e);
         }
         return null;
+    }
+
+    private boolean idCorrisponde(String[] dati, int id) {
+        if (dati.length < 1) {
+            return false;
+        }
+
+        try {
+            return Integer.parseInt(dati[0]) == id;
+        } catch (NumberFormatException e) {
+            LOGGER.log(Level.FINE, "Riga utente con ID non valido ignorata.", e);
+            return false;
+        }
     }
 
     /**

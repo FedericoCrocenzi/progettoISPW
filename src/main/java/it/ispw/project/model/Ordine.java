@@ -85,6 +85,6 @@ public class Ordine {
 
     // Manteniamo anche il getter originale per compatibilità interna se serve
     public Map<Articolo, Integer> getArticoliAcquistati() {
-        return articoliAcquistati;
+        return getArticoli();
     }
 }

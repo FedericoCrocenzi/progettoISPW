@@ -235,15 +235,7 @@ public class JDBCOrdineDAO implements OrdineDAO {
                     int idArticolo = rs.getInt("id_articolo");
                     int qta = rs.getInt("quantita");
 
-                    try {
-                        Articolo a = articoloDAO.selectArticoloById(idArticolo);
-                        if (a != null) {
-                            mappa.put(a, qta);
-                        }
-                    } catch (Exception e) {
-                        logger.log(Level.WARNING, e,
-                                () -> MessageFormat.format("Errore nel recupero articolo id={0}", idArticolo));
-                    }
+                    aggiungiArticoloOrdine(mappa, idArticolo, qta);
                 }
             }
         } catch (SQLException e) {
@@ -251,5 +243,17 @@ public class JDBCOrdineDAO implements OrdineDAO {
                     () -> MessageFormat.format("Errore SQL recupero righe ordine {0}", idOrdine));
         }
         return mappa;
+    }
+
+    private void aggiungiArticoloOrdine(Map<Articolo, Integer> mappa, int idArticolo, int qta) {
+        try {
+            Articolo a = articoloDAO.selectArticoloById(idArticolo);
+            if (a != null) {
+                mappa.put(a, qta);
+            }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, e,
+                    () -> MessageFormat.format("Errore nel recupero articolo id={0}", idArticolo));
+        }
     }
 }

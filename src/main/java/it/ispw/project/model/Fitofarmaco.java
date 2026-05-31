@@ -29,7 +29,7 @@ public class Fitofarmaco extends Articolo {
     // --- Logica di Business Specifica ---
 
     public boolean isPericoloso() {
-        return richiedePatentino;
+        return isRichiedePatentino();
     }
 
     // --- Getter & Setter ---

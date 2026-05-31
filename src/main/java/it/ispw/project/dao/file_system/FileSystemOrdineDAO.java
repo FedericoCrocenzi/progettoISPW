@@ -244,15 +244,7 @@ public class FileSystemOrdineDAO implements OrdineDAO {
             int idCliente = Integer.parseInt(parts[4]);
             String articoliStr = (parts.length > 5) ? parts[5] : "";
 
-            // Ricostruzione Utente
-            FileSystemUtenteDAO utenteDAO = new FileSystemUtenteDAO();
-            // Nota: qui serve gestione eccezioni se aggiungi throws ai metodi DAO
-            Utente cliente = null;
-            try {
-                cliente = utenteDAO.findById(idCliente);
-            } catch (Exception e) {
-                // Cliente non ricostruibile: l'ordine viene comunque letto con cliente nullo, come prima.
-            }
+            Utente cliente = recuperaClienteOrdine(idCliente);
 
             // Ricostruzione Mappa Articoli
             Map<Articolo, Integer> mappaArticoli = new HashMap<>();
@@ -305,5 +297,17 @@ public class FileSystemOrdineDAO implements OrdineDAO {
 
         sb.append(articoliStr.toString());
         return sb.toString();
+    }
+
+    private Utente recuperaClienteOrdine(int idCliente) {
+        FileSystemUtenteDAO utenteDAO = new FileSystemUtenteDAO();
+        try {
+            return utenteDAO.findById(idCliente);
+        } catch (Exception e) {
+            LOGGER.log(Level.FINE,
+                    "Cliente non ricostruibile: l'ordine viene comunque letto con cliente nullo.",
+                    e);
+            return null;
+        }
     }
 }

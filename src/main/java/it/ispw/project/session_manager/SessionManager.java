@@ -36,7 +36,7 @@ public class SessionManager {
         Session existingSession = checkDuplicateSessionUtente(utente);
 
         if (existingSession != null) {
-            logger.log(Level.WARNING, "L'utente {0} ha già una sessione attiva.", utente.leggiUsername());
+            logger.log(Level.WARNING, "L''utente {0} ha già una sessione attiva.", utente.leggiUsername());
             return existingSession.getSessionId();
         }
 

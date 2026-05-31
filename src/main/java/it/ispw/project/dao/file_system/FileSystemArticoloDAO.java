@@ -19,7 +19,7 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
 
     private static final Logger LOGGER = Logger.getLogger(FileSystemArticoloDAO.class.getName());
     private static final String CSV_FILE_NAME = "articoli.csv";
-    private static final SimpleDateFormat DATE_FMT = new SimpleDateFormat("yyyy-MM-dd");
+    private final SimpleDateFormat dateFmt = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
     public Articolo selectArticoloById(int id) {
@@ -125,7 +125,7 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
             throws ParseException {
         switch (tipo) {
             case "MANGIME":
-                Date scadenza = (dati.length > 5 && !dati[5].equals("null")) ? DATE_FMT.parse(dati[5]) : null;
+                Date scadenza = (dati.length > 5 && !dati[5].equals("null")) ? dateFmt.parse(dati[5]) : null;
                 return new Mangime(id, desc, prezzo, scorta, scadenza);
             case "UTENSILE":
                 String materiale = (dati.length > 5) ? dati[5] : "";
@@ -202,7 +202,7 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
         sb.append(mangime.ottieniPrezzo()).append(";");
         sb.append(mangime.ottieniScorta()).append(";");
         Date scad = mangime.getScadenza();
-        sb.append(scad != null ? DATE_FMT.format(scad) : "null");
+        sb.append(scad != null ? dateFmt.format(scad) : "null");
     }
 
     private void aggiungiUtensile(StringBuilder sb, Utensile utensile) {

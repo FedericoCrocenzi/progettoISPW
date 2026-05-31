@@ -19,7 +19,7 @@ public abstract class Articolo implements Serializable {
     private int scorta;
     private String immaginePath;
     // Costruttore
-    public Articolo(int id, String descrizione, double prezzo, int scorta) {
+    protected Articolo(int id, String descrizione, double prezzo, int scorta) {
         this.id = id;
         this.descrizione = descrizione;
         this.prezzo = prezzo;
