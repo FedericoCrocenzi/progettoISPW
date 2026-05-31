@@ -102,29 +102,7 @@ public class FileSystemUtenteDAO implements UtenteDAO {
     @Override
     public void salva(Utente utente) throws DAOException {
         File file = new File(CSV_FILE_NAME);
-        int newId = 1;
-
-        // 1. Calcolo nuovo ID (Simulazione Auto-Increment)
-        if (file.exists() && file.length() > 0) {
-            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    String[] dati = line.split(SEPARATOR);
-                    if (dati.length > 0) {
-                        try {
-                            int currentId = Integer.parseInt(dati[0]);
-                            if (currentId >= newId) {
-                                newId = currentId + 1;
-                            }
-                        } catch (NumberFormatException e) {
-                            // ignora
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                throw new DAOException("Errore nel calcolo ID per nuovo utente", e);
-            }
-        }
+        int newId = calcolaNuovoId(file);
 
         // 2. Scrittura in coda (append = true)
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
@@ -133,20 +111,7 @@ public class FileSystemUtenteDAO implements UtenteDAO {
                 bw.newLine();
             }
 
-            // Formato: id;username;password;ruolo;email;indirizzo
-            StringBuilder sb = new StringBuilder();
-            sb.append(newId).append(SEPARATOR);
-            sb.append(utente.leggiUsername()).append(SEPARATOR);
-            sb.append(utente.ottieniPassword()).append(SEPARATOR); // o password criptata
-            sb.append(utente.scopriRuolo()).append(SEPARATOR);
-
-            // Gestione null per email
-            sb.append(utente.leggiEmail() != null ? utente.leggiEmail() : "null").append(SEPARATOR);
-
-            // Gestione null per indirizzo
-            sb.append(utente.leggiIndirizzo() != null ? utente.leggiIndirizzo() : "null");
-
-            bw.write(sb.toString());
+            bw.write(serializzaUtente(newId, utente));
 
         } catch (IOException e) {
             throw new DAOException("Errore salvataggio utente su file", e);
@@ -168,6 +133,49 @@ public class FileSystemUtenteDAO implements UtenteDAO {
 
     private String normalizza(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    private int calcolaNuovoId(File file) throws DAOException {
+        int newId = 1;
+        if (!file.exists() || file.length() <= 0) {
+            return newId;
+        }
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                newId = aggiornaNuovoId(newId, line);
+            }
+        } catch (IOException e) {
+            throw new DAOException("Errore nel calcolo ID per nuovo utente", e);
+        }
+        return newId;
+    }
+
+    private int aggiornaNuovoId(int newId, String line) {
+        String[] dati = line.split(SEPARATOR);
+        if (dati.length > 0) {
+            try {
+                int currentId = Integer.parseInt(dati[0]);
+                if (currentId >= newId) {
+                    return currentId + 1;
+                }
+            } catch (NumberFormatException e) {
+                // ignora
+            }
+        }
+        return newId;
+    }
+
+    private String serializzaUtente(int id, Utente utente) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(id).append(SEPARATOR);
+        sb.append(utente.leggiUsername()).append(SEPARATOR);
+        sb.append(utente.ottieniPassword()).append(SEPARATOR); // o password criptata
+        sb.append(utente.scopriRuolo()).append(SEPARATOR);
+        sb.append(utente.leggiEmail() != null ? utente.leggiEmail() : "null").append(SEPARATOR);
+        sb.append(utente.leggiIndirizzo() != null ? utente.leggiIndirizzo() : "null");
+        return sb.toString();
     }
 
     private String estraiCampoOpzionale(String[] dati, int indice) {

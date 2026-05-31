@@ -41,35 +41,8 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
-                String[] d = line.split(";");
-                // Formato: id;TIPO;descrizione;prezzo;scorta;extra;[immagine_path]
-
-                int id = Integer.parseInt(d[0]);
-                String tipo = d[1];
-                String desc = d[2];
-                double prezzo = Double.parseDouble(d[3]);
-                int scorta = Integer.parseInt(d[4]);
-
-                Articolo art = null;
-                switch (tipo) {
-                    case "MANGIME":
-                        Date scadenza = (d.length > 5 && !d[5].equals("null")) ? DATE_FMT.parse(d[5]) : null;
-                        art = new Mangime(id, desc, prezzo, scorta, scadenza);
-                        break;
-                    case "UTENSILE":
-                        String materiale = (d.length > 5) ? d[5] : "";
-                        art = new Utensile(id, desc, prezzo, scorta, materiale);
-                        break;
-                    case "FITOFARMACO":
-                        boolean patentino = (d.length > 5) && Boolean.parseBoolean(d[5]);
-                        art = new Fitofarmaco(id, desc, prezzo, scorta, patentino);
-                        break;
-                }
-
+                Articolo art = parseArticolo(line);
                 if (art != null) {
-                    if (d.length > 6 && !d[6].isBlank()) {
-                        art.setImmaginePath(d[6]);
-                    }
                     catalogo.add(art);
                 }
             }
@@ -112,23 +85,9 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
         List<Articolo> filtrati = new ArrayList<>();
 
         for (Articolo a : tutti) {
-            boolean match = true;
-
-            // Check Descrizione
-            if (descrizione != null && !descrizione.isEmpty()) {
-                if (!a.leggiDescrizione().toLowerCase().contains(descrizione.toLowerCase())) match = false;
+            if (rispettaFiltri(a, descrizione, tipo, min, max)) {
+                filtrati.add(a);
             }
-            // Check Tipo (controllo di istanza)
-            if (match && tipo != null && !tipo.isEmpty()) {
-                if (tipo.equals("MANGIME") && !(a instanceof Mangime)) match = false;
-                else if (tipo.equals("UTENSILE") && !(a instanceof Utensile)) match = false;
-                else if (tipo.equals("FITOFARMACO") && !(a instanceof Fitofarmaco)) match = false;
-            }
-            // Check Prezzo
-            if (match && min != null && a.ottieniPrezzo() < min) match = false;
-            if (match && max != null && a.ottieniPrezzo() > max) match = false;
-
-            if (match) filtrati.add(a);
         }
         return filtrati;
     }
@@ -137,37 +96,7 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
     private boolean riscriviFile(List<Articolo> lista) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(CSV_FILE_NAME))) {
             for (Articolo a : lista) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(a.leggiId()).append(";");
-
-                // Discriminatore e campi specifici
-                if (a instanceof Mangime) {
-                    sb.append("MANGIME;");
-                    sb.append(a.leggiDescrizione()).append(";");
-                    sb.append(a.ottieniPrezzo()).append(";");
-                    sb.append(a.ottieniScorta()).append(";");
-                    Date scad = ((Mangime) a).getScadenza();
-                    sb.append(scad != null ? DATE_FMT.format(scad) : "null");
-                }
-                else if (a instanceof Utensile) {
-                    sb.append("UTENSILE;");
-                    sb.append(a.leggiDescrizione()).append(";");
-                    sb.append(a.ottieniPrezzo()).append(";");
-                    sb.append(a.ottieniScorta()).append(";");
-                    sb.append(((Utensile) a).getMateriale());
-                }
-                else if (a instanceof Fitofarmaco) {
-                    sb.append("FITOFARMACO;");
-                    sb.append(a.leggiDescrizione()).append(";");
-                    sb.append(a.ottieniPrezzo()).append(";");
-                    sb.append(a.ottieniScorta()).append(";");
-                    sb.append(((Fitofarmaco) a).isRichiedePatentino());
-                }
-
-                sb.append(";");
-                sb.append(a.getImmaginePath() != null ? a.getImmaginePath() : "");
-
-                bw.write(sb.toString());
+                bw.write(serializzaArticolo(a));
                 bw.newLine();
             }
             return true;
@@ -175,5 +104,120 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
             LOGGER.log(Level.SEVERE, "Errore scrittura file articoli.", e);
             return false;
         }
+    }
+
+    private Articolo parseArticolo(String line) throws ParseException {
+        String[] d = line.split(";");
+        // Formato: id;TIPO;descrizione;prezzo;scorta;extra;[immagine_path]
+
+        int id = Integer.parseInt(d[0]);
+        String tipo = d[1];
+        String desc = d[2];
+        double prezzo = Double.parseDouble(d[3]);
+        int scorta = Integer.parseInt(d[4]);
+
+        Articolo art = creaArticolo(id, tipo, desc, prezzo, scorta, d);
+        applicaImmagine(art, d);
+        return art;
+    }
+
+    private Articolo creaArticolo(int id, String tipo, String desc, double prezzo, int scorta, String[] dati)
+            throws ParseException {
+        switch (tipo) {
+            case "MANGIME":
+                Date scadenza = (dati.length > 5 && !dati[5].equals("null")) ? DATE_FMT.parse(dati[5]) : null;
+                return new Mangime(id, desc, prezzo, scorta, scadenza);
+            case "UTENSILE":
+                String materiale = (dati.length > 5) ? dati[5] : "";
+                return new Utensile(id, desc, prezzo, scorta, materiale);
+            case "FITOFARMACO":
+                boolean patentino = (dati.length > 5) && Boolean.parseBoolean(dati[5]);
+                return new Fitofarmaco(id, desc, prezzo, scorta, patentino);
+            default:
+                return null;
+        }
+    }
+
+    private void applicaImmagine(Articolo art, String[] dati) {
+        if (art != null && dati.length > 6 && !dati[6].isBlank()) {
+            art.setImmaginePath(dati[6]);
+        }
+    }
+
+    private boolean rispettaFiltri(Articolo articolo, String descrizione, String tipo, Double min, Double max) {
+        return descrizioneCompatibile(articolo, descrizione)
+                && tipoCompatibile(articolo, tipo)
+                && prezzoCompatibile(articolo, min, max);
+    }
+
+    private boolean descrizioneCompatibile(Articolo articolo, String descrizione) {
+        return descrizione == null
+                || descrizione.isEmpty()
+                || articolo.leggiDescrizione().toLowerCase().contains(descrizione.toLowerCase());
+    }
+
+    private boolean tipoCompatibile(Articolo articolo, String tipo) {
+        if (tipo == null || tipo.isEmpty()) {
+            return true;
+        }
+        if (tipo.equals("MANGIME")) {
+            return articolo instanceof Mangime;
+        }
+        if (tipo.equals("UTENSILE")) {
+            return articolo instanceof Utensile;
+        }
+        if (tipo.equals("FITOFARMACO")) {
+            return articolo instanceof Fitofarmaco;
+        }
+        return true;
+    }
+
+    private boolean prezzoCompatibile(Articolo articolo, Double min, Double max) {
+        return (min == null || articolo.ottieniPrezzo() >= min)
+                && (max == null || articolo.ottieniPrezzo() <= max);
+    }
+
+    private String serializzaArticolo(Articolo articolo) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(articolo.leggiId()).append(";");
+        aggiungiDatiSpecifici(sb, articolo);
+        sb.append(";");
+        sb.append(articolo.getImmaginePath() != null ? articolo.getImmaginePath() : "");
+        return sb.toString();
+    }
+
+    private void aggiungiDatiSpecifici(StringBuilder sb, Articolo articolo) {
+        if (articolo instanceof Mangime) {
+            aggiungiMangime(sb, (Mangime) articolo);
+        } else if (articolo instanceof Utensile) {
+            aggiungiUtensile(sb, (Utensile) articolo);
+        } else if (articolo instanceof Fitofarmaco) {
+            aggiungiFitofarmaco(sb, (Fitofarmaco) articolo);
+        }
+    }
+
+    private void aggiungiMangime(StringBuilder sb, Mangime mangime) {
+        sb.append("MANGIME;");
+        sb.append(mangime.leggiDescrizione()).append(";");
+        sb.append(mangime.ottieniPrezzo()).append(";");
+        sb.append(mangime.ottieniScorta()).append(";");
+        Date scad = mangime.getScadenza();
+        sb.append(scad != null ? DATE_FMT.format(scad) : "null");
+    }
+
+    private void aggiungiUtensile(StringBuilder sb, Utensile utensile) {
+        sb.append("UTENSILE;");
+        sb.append(utensile.leggiDescrizione()).append(";");
+        sb.append(utensile.ottieniPrezzo()).append(";");
+        sb.append(utensile.ottieniScorta()).append(";");
+        sb.append(utensile.getMateriale());
+    }
+
+    private void aggiungiFitofarmaco(StringBuilder sb, Fitofarmaco fitofarmaco) {
+        sb.append("FITOFARMACO;");
+        sb.append(fitofarmaco.leggiDescrizione()).append(";");
+        sb.append(fitofarmaco.ottieniPrezzo()).append(";");
+        sb.append(fitofarmaco.ottieniScorta()).append(";");
+        sb.append(fitofarmaco.isRichiedePatentino());
     }
 }

@@ -30,6 +30,12 @@ import java.util.logging.Logger;
 public class PaymentGraphicController implements ControllerGraficoBase {
 
     private static final Logger LOGGER = Logger.getLogger(PaymentGraphicController.class.getName());
+    private static final String METODO_CARTA_CREDITO = "CARTA_CREDITO";
+    private static final String METODO_PAYPAL = "PAYPAL";
+    private static final String METODO_CONTANTI_CONSEGNA = "CONTANTI_CONSEGNA";
+    private static final String MAIN_VIEW_PATH = "/view/MainView.fxml";
+    private static final String TITOLO_ACQUISTA_ARTICOLO = "Acquista Articolo";
+    private static final String MESSAGGIO_ORDINE_COMPLETATO = "Ordine completato correttamente.";
 
     @FXML private TextField txtNumeroCarta;
     @FXML private TextField txtIntestatario;
@@ -89,7 +95,7 @@ public class PaymentGraphicController implements ControllerGraficoBase {
             PagamentoBean pagamentoBean = new PagamentoBean();
 
             if (rbCarta.isSelected()) {
-                pagamentoBean.setMetodoPagamento("CARTA_CREDITO");
+                pagamentoBean.setMetodoPagamento(METODO_CARTA_CREDITO);
                 pagamentoBean.setNumeroCarta(testoCampo(txtNumeroCarta));
                 pagamentoBean.setIntestatario(testoCampo(txtIntestatario));
                 pagamentoBean.setDataScadenza(
@@ -97,11 +103,11 @@ public class PaymentGraphicController implements ControllerGraficoBase {
                 );
                 pagamentoBean.setCvv(testoCampo(txtCvv));
             } else if (rbPaypal.isSelected()) {
-                pagamentoBean.setMetodoPagamento("PAYPAL");
+                pagamentoBean.setMetodoPagamento(METODO_PAYPAL);
                 pagamentoBean.setEmailPaypal(testoCampo(txtEmailPaypal));
                 pagamentoBean.setPasswordPaypal(testoCampo(txtPasswordPaypal));
             } else {
-                pagamentoBean.setMetodoPagamento("CONTANTI_CONSEGNA");
+                pagamentoBean.setMetodoPagamento(METODO_CONTANTI_CONSEGNA);
             }
 
             CarrelloBean carrelloTmp = appController.visualizzaCarrello(sessionId);
@@ -136,7 +142,7 @@ public class PaymentGraphicController implements ControllerGraficoBase {
         try {
             CarrelloBean carrelloTmp = appController.visualizzaCarrello(sessionId);
             PagamentoBean pagamentoBean = new PagamentoBean();
-            pagamentoBean.setMetodoPagamento("CONTANTI_CONSEGNA");
+            pagamentoBean.setMetodoPagamento(METODO_CONTANTI_CONSEGNA);
             pagamentoBean.setImportoDaPagare(carrelloTmp.getTotale());
 
             completaOrdineConPagamento(pagamentoBean, carrelloTmp);
@@ -160,13 +166,13 @@ public class PaymentGraphicController implements ControllerGraficoBase {
         }
 
         Stage stage = (Stage) btnCassa.getScene().getWindow();
-        ViewSwitcher.switchTo("/view/MainView.fxml", sessionId, stage);
+        ViewSwitcher.switchTo(MAIN_VIEW_PATH, sessionId, stage);
     }
 
     @FXML
     public void tornaAlCarrello() {
         Stage stage = (Stage) btnIndietro.getScene().getWindow();
-        ViewSwitcher.switchTo("/view/MainView.fxml", sessionId, stage);
+        ViewSwitcher.switchTo(MAIN_VIEW_PATH, sessionId, stage);
     }
 
     private void mostraMessaggio(String titolo, String testo, Alert.AlertType type) {
@@ -195,16 +201,16 @@ public class PaymentGraphicController implements ControllerGraficoBase {
 
         String metodo = pagamentoBean.getMetodoPagamento();
 
-        if ("CONTANTI_CONSEGNA".equals(metodo)) {
+        if (METODO_CONTANTI_CONSEGNA.equals(metodo)) {
             return;
         }
 
-        if ("PAYPAL".equals(metodo)) {
+        if (METODO_PAYPAL.equals(metodo)) {
             validaDatiPaypal(pagamentoBean);
             return;
         }
 
-        if ("CARTA_CREDITO".equals(metodo)) {
+        if (METODO_CARTA_CREDITO.equals(metodo)) {
             validaDatiCarta(pagamentoBean);
             return;
         }
@@ -300,33 +306,33 @@ public class PaymentGraphicController implements ControllerGraficoBase {
             NotificaOrdineProntoGraphicController popupController = loader.getController();
             popupController.configura(
                     ordineBean,
-                    "Acquista Articolo",
-                    "Ordine completato correttamente.",
+                    TITOLO_ACQUISTA_ARTICOLO,
+                    MESSAGGIO_ORDINE_COMPLETATO,
                     "Torna alla Home",
                     "/Image/pagamento_approvato.png",
                     () -> {
                         homeAperta[0] = true;
-                        ViewSwitcher.switchTo("/view/MainView.fxml", sessionId, owner);
+                        ViewSwitcher.switchTo(MAIN_VIEW_PATH, sessionId, owner);
                     }
             );
 
             Stage popupStage = new Stage();
             popupStage.initOwner(owner);
             popupStage.initModality(Modality.APPLICATION_MODAL);
-            popupStage.setTitle("Acquista Articolo");
+            popupStage.setTitle(TITOLO_ACQUISTA_ARTICOLO);
             popupStage.setScene(new Scene(root));
             popupStage.showAndWait();
 
             if (!homeAperta[0]) {
-                ViewSwitcher.switchTo("/view/MainView.fxml", sessionId, owner);
+                ViewSwitcher.switchTo(MAIN_VIEW_PATH, sessionId, owner);
             }
 
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Errore caricamento popup acquisto completato.", e);
-            mostraMessaggio("Acquista Articolo",
-                    "Ordine completato correttamente.",
+            mostraMessaggio(TITOLO_ACQUISTA_ARTICOLO,
+                    MESSAGGIO_ORDINE_COMPLETATO,
                     Alert.AlertType.INFORMATION);
-            ViewSwitcher.switchTo("/view/MainView.fxml", sessionId, owner);
+            ViewSwitcher.switchTo(MAIN_VIEW_PATH, sessionId, owner);
         }
     }
 }

@@ -71,26 +71,43 @@ public class MemoryArticoloDAO implements ArticoloDAO {
         List<Articolo> filtrati = new ArrayList<>();
 
         for (Articolo a : tutti) {
-            boolean match = true;
-
-            // Filtro Descrizione
-            if (descrizione != null && !descrizione.isEmpty()) {
-                if (!a.leggiDescrizione().toLowerCase().contains(descrizione.toLowerCase())) match = false;
+            if (rispettaFiltri(a, descrizione, tipo, min, max)) {
+                filtrati.add(a);
             }
-
-            // Filtro Tipo
-            if (match && tipo != null && !tipo.isEmpty()) {
-                if (tipo.equals("MANGIME") && !(a instanceof Mangime)) match = false;
-                else if (tipo.equals("UTENSILE") && !(a instanceof Utensile)) match = false;
-                else if (tipo.equals("FITOFARMACO") && !(a instanceof Fitofarmaco)) match = false;
-            }
-
-            // Filtri Prezzo
-            if (match && min != null && a.ottieniPrezzo() < min) match = false;
-            if (match && max != null && a.ottieniPrezzo() > max) match = false;
-
-            if (match) filtrati.add(a);
         }
         return filtrati;
+    }
+
+    private boolean rispettaFiltri(Articolo articolo, String descrizione, String tipo, Double min, Double max) {
+        return descrizioneCompatibile(articolo, descrizione)
+                && tipoCompatibile(articolo, tipo)
+                && prezzoCompatibile(articolo, min, max);
+    }
+
+    private boolean descrizioneCompatibile(Articolo articolo, String descrizione) {
+        return descrizione == null
+                || descrizione.isEmpty()
+                || articolo.leggiDescrizione().toLowerCase().contains(descrizione.toLowerCase());
+    }
+
+    private boolean tipoCompatibile(Articolo articolo, String tipo) {
+        if (tipo == null || tipo.isEmpty()) {
+            return true;
+        }
+        if (tipo.equals("MANGIME")) {
+            return articolo instanceof Mangime;
+        }
+        if (tipo.equals("UTENSILE")) {
+            return articolo instanceof Utensile;
+        }
+        if (tipo.equals("FITOFARMACO")) {
+            return articolo instanceof Fitofarmaco;
+        }
+        return true;
+    }
+
+    private boolean prezzoCompatibile(Articolo articolo, Double min, Double max) {
+        return (min == null || articolo.ottieniPrezzo() >= min)
+                && (max == null || articolo.ottieniPrezzo() <= max);
     }
 }

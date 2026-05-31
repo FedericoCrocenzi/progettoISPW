@@ -20,60 +20,26 @@ public class FileSystemOrdineDAO implements OrdineDAO {
     private static final Logger LOGGER = Logger.getLogger(FileSystemOrdineDAO.class.getName());
     private static final String CSV_FILE_NAME = "ordini.csv";
     private static final String SEPARATOR = ";";
+    private static final String ERRORE_LETTURA_FILE_ORDINI = "Errore lettura file ordini.";
 
     @Override
     public void insertOrdine(Ordine ordine) throws DAOException {
         File file = new File(CSV_FILE_NAME);
-        int nuovoId = 1;
-
-        // 1. Calcolo ID Auto-Increment
-        if (file.exists()) {
-            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    if (!line.trim().isEmpty()) {
-                        String[] parts = line.split(SEPARATOR);
-                        try {
-                            int idLetto = Integer.parseInt(parts[0]);
-                            if (idLetto >= nuovoId) {
-                                nuovoId = idLetto + 1;
-                            }
-                        } catch (NumberFormatException ignored) {}
-                    }
-                }
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Errore lettura file ordini.", e);
-                throw new DAOException("Errore durante il salvataggio dell'ordine.", e);
-            }
-        }
+        int nuovoId = calcolaProssimoId(file);
 
         // Assegno il nuovo ID all'oggetto (anche se il Model non ha setter pubblico,
         // nel costruttore usato per la lettura lo useremo).
         // Nota: Nel FS simuliamo l'assegnazione salvandolo con quell'ID.
 
         // 2. Preparazione stringa articoli: "id:qta,id:qta"
-        StringBuilder articoliStr = new StringBuilder();
-        for (Map.Entry<Articolo, Integer> entry : ordine.getArticoliAcquistati().entrySet()) {
-            if (articoliStr.length() > 0) articoliStr.append(",");
-            articoliStr.append(entry.getKey().leggiId())
-                    .append(":")
-                    .append(entry.getValue());
-        }
+        String articoliStr = serializzaArticoli(ordine.getArticoliAcquistati());
 
         // 3. Scrittura su file
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
             if (file.length() > 0) bw.newLine();
 
             // Formato: ID;TIMESTAMP;TOTALE;STATO;ID_CLIENTE;LISTA_ARTICOLI
-            StringBuilder sb = new StringBuilder();
-            sb.append(nuovoId).append(SEPARATOR);
-            sb.append(ordine.getDataCreazione().getTime()).append(SEPARATOR); // Timestamp long
-            sb.append(ordine.getTotale()).append(SEPARATOR);
-            sb.append(ordine.getStato() == null ? "IN_ATTESA" : ordine.getStato()).append(SEPARATOR);
-            sb.append(ordine.getCliente().ottieniId()).append(SEPARATOR);
-            sb.append(articoliStr.toString());
-
-            bw.write(sb.toString());
+            bw.write(creaRigaOrdine(nuovoId, ordine, articoliStr));
 
             // Aggiorniamo l'ID dell'oggetto in memoria per coerenza con la sessione
             ordine.registraIdGenerato(nuovoId);
@@ -101,7 +67,7 @@ public class FileSystemOrdineDAO implements OrdineDAO {
                 }
             }
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Errore lettura file ordini.", e);
+            LOGGER.log(Level.SEVERE, ERRORE_LETTURA_FILE_ORDINI, e);
             throw new DAOException("Errore durante il recupero degli ordini.", e);
         }
         return ordini;
@@ -148,42 +114,19 @@ public class FileSystemOrdineDAO implements OrdineDAO {
         List<String> lines = new ArrayList<>();
         boolean updated = false;
 
-        // 1. Leggi tutto in memoria
         if (file.exists()) {
-            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    if (!line.trim().isEmpty()) {
-                        String[] parts = line.split(SEPARATOR);
-                        int currentId = Integer.parseInt(parts[0]);
-
-                        if (currentId == ordine.leggiId()) {
-                            // 2. Ricostruisci la riga con lo stato aggiornato
-                            // Recuperiamo la stringa articoli originale o la rigeneriamo
-                            // Qui rigeneriamo la riga completa basandoci sull'oggetto passato
-                            String newLine = serializeOrdine(ordine);
-                            lines.add(newLine);
-                            updated = true;
-                        } else {
-                            lines.add(line);
-                        }
-                    }
-                }
+            try {
+                updated = caricaRigheAggiornate(file, ordine, lines);
             } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Errore lettura file ordini.", e);
+                LOGGER.log(Level.SEVERE, ERRORE_LETTURA_FILE_ORDINI, e);
                 throw new DAOException("Errore durante l'aggiornamento dello stato ordine.", e);
             }
         }
 
         // 3. Riscrivi tutto il file solo se c'è stata modifica
         if (updated) {
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, false))) { // false = sovrascrivi
-                for (int i = 0; i < lines.size(); i++) {
-                    bw.write(lines.get(i));
-                    if (i < lines.size() - 1) {
-                        bw.newLine();
-                    }
-                }
+            try {
+                riscriviRigheOrdini(file, lines);
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Errore scrittura file ordini.", e);
                 throw new DAOException("Errore durante l'aggiornamento dello stato ordine.", e);
@@ -192,6 +135,96 @@ public class FileSystemOrdineDAO implements OrdineDAO {
     }
 
     // --- HELPER METHODS ---
+
+    private int calcolaProssimoId(File file) throws DAOException {
+        int nuovoId = 1;
+        if (!file.exists()) {
+            return nuovoId;
+        }
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                nuovoId = aggiornaProssimoId(nuovoId, line);
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, ERRORE_LETTURA_FILE_ORDINI, e);
+            throw new DAOException("Errore durante il salvataggio dell'ordine.", e);
+        }
+        return nuovoId;
+    }
+
+    private int aggiornaProssimoId(int nuovoId, String line) {
+        if (!line.trim().isEmpty()) {
+            String[] parts = line.split(SEPARATOR);
+            try {
+                int idLetto = Integer.parseInt(parts[0]);
+                if (idLetto >= nuovoId) {
+                    return idLetto + 1;
+                }
+            } catch (NumberFormatException ignored) {}
+        }
+        return nuovoId;
+    }
+
+    private String serializzaArticoli(Map<Articolo, Integer> articoli) {
+        StringBuilder articoliStr = new StringBuilder();
+        for (Map.Entry<Articolo, Integer> entry : articoli.entrySet()) {
+            if (articoliStr.length() > 0) articoliStr.append(",");
+            articoliStr.append(entry.getKey().leggiId())
+                    .append(":")
+                    .append(entry.getValue());
+        }
+        return articoliStr.toString();
+    }
+
+    private String creaRigaOrdine(int nuovoId, Ordine ordine, String articoliStr) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(nuovoId).append(SEPARATOR);
+        sb.append(ordine.getDataCreazione().getTime()).append(SEPARATOR); // Timestamp long
+        sb.append(ordine.getTotale()).append(SEPARATOR);
+        sb.append(ordine.getStato() == null ? "IN_ATTESA" : ordine.getStato()).append(SEPARATOR);
+        sb.append(ordine.getCliente().ottieniId()).append(SEPARATOR);
+        sb.append(articoliStr);
+        return sb.toString();
+    }
+
+    private boolean caricaRigheAggiornate(File file, Ordine ordine, List<String> lines) throws IOException {
+        boolean updated = false;
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (!line.trim().isEmpty()) {
+                    updated = aggiungiRigaAggiornata(lines, line, ordine) || updated;
+                }
+            }
+        }
+        return updated;
+    }
+
+    private boolean aggiungiRigaAggiornata(List<String> lines, String line, Ordine ordine) {
+        String[] parts = line.split(SEPARATOR);
+        int currentId = Integer.parseInt(parts[0]);
+
+        if (currentId == ordine.leggiId()) {
+            lines.add(serializeOrdine(ordine));
+            return true;
+        }
+
+        lines.add(line);
+        return false;
+    }
+
+    private void riscriviRigheOrdini(File file, List<String> lines) throws IOException {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, false))) { // false = sovrascrivi
+            for (int i = 0; i < lines.size(); i++) {
+                bw.write(lines.get(i));
+                if (i < lines.size() - 1) {
+                    bw.newLine();
+                }
+            }
+        }
+    }
 
     /**
      * Converte una riga CSV in un oggetto Ordine.

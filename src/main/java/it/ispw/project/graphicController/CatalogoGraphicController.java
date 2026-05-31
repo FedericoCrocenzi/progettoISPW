@@ -26,6 +26,8 @@ import java.util.Optional;
 
 public class CatalogoGraphicController implements ControllerGraficoBase {
 
+    private static final String IMMAGINE_FALLBACK_PATH = "/Image/logo1.png";
+
     @FXML
     private TilePane tilePaneCatalogo;
 
@@ -94,17 +96,17 @@ public class CatalogoGraphicController implements ControllerGraficoBase {
         try {
             String imagePath = articolo.getImmaginePath();
             if (imagePath == null || imagePath.isEmpty()) {
-                imagePath = "/Image/logo1.png";
+                imagePath = IMMAGINE_FALLBACK_PATH;
             }
             InputStream is = getClass().getResourceAsStream(imagePath);
             if (is != null) {
                 imgView.setImage(new Image(is));
             } else {
-                imgView.setImage(new Image(getClass().getResourceAsStream("/Image/logo1.png")));
+                imgView.setImage(new Image(getClass().getResourceAsStream(IMMAGINE_FALLBACK_PATH)));
             }
         } catch (Exception e) {
             try {
-                imgView.setImage(new Image(getClass().getResourceAsStream("/Image/logo1.png")));
+                imgView.setImage(new Image(getClass().getResourceAsStream(IMMAGINE_FALLBACK_PATH)));
             } catch (Exception ignored) {}
         }
 

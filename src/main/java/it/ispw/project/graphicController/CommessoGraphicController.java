@@ -36,6 +36,11 @@ import java.util.logging.Logger;
 public class CommessoGraphicController implements ControllerGraficoBase, Observer {
 
     private static final Logger LOGGER = Logger.getLogger(CommessoGraphicController.class.getName());
+    private static final String ICONA_ORDINE_PATH = "/Image/order-purchase.png";
+    private static final String TITOLO_NUOVO_ORDINE = "Nuovo Ordine!";
+    private static final String TESTO_VISUALIZZA_ORDINE = "Visualizza Ordine";
+    private static final String MESSAGGIO_NUOVO_ORDINE_COMPLETO =
+            "E' arrivato un nuovo ordine con la lista articoli completa.";
     private static final Map<Integer, OrdineBean> nuoviOrdiniInAttesa = new LinkedHashMap<>();
     private static boolean commessoGraficoAttivo;
 
@@ -150,7 +155,7 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
         imgView.setFitWidth(80);
         imgView.setPreserveRatio(true);
         try {
-            imgView.setImage(new Image(getClass().getResourceAsStream("/Image/order-purchase.png")));
+            imgView.setImage(new Image(getClass().getResourceAsStream(ICONA_ORDINE_PATH)));
         } catch (RuntimeException e) {
             imgView.setImage(null);
         }
@@ -212,9 +217,9 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
 
     private void apriPopupNotifica(OrdineBean ordineBean, String titolo, String messaggio) {
         Runnable azione = ordineBean != null ? () -> apriDettaglioOrdine(ordineBean) : null;
-        String testoPulsante = ordineBean != null ? "Visualizza Ordine" : "Chiudi";
+        String testoPulsante = ordineBean != null ? TESTO_VISUALIZZA_ORDINE : "Chiudi";
         String testoMessaggio = messaggio != null ? messaggio : "E' arrivato un nuovo ordine da preparare.";
-        apriPopupNotifica(ordineBean, titolo, testoMessaggio, testoPulsante, "/Image/order-purchase.png", azione);
+        apriPopupNotifica(ordineBean, titolo, testoMessaggio, testoPulsante, ICONA_ORDINE_PATH, azione);
     }
 
     private void apriPopupNotifica(OrdineBean ordineBean,
@@ -254,10 +259,10 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
         OrdineBean ordine = ordini.get(0);
         apriPopupNotifica(
                 ordine,
-                "Nuovo Ordine!",
+                TITOLO_NUOVO_ORDINE,
                 "Ordine pendente da preparare.",
-                "Visualizza Ordine",
-                "/Image/order-purchase.png",
+                TESTO_VISUALIZZA_ORDINE,
+                ICONA_ORDINE_PATH,
                 () -> apriDettaglioOrdine(ordine)
         );
     }
@@ -272,10 +277,10 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
         for (OrdineBean ordine : ordini) {
             apriPopupNotifica(
                     ordine,
-                    "Nuovo Ordine!",
-                    "E' arrivato un nuovo ordine con la lista articoli completa.",
-                    "Visualizza Ordine",
-                    "/Image/order-purchase.png",
+                    TITOLO_NUOVO_ORDINE,
+                    MESSAGGIO_NUOVO_ORDINE_COMPLETO,
+                    TESTO_VISUALIZZA_ORDINE,
+                    ICONA_ORDINE_PATH,
                     () -> apriDettaglioOrdine(ordine)
             );
         }
@@ -295,10 +300,10 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
 
                 apriPopupNotifica(
                         bean,
-                        "Nuovo Ordine!",
-                        "E' arrivato un nuovo ordine con la lista articoli completa.",
-                        "Visualizza Ordine",
-                        "/Image/order-purchase.png",
+                        TITOLO_NUOVO_ORDINE,
+                        MESSAGGIO_NUOVO_ORDINE_COMPLETO,
+                        TESTO_VISUALIZZA_ORDINE,
+                        ICONA_ORDINE_PATH,
                         () -> apriDettaglioOrdine(bean)
                 );
 
