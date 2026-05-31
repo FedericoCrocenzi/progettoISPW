@@ -3,7 +3,6 @@ package it.ispw.project.graphic_controller;
 import it.ispw.project.application_controller.AcquistaArticoloControllerApplicativo;
 import it.ispw.project.bean.ArticoloBean;
 import it.ispw.project.bean.RicercaArticoloBean;
-import it.ispw.project.exception.DAOException;
 import it.ispw.project.exception.QuantitaInsufficienteException;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -53,28 +52,23 @@ public class CatalogoGraphicController implements ControllerGraficoBase {
     }
 
     private void caricaProdotti() {
-        try {
-            tilePaneCatalogo.getChildren().clear();
-            List<ArticoloBean> listaArticoli;
+        tilePaneCatalogo.getChildren().clear();
+        List<ArticoloBean> listaArticoli;
 
-            if (filtroCorrente != null && filtroCorrente.getTestoRicerca() != null && !filtroCorrente.getTestoRicerca().isEmpty()) {
-                listaArticoli = appController.ricercaArticoli(filtroCorrente);
-            } else {
-                listaArticoli = appController.visualizzaCatalogo();
-            }
+        if (filtroCorrente != null && filtroCorrente.getTestoRicerca() != null && !filtroCorrente.getTestoRicerca().isEmpty()) {
+            listaArticoli = appController.ricercaArticoli(filtroCorrente);
+        } else {
+            listaArticoli = appController.visualizzaCatalogo();
+        }
 
-            if (listaArticoli.isEmpty()) {
-                tilePaneCatalogo.getChildren().add(new Label("Nessun prodotto trovato."));
-                return;
-            }
+        if (listaArticoli.isEmpty()) {
+            tilePaneCatalogo.getChildren().add(new Label("Nessun prodotto trovato."));
+            return;
+        }
 
-            for (ArticoloBean articolo : listaArticoli) {
-                VBox card = creaCardArticolo(articolo);
-                tilePaneCatalogo.getChildren().add(card);
-            }
-
-        } catch (DAOException e) {
-            mostraMessaggio("Errore", "Impossibile caricare il catalogo: " + e.getMessage(), Alert.AlertType.ERROR);
+        for (ArticoloBean articolo : listaArticoli) {
+            VBox card = creaCardArticolo(articolo);
+            tilePaneCatalogo.getChildren().add(card);
         }
     }
 

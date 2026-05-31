@@ -16,6 +16,8 @@ import java.util.Map;
  * centralizza le regole sulle scorte, come disponibilita', scarico merce e
  * ripristino dello stock dopo un fallimento della persistenza.
  */
+// Singleton intenzionale per il progetto ISPW: rappresenta l'unico magazzino fisico dell'applicazione.
+@SuppressWarnings("java:S6548")
 public class Magazzino {
 
     private final Map<Integer, Articolo> stock;

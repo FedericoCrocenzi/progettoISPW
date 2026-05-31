@@ -78,7 +78,7 @@ public class DBConnection {
     private String resolveConfiguredSecret(String propertyName) {
         String configuredValue = properties.getProperty(propertyName);
         if (configuredValue == null) {
-            logger.log(Level.WARNING, "Proprieta' DB sensibile non configurata: {0}", propertyName);
+            logger.log(Level.WARNING, "Proprieta'' DB sensibile non configurata: {0}", propertyName);
             return "";
         }
 
@@ -104,7 +104,7 @@ public class DBConnection {
         }
         if (value == null || value.isBlank()) {
             logger.log(Level.WARNING,
-                    "Proprieta' DB sensibile {0} non configurata: impostare la variabile {1}.",
+                    "Proprieta'' DB sensibile {0} non configurata: impostare la variabile {1}.",
                     new Object[]{propertyName, variableName});
             return "";
         }

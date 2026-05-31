@@ -62,11 +62,7 @@ public class ArticoloViewGraphicController {
         }
 
         // Gestione Patentino
-        if ("FITOFARMACO".equals(articolo.getType()) && articolo.isServePatentino()) {
-            lblPatentino.setVisible(true);
-        } else {
-            lblPatentino.setVisible(false);
-        }
+        lblPatentino.setVisible("FITOFARMACO".equals(articolo.getType()) && articolo.isServePatentino());
     }
 
     @FXML

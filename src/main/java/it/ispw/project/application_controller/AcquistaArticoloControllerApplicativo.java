@@ -72,7 +72,7 @@ public class AcquistaArticoloControllerApplicativo {
         return listaBean;
     }
 
-    public List<ArticoloBean> ricercaArticoli(RicercaArticoloBean criteri) throws DAOException {
+    public List<ArticoloBean> ricercaArticoli(RicercaArticoloBean criteri) {
         if (criteri == null ||
                 (criteri.getTestoRicerca() == null && criteri.getTipoArticolo() == null)) {
             return visualizzaCatalogo();

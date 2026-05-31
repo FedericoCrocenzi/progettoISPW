@@ -15,6 +15,8 @@ import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+// Singleton intenzionale: centralizza il cambio schermata nell'app stand-alone ISPW.
+@SuppressWarnings("java:S6548")
 public class ViewSwitcher {
 
     private static final Logger LOGGER = Logger.getLogger(ViewSwitcher.class.getName());

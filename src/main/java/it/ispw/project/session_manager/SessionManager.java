@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+// Singleton intenzionale: centralizza la sessione utente corrente nell'app stand-alone ISPW.
+@SuppressWarnings("java:S6548")
 public class SessionManager {
 
     private final Logger logger = Logger.getLogger(SessionManager.class.getName());
