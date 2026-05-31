@@ -14,8 +14,12 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ArticoloViewGraphicController {
+
+    private static final Logger LOGGER = Logger.getLogger(ArticoloViewGraphicController.class.getName());
 
     @FXML private Label lblTitolo;
     @FXML private Label lblPrezzo;
@@ -52,7 +56,7 @@ public class ArticoloViewGraphicController {
                 imgProdotto.setImage(new Image(getClass().getResourceAsStream(articolo.getImmaginePath())));
             }
         } catch (Exception e) {
-            System.err.println("Immagine non trovata: " + articolo.getImmaginePath());
+            LOGGER.log(Level.WARNING, "Immagine non trovata: " + articolo.getImmaginePath(), e);
         }
 
         // Gestione Patentino
@@ -115,7 +119,7 @@ public class ArticoloViewGraphicController {
                 mainLayout.setCenter(catalogoNode);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore durante il caricamento della vista catalogo.", e);
         }
     }
 

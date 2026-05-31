@@ -18,12 +18,12 @@ public class CommessoCLIController extends CLIControllerBase {
 
     @Override
     public void show() {
-        System.out.println("\n=== AREA COMMESSO ===");
-        System.out.println("1 - Visualizza ordini pendenti");
-        System.out.println("2 - Conferma ritiro merce");
-        System.out.println("3 - Logout");
+        CLIPrinter.println("\n=== AREA COMMESSO ===");
+        CLIPrinter.println("1 - Visualizza ordini pendenti");
+        CLIPrinter.println("2 - Conferma ritiro merce");
+        CLIPrinter.println("3 - Logout");
 
-        System.out.print("Scelta: ");
+        CLIPrinter.print("Scelta: ");
         String choice = scanner.nextLine();
 
         switch (choice) {
@@ -31,7 +31,7 @@ public class CommessoCLIController extends CLIControllerBase {
             case "2" -> confermaMercePronta();
             case "3" -> CLIViewNavigator.logout();
             default -> {
-                System.out.println("Scelta non valida.");
+                CLIPrinter.println("Scelta non valida.");
                 waitForEnter();
                 show();
             }
@@ -47,11 +47,11 @@ public class CommessoCLIController extends CLIControllerBase {
             List<OrdineBean> ordini = appController.recuperaOrdiniPendenti();
 
             if (ordini.isEmpty()) {
-                System.out.println("Nessun ordine da evadere.");
+                CLIPrinter.println("Nessun ordine da evadere.");
             } else {
-                System.out.println("\nOrdini pendenti:");
+                CLIPrinter.println("\nOrdini pendenti:");
                 for (OrdineBean o : ordini) {
-                    System.out.printf(
+                    CLIPrinter.printf(
                             "- ID: %d | Totale: € %.2f | Stato: %s%n",
                             o.getId(),
                             o.getTotale(),
@@ -61,7 +61,7 @@ public class CommessoCLIController extends CLIControllerBase {
             }
 
         } catch (DAOException e) {
-            System.out.println("Errore nel recupero ordini: " + e.getMessage());
+            CLIPrinter.println("Errore nel recupero ordini: " + e.getMessage());
         }
 
         waitForEnter();
@@ -69,18 +69,18 @@ public class CommessoCLIController extends CLIControllerBase {
     }
 
     private void confermaMercePronta() {
-        System.out.print("Inserisci ID ordine da confermare: ");
+        CLIPrinter.print("Inserisci ID ordine da confermare: ");
         String input = scanner.nextLine();
 
         try {
             int idOrdine = Integer.parseInt(input);
             appController.confermaRitiroMerce(idOrdine);
-            System.out.println("Ordine confermato. Cliente notificato.");
+            CLIPrinter.println("Ordine confermato. Cliente notificato.");
 
         } catch (NumberFormatException e) {
-            System.out.println("ID non valido.");
+            CLIPrinter.println("ID non valido.");
         } catch (DAOException e) {
-            System.out.println("Errore: " + e.getMessage());
+            CLIPrinter.println("Errore: " + e.getMessage());
         }
 
         waitForEnter();

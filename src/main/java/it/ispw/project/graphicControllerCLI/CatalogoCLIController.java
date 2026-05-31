@@ -10,10 +10,10 @@ public class CatalogoCLIController extends CLIControllerBase {
 
     @Override
     public void show() {
-        System.out.println("=== CATALOGO PRODOTTI ===");
+        CLIPrinter.println("=== CATALOGO PRODOTTI ===");
 
         if (sessionId == null) {
-            System.out.println("Errore: sessione non inizializzata.");
+            CLIPrinter.println("Errore: sessione non inizializzata.");
             CLIViewNavigator.goToLogin();
             return;
         }
@@ -25,22 +25,22 @@ public class CatalogoCLIController extends CLIControllerBase {
         try {
             catalogo = controller.visualizzaCatalogo();
         } catch (DAOException e) {
-            System.out.println("Errore nel caricamento del catalogo.");
+            CLIPrinter.println("Errore nel caricamento del catalogo.");
             CLIViewNavigator.goToLogin();
             return;
         }
 
         for (int i = 0; i < catalogo.size(); i++) {
             ArticoloBean a = catalogo.get(i);
-            System.out.println((i + 1) + ") "
+            CLIPrinter.println((i + 1) + ") "
                     + a.getDescrizione()
                     + " - €" + a.getPrezzo());
         }
 
-        System.out.println();
-        System.out.println("0) Vai al carrello");
-        System.out.println("9) Logout");
-        System.out.print("Scelta: ");
+        CLIPrinter.println();
+        CLIPrinter.println("0) Vai al carrello");
+        CLIPrinter.println("9) Logout");
+        CLIPrinter.print("Scelta: ");
 
         int scelta;
         try {

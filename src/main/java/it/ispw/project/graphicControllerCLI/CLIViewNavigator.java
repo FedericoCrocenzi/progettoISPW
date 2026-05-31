@@ -79,7 +79,7 @@ public class CLIViewNavigator {
             currentSessionId = null;
         }
 
-        System.out.println("\nLogout effettuato correttamente.\n");
+        CLIPrinter.println("\nLogout effettuato correttamente.\n");
         goToLogin();
     }
 
@@ -89,7 +89,7 @@ public class CLIViewNavigator {
 
     private static boolean checkSession() {
         if (currentSessionId == null) {
-            System.out.println("Sessione non valida. Torno al login.");
+            CLIPrinter.println("Sessione non valida. Torno al login.");
             goToLogin();
             return false;
         }

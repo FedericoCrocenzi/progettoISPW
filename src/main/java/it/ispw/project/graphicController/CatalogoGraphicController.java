@@ -23,9 +23,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class CatalogoGraphicController implements ControllerGraficoBase {
 
+    private static final Logger LOGGER = Logger.getLogger(CatalogoGraphicController.class.getName());
     private static final String IMMAGINE_FALLBACK_PATH = "/Image/logo1.png";
 
     @FXML
@@ -137,11 +140,11 @@ public class CatalogoGraphicController implements ControllerGraficoBase {
             if (mainLayout != null) {
                 mainLayout.setCenter(articoloView);
             } else {
-                System.err.println("Errore: Impossibile trovare il rootLayout (MainView).");
+                LOGGER.warning("Errore: Impossibile trovare il rootLayout (MainView).");
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore durante l'apertura del dettaglio prodotto.", e);
             mostraMessaggio("Errore Applicazione", "Impossibile aprire il dettaglio prodotto.", Alert.AlertType.ERROR);
         }
     }

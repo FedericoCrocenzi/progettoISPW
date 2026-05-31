@@ -10,10 +10,10 @@ public class CarrelloCLIController extends CLIControllerBase {
 
     @Override
     public void show() {
-        System.out.println("=== CARRELLO ===");
+        CLIPrinter.println("=== CARRELLO ===");
 
         if (sessionId == null) {
-            System.out.println("Sessione non valida.");
+            CLIPrinter.println("Sessione non valida.");
             CLIViewNavigator.goToLogin();
             return;
         }
@@ -25,30 +25,30 @@ public class CarrelloCLIController extends CLIControllerBase {
         try {
             carrello = controller.visualizzaCarrello(sessionId);
         } catch (Exception e) {
-            System.out.println("Errore nel recupero del carrello.");
+            CLIPrinter.println("Errore nel recupero del carrello.");
             CLIViewNavigator.goToCatalogo();
             return;
         }
 
         if (carrello.getListaArticoli().isEmpty()) {
-            System.out.println("Carrello vuoto.");
+            CLIPrinter.println("Carrello vuoto.");
             CLIViewNavigator.goToCatalogo();
             return;
         }
 
         for (int i = 0; i < carrello.getListaArticoli().size(); i++) {
             ArticoloBean articolo = carrello.getListaArticoli().get(i);
-            System.out.println((i + 1) + ") " + articolo.getDescrizione() + " x" + articolo.getQuantita());
+            CLIPrinter.println((i + 1) + ") " + articolo.getDescrizione() + " x" + articolo.getQuantita());
         }
 
-        System.out.println("Totale: EUR " + carrello.getTotale());
-        System.out.println();
-        System.out.println("1) Procedi al pagamento");
-        System.out.println("2) Aumenta quantita articolo");
-        System.out.println("3) Diminuisci quantita articolo");
-        System.out.println("4) Torna al catalogo");
-        System.out.println("9) Logout");
-        System.out.print("Scelta: ");
+        CLIPrinter.println("Totale: EUR " + carrello.getTotale());
+        CLIPrinter.println();
+        CLIPrinter.println("1) Procedi al pagamento");
+        CLIPrinter.println("2) Aumenta quantita articolo");
+        CLIPrinter.println("3) Diminuisci quantita articolo");
+        CLIPrinter.println("4) Torna al catalogo");
+        CLIPrinter.println("9) Logout");
+        CLIPrinter.print("Scelta: ");
 
         int scelta;
         try {
@@ -83,11 +83,11 @@ public class CarrelloCLIController extends CLIControllerBase {
     private void modificaQuantita(AcquistaArticoloControllerApplicativo controller,
                                   CarrelloBean carrello,
                                   boolean aumenta) {
-        System.out.print("Numero articolo: ");
+        CLIPrinter.print("Numero articolo: ");
         try {
             int indice = Integer.parseInt(scanner.nextLine()) - 1;
             if (indice < 0 || indice >= carrello.getListaArticoli().size()) {
-                System.out.println("Articolo non valido.");
+                CLIPrinter.println("Articolo non valido.");
                 waitForEnter();
                 show();
                 return;
@@ -102,15 +102,15 @@ public class CarrelloCLIController extends CLIControllerBase {
             show();
 
         } catch (NumberFormatException e) {
-            System.out.println("Inserisci un numero valido.");
+            CLIPrinter.println("Inserisci un numero valido.");
             waitForEnter();
             show();
         } catch (QuantitaInsufficienteException e) {
-            System.out.println("Quantita non disponibile.");
+            CLIPrinter.println("Quantita non disponibile.");
             waitForEnter();
             show();
         } catch (DAOException | IllegalArgumentException e) {
-            System.out.println("Impossibile aggiornare il carrello.");
+            CLIPrinter.println("Impossibile aggiornare il carrello.");
             waitForEnter();
             show();
         }

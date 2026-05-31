@@ -12,9 +12,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class JDBCUtenteDAO implements UtenteDAO {
 
+    private static final Logger LOGGER = Logger.getLogger(JDBCUtenteDAO.class.getName());
     private final Map<Integer, Utente> utentiById = new HashMap<>();
 
     @Override
@@ -163,7 +166,7 @@ public class JDBCUtenteDAO implements UtenteDAO {
             if (stmt != null) stmt.close();
             // Non chiudiamo la connessione qui perché è gestita dal Singleton condiviso
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.WARNING, "Errore durante la chiusura delle risorse JDBC.", e);
         }
     }
 }

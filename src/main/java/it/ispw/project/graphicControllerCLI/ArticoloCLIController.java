@@ -15,23 +15,23 @@ public class ArticoloCLIController extends CLIControllerBase {
 
     @Override
     public void show() {
-        System.out.println("=== DETTAGLIO ARTICOLO ===");
-        System.out.println("Descrizione: " + articolo.getDescrizione());
-        System.out.println("Prezzo: €" + articolo.getPrezzo());
+        CLIPrinter.println("=== DETTAGLIO ARTICOLO ===");
+        CLIPrinter.println("Descrizione: " + articolo.getDescrizione());
+        CLIPrinter.println("Prezzo: €" + articolo.getPrezzo());
 
         // 🔐 sessionId DEVE arrivare dal navigator (come JavaFX)
         if (sessionId == null) {
-            System.out.println("Errore: sessione non inizializzata.");
+            CLIPrinter.println("Errore: sessione non inizializzata.");
             CLIViewNavigator.goToLogin();
             return;
         }
 
-        System.out.print("Quantità da aggiungere: ");
+        CLIPrinter.print("Quantità da aggiungere: ");
         int qta;
         try {
             qta = Integer.parseInt(scanner.nextLine());
         } catch (NumberFormatException e) {
-            System.out.println("Inserisci un numero valido.");
+            CLIPrinter.println("Inserisci un numero valido.");
             waitForEnter();
             show();
             return;
@@ -44,15 +44,15 @@ public class ArticoloCLIController extends CLIControllerBase {
             // ✅ CHIAMATA CORRETTA (firma reale)
             controller.aggiungiArticoloAlCarrello(sessionId, articolo, qta);
 
-            System.out.println("Articolo aggiunto al carrello.");
+            CLIPrinter.println("Articolo aggiunto al carrello.");
             CLIViewNavigator.goToCatalogo();
 
         } catch (QuantitaInsufficienteException e) {
-            System.out.println("Quantità non disponibile.");
+            CLIPrinter.println("Quantità non disponibile.");
             waitForEnter();
             show();
         } catch (DAOException | IllegalArgumentException e) {
-            System.out.println("Errore durante l'aggiunta al carrello: " + e.getMessage());
+            CLIPrinter.println("Errore durante l'aggiunta al carrello: " + e.getMessage());
             waitForEnter();
             CLIViewNavigator.goToCatalogo();
         }

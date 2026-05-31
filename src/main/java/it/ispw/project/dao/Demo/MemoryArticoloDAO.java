@@ -10,8 +10,11 @@ import it.ispw.project.model.Utensile;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class MemoryArticoloDAO implements ArticoloDAO {
+
+    private static final Logger LOGGER = Logger.getLogger(MemoryArticoloDAO.class.getName());
 
     // Rimuoviamo la lista statica 'tabellaArticoli'.
     // Usiamo Magazzino come unica fonte di verità.
@@ -32,7 +35,7 @@ public class MemoryArticoloDAO implements ArticoloDAO {
         // ID 3: Fitofarmaco
         magazzino.aggiungiArticolo(new Fitofarmaco(3, "Diserbante Potente", 45.00, 20, true));
 
-        System.out.println("DEMO: Magazzino popolato con dati di prova.");
+        LOGGER.info("DEMO: Magazzino popolato con dati di prova.");
     }
 
     @Override
@@ -60,7 +63,7 @@ public class MemoryArticoloDAO implements ArticoloDAO {
 
         // Qui non dobbiamo fare nulla di pratico, ma per simulare un DAO reale potremmo fare:
         Magazzino.getInstance().aggiungiArticolo(articolo); // Sovrascrive/Conferma
-        System.out.println("DEMO: Scorta salvata (in RAM) per articolo " + articolo.leggiId());
+        LOGGER.info(() -> "DEMO: Scorta salvata (in RAM) per articolo " + articolo.leggiId());
         return true;
     }
 

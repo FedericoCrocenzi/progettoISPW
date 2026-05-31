@@ -7,9 +7,12 @@ import it.ispw.project.model.Utente;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FileSystemUtenteDAO implements UtenteDAO {
 
+    private static final Logger LOGGER = Logger.getLogger(FileSystemUtenteDAO.class.getName());
     private static final String CSV_FILE_NAME = "utenti.csv";
     private static final String SEPARATOR = ";";
 
@@ -20,7 +23,7 @@ public class FileSystemUtenteDAO implements UtenteDAO {
             try {
                 file.createNewFile();
             } catch (IOException e) {
-                System.err.println("Impossibile creare il file utenti.csv");
+                LOGGER.log(Level.SEVERE, "Impossibile creare il file utenti.csv", e);
             }
         }
     }

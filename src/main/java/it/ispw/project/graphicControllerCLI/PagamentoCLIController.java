@@ -11,10 +11,10 @@ public class PagamentoCLIController extends CLIControllerBase {
 
     @Override
     public void show() {
-        System.out.println("=== PAGAMENTO ===");
+        CLIPrinter.println("=== PAGAMENTO ===");
 
         if (sessionId == null) {
-            System.out.println("Errore: sessione non inizializzata.");
+            CLIPrinter.println("Errore: sessione non inizializzata.");
             CLIViewNavigator.goToLogin();
             return;
         }
@@ -25,7 +25,7 @@ public class PagamentoCLIController extends CLIControllerBase {
         try {
             CarrelloBean carrello = controller.visualizzaCarrello(sessionId);
             if (carrello.getListaArticoli().isEmpty()) {
-                System.out.println("Il carrello e' vuoto. Aggiungi almeno un articolo prima di pagare.");
+                CLIPrinter.println("Il carrello e' vuoto. Aggiungi almeno un articolo prima di pagare.");
                 waitForEnter();
                 CLIViewNavigator.goToCatalogo();
                 return;
@@ -39,32 +39,32 @@ public class PagamentoCLIController extends CLIControllerBase {
 
             OrdineBean ordine = controller.completaAcquisto(sessionId, pagamento);
 
-            System.out.println("Pagamento completato con successo.");
-            System.out.println("Ordine #" + ordine.getId()
+            CLIPrinter.println("Pagamento completato con successo.");
+            CLIPrinter.println("Ordine #" + ordine.getId()
                     + " - Totale: EUR " + ordine.getTotale());
-            System.out.println("Notifica nuovo ordine inviata al commesso.");
+            CLIPrinter.println("Notifica nuovo ordine inviata al commesso.");
 
             waitForEnter();
             CLIViewNavigator.goToCatalogo();
 
         } catch (PaymentException e) {
-            System.out.println("Errore nel pagamento: " + e.getMessage());
+            CLIPrinter.println("Errore nel pagamento: " + e.getMessage());
             waitForEnter();
             CLIViewNavigator.goToCarrello();
 
         } catch (DAOException e) {
-            System.out.println("Errore di sistema durante il pagamento.");
+            CLIPrinter.println("Errore di sistema durante il pagamento.");
             waitForEnter();
             CLIViewNavigator.goToCarrello();
         }
     }
 
     private PagamentoBean creaPagamentoDaInput() throws PaymentException {
-        System.out.println("1) Carta di credito");
-        System.out.println("2) PayPal");
-        System.out.println("3) Paga in cassa");
-        System.out.println("0) Torna al carrello");
-        System.out.print("Metodo: ");
+        CLIPrinter.println("1) Carta di credito");
+        CLIPrinter.println("2) PayPal");
+        CLIPrinter.println("3) Paga in cassa");
+        CLIPrinter.println("0) Torna al carrello");
+        CLIPrinter.print("Metodo: ");
 
         String scelta = scanner.nextLine();
         PagamentoBean pagamento = new PagamentoBean();
@@ -72,20 +72,20 @@ public class PagamentoCLIController extends CLIControllerBase {
         switch (scelta) {
             case "1":
                 pagamento.setMetodoPagamento("CARTA_CREDITO");
-                System.out.print("Intestatario carta: ");
+                CLIPrinter.print("Intestatario carta: ");
                 pagamento.setIntestatario(scanner.nextLine().trim());
-                System.out.print("Numero carta: ");
+                CLIPrinter.print("Numero carta: ");
                 pagamento.setNumeroCarta(scanner.nextLine().trim());
-                System.out.print("Scadenza (MM/YY o MM/YYYY): ");
+                CLIPrinter.print("Scadenza (MM/YY o MM/YYYY): ");
                 pagamento.setDataScadenza(scanner.nextLine().trim());
-                System.out.print("CVV: ");
+                CLIPrinter.print("CVV: ");
                 pagamento.setCvv(scanner.nextLine().trim());
                 return pagamento;
             case "2":
                 pagamento.setMetodoPagamento("PAYPAL");
-                System.out.print("Email PayPal: ");
+                CLIPrinter.print("Email PayPal: ");
                 pagamento.setEmailPaypal(scanner.nextLine().trim());
-                System.out.print("Password PayPal: ");
+                CLIPrinter.print("Password PayPal: ");
                 pagamento.setPasswordPaypal(scanner.nextLine().trim());
                 return pagamento;
             case "3":

@@ -22,13 +22,13 @@ public abstract class CLIControllerBase {
     }
 
     protected void waitForEnter() {
-        System.out.println("\nPremi INVIO per continuare...");
+        CLIPrinter.println("\nPremi INVIO per continuare...");
         if (scanner.hasNextLine()) {
             scanner.nextLine();
         }
     }
 
     protected void chiudiApplicazione() {
-        System.out.println("Chiusura applicazione.");
+        CLIPrinter.println("Chiusura applicazione.");
     }
 }

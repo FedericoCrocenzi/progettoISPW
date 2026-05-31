@@ -9,10 +9,10 @@ public class ProfiloCLIController extends CLIControllerBase {
 
     @Override
     public void show() {
-        System.out.println("=== PROFILO UTENTE ===");
+        CLIPrinter.println("=== PROFILO UTENTE ===");
 
         if (sessionId == null) {
-            System.out.println("Errore: sessione non inizializzata.");
+            CLIPrinter.println("Errore: sessione non inizializzata.");
             CLIViewNavigator.goToLogin();
             return;
         }
@@ -20,16 +20,16 @@ public class ProfiloCLIController extends CLIControllerBase {
         Session session = SessionManager.getInstance().getSession(sessionId);
 
         if (session == null) {
-            System.out.println("Sessione scaduta.");
+            CLIPrinter.println("Sessione scaduta.");
             CLIViewNavigator.goToLogin();
             return;
         }
 
-        System.out.println("Username: " + session.getUtenteCorrente().leggiUsername());
-        System.out.println("Ruolo: " + session.getUtenteCorrente().scopriRuolo());
-        System.out.println();
-        System.out.println("1 - Torna al catalogo");
-        System.out.println("2 - Logout");
+        CLIPrinter.println("Username: " + session.getUtenteCorrente().leggiUsername());
+        CLIPrinter.println("Ruolo: " + session.getUtenteCorrente().scopriRuolo());
+        CLIPrinter.println();
+        CLIPrinter.println("1 - Torna al catalogo");
+        CLIPrinter.println("2 - Logout");
 
         Scanner scanner = new Scanner(System.in);
         int choice = scanner.nextInt();
@@ -42,7 +42,7 @@ public class ProfiloCLIController extends CLIControllerBase {
                 CLIViewNavigator.logout();
                 break;
             default:
-                System.out.println("Scelta non valida.");
+                CLIPrinter.println("Scelta non valida.");
                 show();
                 break;
         }

@@ -10,17 +10,17 @@ public class LoginCLIController extends CLIControllerBase {
 
     @Override
     public void show() {
-        System.out.println("=== LOGIN ===");
-        System.out.println("0 - Esci");
+        CLIPrinter.println("=== LOGIN ===");
+        CLIPrinter.println("0 - Esci");
 
-        System.out.print("Username: ");
+        CLIPrinter.print("Username: ");
         String username = leggiLinea();
         if (username == null || "0".equals(username.trim())) {
             chiudiApplicazione();
             return;
         }
 
-        System.out.print("Password: ");
+        CLIPrinter.print("Password: ");
         String password = leggiLinea();
         if (password == null) {
             chiudiApplicazione();
@@ -35,7 +35,7 @@ public class LoginCLIController extends CLIControllerBase {
             UtenteBean out = new LoginControllerApplicativo().login(bean);
 
             CLIViewNavigator.setSessionId(out.getSessionId());
-            System.out.println("Login OK. Ruolo: " + out.getRuolo());
+            CLIPrinter.println("Login OK. Ruolo: " + out.getRuolo());
 
             // FIX: switch su String (ruolo) con literal corretti
             switch (out.getRuolo().toUpperCase()) {
@@ -47,11 +47,11 @@ public class LoginCLIController extends CLIControllerBase {
             }
 
         } catch (InvalidCredentialsException e) {
-            System.out.println("Credenziali errate.");
+            CLIPrinter.println("Credenziali errate.");
             waitForEnter();
             show();
         } catch (DAOException e) {
-            System.out.println("Errore di sistema (DAO).");
+            CLIPrinter.println("Errore di sistema (DAO).");
             waitForEnter();
             show();
         }

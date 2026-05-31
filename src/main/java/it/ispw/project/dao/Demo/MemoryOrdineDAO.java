@@ -5,8 +5,11 @@ import it.ispw.project.model.Ordine;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class MemoryOrdineDAO implements OrdineDAO {
+
+    private static final Logger LOGGER = Logger.getLogger(MemoryOrdineDAO.class.getName());
 
     // IMPORTANTE: static per simulare la persistenza tra le varie schermate
     private static List<Ordine> tabellaOrdini = new ArrayList<>();
@@ -26,7 +29,7 @@ public class MemoryOrdineDAO implements OrdineDAO {
         // 3. "Salvo" nella lista condivisa
         tabellaOrdini.add(ordine);
 
-        System.out.println("DEMO (RAM): Ordine salvato con ID " + nuovoId + " | Totale: " + ordine.getTotale());
+        LOGGER.info("DEMO (RAM): Ordine salvato con ID " + nuovoId + " | Totale: " + ordine.getTotale());
     }
 
     @Override
@@ -67,7 +70,8 @@ public class MemoryOrdineDAO implements OrdineDAO {
             if (o.leggiId() == ordine.leggiId()) {
                 // In un DB vero faresti: UPDATE ... SET stato = ...
                 // Qui stampiamo solo un log di conferma
-                System.out.println("DEMO (RAM): Stato ordine #" + o.leggiId() + " aggiornato a: " + ordine.getStato());
+                LOGGER.info("DEMO (RAM): Stato ordine #" + o.leggiId()
+                        + " aggiornato a: " + ordine.getStato());
                 return;
             }
         }
