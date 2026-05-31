@@ -21,14 +21,7 @@ public class CatalogoCLIController extends CLIControllerBase {
         AcquistaArticoloControllerApplicativo controller =
                 new AcquistaArticoloControllerApplicativo();
 
-        List<ArticoloBean> catalogo;
-        try {
-            catalogo = controller.visualizzaCatalogo();
-        } catch (DAOException e) {
-            CLIPrinter.println("Errore nel caricamento del catalogo.");
-            CLIViewNavigator.goToLogin();
-            return;
-        }
+        List<ArticoloBean> catalogo = controller.visualizzaCatalogo();
 
         for (int i = 0; i < catalogo.size(); i++) {
             ArticoloBean a = catalogo.get(i);

@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 public class CarrelloGraphicController implements ControllerGraficoBase, Observer {
 
     private static final Logger LOGGER = Logger.getLogger(CarrelloGraphicController.class.getName());
+    private static final String IMMAGINE_FALLBACK_PATH = "/image/logo1.png";
 
     @FXML private VBox vboxCarrello;
     @FXML private Label lblTotale;
@@ -159,9 +160,9 @@ public class CarrelloGraphicController implements ControllerGraficoBase, Observe
 
     private void caricaImmagine(ImageView imgView, String path) {
         try {
-            if (path == null || path.isEmpty()) path = "/image/logo1.png";
+            if (path == null || path.isEmpty()) path = IMMAGINE_FALLBACK_PATH;
             InputStream is = getClass().getResourceAsStream(path);
-            if (is == null) is = getClass().getResourceAsStream("/image/logo1.png");
+            if (is == null) is = getClass().getResourceAsStream(IMMAGINE_FALLBACK_PATH);
             if (is != null) imgView.setImage(new Image(is));
         } catch (RuntimeException e) {
             LOGGER.log(Level.FINE, "Immagine carrello non disponibile.", e);

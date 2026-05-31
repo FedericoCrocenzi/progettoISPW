@@ -103,8 +103,8 @@ public class MainGraphicController implements ControllerGraficoBase, Observer {
 
             // Inizializza il controller della sotto-vista se necessario
             Object controller = loader.getController();
-            if (controller instanceof ControllerGraficoBase) {
-                ((ControllerGraficoBase) controller).initData(sessionId);
+            if (controller instanceof ControllerGraficoBase controllerGraficoBase) {
+                controllerGraficoBase.initData(sessionId);
             }
 
             // Sostituisce il centro del BorderPane

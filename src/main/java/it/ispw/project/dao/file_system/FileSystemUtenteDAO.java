@@ -19,7 +19,9 @@ public class FileSystemUtenteDAO implements UtenteDAO {
         File file = new File(CSV_FILE_NAME);
         if (!file.exists()) {
             try {
-                file.createNewFile();
+                if (!file.createNewFile()) {
+                    LOGGER.warning("File utenti.csv non creato perche' gia' presente o non disponibile.");
+                }
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Impossibile creare il file utenti.csv", e);
             }

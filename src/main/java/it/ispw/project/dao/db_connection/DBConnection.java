@@ -11,6 +11,10 @@ import java.util.logging.Logger;
 
 public class DBConnection {
 
+    private static final String DB_PASSWORD_PROPERTY = "password";
+    private static final String ENV_PLACEHOLDER_PREFIX = "${";
+    private static final String ENV_PLACEHOLDER_SUFFIX = "}";
+
     private static DBConnection instance = null; // L'istanza Singleton (Lazy)
     private Connection connection = null;        // L'oggetto Connection gestito dall'istanza
     private final Properties properties = new Properties();
@@ -60,7 +64,7 @@ public class DBConnection {
             if (connection == null || connection.isClosed()) {
                 String dbUrl = properties.getProperty("dbUrl");
                 String user = properties.getProperty("username");
-                String pass = properties.getProperty("password");
+                String pass = resolveConfiguredSecret(DB_PASSWORD_PROPERTY);
 
                 connection = DriverManager.getConnection(dbUrl, user, pass);
             }
@@ -69,5 +73,41 @@ public class DBConnection {
             connection = null; // Reset in caso di errore
         }
         return connection;
+    }
+
+    private String resolveConfiguredSecret(String propertyName) {
+        String configuredValue = properties.getProperty(propertyName);
+        if (configuredValue == null) {
+            logger.log(Level.WARNING, "Proprieta' DB sensibile non configurata: {0}", propertyName);
+            return "";
+        }
+
+        if (isEnvironmentPlaceholder(configuredValue)) {
+            return resolveEnvironmentValue(propertyName, configuredValue);
+        }
+
+        return configuredValue;
+    }
+
+    private boolean isEnvironmentPlaceholder(String value) {
+        return value.startsWith(ENV_PLACEHOLDER_PREFIX) && value.endsWith(ENV_PLACEHOLDER_SUFFIX);
+    }
+
+    private String resolveEnvironmentValue(String propertyName, String placeholder) {
+        String variableName = placeholder.substring(
+                ENV_PLACEHOLDER_PREFIX.length(),
+                placeholder.length() - ENV_PLACEHOLDER_SUFFIX.length()
+        );
+        String value = System.getenv(variableName);
+        if (value == null || value.isBlank()) {
+            value = System.getProperty(variableName);
+        }
+        if (value == null || value.isBlank()) {
+            logger.log(Level.WARNING,
+                    "Proprieta' DB sensibile {0} non configurata: impostare la variabile {1}.",
+                    new Object[]{propertyName, variableName});
+            return "";
+        }
+        return value;
     }
 }

@@ -147,8 +147,7 @@ public class Magazzino {
     }
 
     private Articolo copiaArticolo(Articolo articolo) {
-        if (articolo instanceof Mangime) {
-            Mangime mangime = (Mangime) articolo;
+        if (articolo instanceof Mangime mangime) {
             Date scadenza = mangime.getScadenza();
             Mangime copia = new Mangime(
                     mangime.leggiId(),
@@ -161,8 +160,7 @@ public class Magazzino {
             return copia;
         }
 
-        if (articolo instanceof Utensile) {
-            Utensile utensile = (Utensile) articolo;
+        if (articolo instanceof Utensile utensile) {
             Utensile copia = new Utensile(
                     utensile.leggiId(),
                     utensile.leggiDescrizione(),
@@ -174,8 +172,7 @@ public class Magazzino {
             return copia;
         }
 
-        if (articolo instanceof Fitofarmaco) {
-            Fitofarmaco fitofarmaco = (Fitofarmaco) articolo;
+        if (articolo instanceof Fitofarmaco fitofarmaco) {
             Fitofarmaco copia = new Fitofarmaco(
                     fitofarmaco.leggiId(),
                     fitofarmaco.leggiDescrizione(),

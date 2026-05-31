@@ -173,8 +173,6 @@ public class CatalogoGraphicController implements ControllerGraficoBase {
                 mostraMessaggio("Scorta Insufficiente", e.getMessage(), Alert.AlertType.WARNING);
             } catch (IllegalArgumentException e) {
                 mostraMessaggio("Attenzione", e.getMessage(), Alert.AlertType.WARNING);
-            } catch (DAOException e) {
-                mostraMessaggio("Errore Sistema", "Problema col database: " + e.getMessage(), Alert.AlertType.ERROR);
             }
         });
     }

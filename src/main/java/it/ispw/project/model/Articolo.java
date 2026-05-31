@@ -58,7 +58,7 @@ public abstract class Articolo implements Serializable {
     // --- OVERRIDE METODI OBJECT (Fondamentali per l'uso nelle MAPPE del Carrello) ---
 
     @Override
-    public boolean equals(Object o) {
+    public final boolean equals(Object o) {
         // 1. Se è lo stesso oggetto in memoria, è uguale
         if (this == o) return true;
 
@@ -71,7 +71,7 @@ public abstract class Articolo implements Serializable {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         // Restituisce l'hash basato sull'ID.
         // Necessario perché oggetti uguali DEVONO avere lo stesso hash.
         return Integer.hashCode(id);

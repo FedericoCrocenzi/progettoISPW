@@ -51,7 +51,7 @@ public class ArticoloCLIController extends CLIControllerBase {
             CLIPrinter.println("Quantità non disponibile.");
             waitForEnter();
             show();
-        } catch (DAOException | IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             CLIPrinter.println("Errore durante l'aggiunta al carrello: " + e.getMessage());
             waitForEnter();
             CLIViewNavigator.goToCatalogo();

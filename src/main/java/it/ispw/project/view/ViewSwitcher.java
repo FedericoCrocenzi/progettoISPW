@@ -43,8 +43,8 @@ public class ViewSwitcher {
             Parent view = loader.load();
 
             Object controller = loader.getController();
-            if (controller instanceof ControllerGraficoBase) {
-                ((ControllerGraficoBase) controller).initData(sessionId);
+            if (controller instanceof ControllerGraficoBase controllerGraficoBase) {
+                controllerGraficoBase.initData(sessionId);
             }
 
             if (mainPane != null) {
@@ -68,8 +68,8 @@ public class ViewSwitcher {
             Parent root = loader.load();
 
             Object controller = loader.getController();
-            if (controller instanceof ControllerGraficoBase) {
-                ((ControllerGraficoBase) controller).initData(sessionId);
+            if (controller instanceof ControllerGraficoBase controllerGraficoBase) {
+                controllerGraficoBase.initData(sessionId);
             }
 
             Scene scene = stage.getScene();

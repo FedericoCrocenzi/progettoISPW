@@ -109,7 +109,7 @@ public class CarrelloCLIController extends CLIControllerBase {
             CLIPrinter.println("Quantita non disponibile.");
             waitForEnter();
             show();
-        } catch (DAOException | IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             CLIPrinter.println("Impossibile aggiornare il carrello.");
             waitForEnter();
             show();

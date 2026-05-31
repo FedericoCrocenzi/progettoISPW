@@ -51,7 +51,7 @@ public class AcquistaArticoloControllerApplicativo {
     // GESTIONE CATALOGO
     // -----------------------------------------------------------------
 
-    public List<ArticoloBean> visualizzaCatalogo() throws DAOException {
+    public List<ArticoloBean> visualizzaCatalogo() {
         Magazzino magazzino = Magazzino.getInstance();
 
         // Lazy loading del catalogo
@@ -103,7 +103,7 @@ public class AcquistaArticoloControllerApplicativo {
     // -----------------------------------------------------------------
 
     public void aggiungiArticoloAlCarrello(String sessionId, ArticoloBean articoloBean, int quantita)
-            throws IllegalArgumentException, DAOException, QuantitaInsufficienteException {
+            throws QuantitaInsufficienteException {
 
         if (quantita <= 0)
             throw new IllegalArgumentException("La quantità deve essere positiva.");
@@ -446,15 +446,15 @@ public class AcquistaArticoloControllerApplicativo {
         b.setQuantita(a.ottieniScorta());
         b.setImmaginePath(a.getImmaginePath());
 
-        if (a instanceof Mangime) {
+        if (a instanceof Mangime mangime) {
             b.setType("MANGIME");
-            b.setDataScadenza(((Mangime) a).getScadenza());
-        } else if (a instanceof Utensile) {
+            b.setDataScadenza(mangime.getScadenza());
+        } else if (a instanceof Utensile utensile) {
             b.setType("UTENSILE");
-            b.setMateriale(((Utensile) a).getMateriale());
-        } else if (a instanceof Fitofarmaco) {
+            b.setMateriale(utensile.getMateriale());
+        } else if (a instanceof Fitofarmaco fitofarmaco) {
             b.setType("FITOFARMACO");
-            b.setServePatentino(((Fitofarmaco) a).isRichiedePatentino());
+            b.setServePatentino(fitofarmaco.isRichiedePatentino());
         }
         return b;
     }

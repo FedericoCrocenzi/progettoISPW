@@ -93,7 +93,7 @@ public class ArticoloViewGraphicController {
             chiudiScheda();
         } catch (QuantitaInsufficienteException e) {
             mostraMessaggio("Attenzione", e.getMessage(), Alert.AlertType.WARNING);
-        } catch (IllegalArgumentException | DAOException e) {
+        } catch (IllegalArgumentException e) {
             mostraMessaggio("Errore", e.getMessage(), Alert.AlertType.ERROR);
         }
     }

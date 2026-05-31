@@ -172,7 +172,7 @@ public class FileSystemOrdineDAO implements OrdineDAO {
     private String serializzaArticoli(Map<Articolo, Integer> articoli) {
         StringBuilder articoliStr = new StringBuilder();
         for (Map.Entry<Articolo, Integer> entry : articoli.entrySet()) {
-            if (articoliStr.length() > 0) articoliStr.append(",");
+            if (!articoliStr.isEmpty()) articoliStr.append(",");
             articoliStr.append(entry.getKey().leggiId())
                     .append(":")
                     .append(entry.getValue());
@@ -279,7 +279,7 @@ public class FileSystemOrdineDAO implements OrdineDAO {
     private String serializeOrdine(Ordine ordine) {
         StringBuilder articoliStr = new StringBuilder();
         for (Map.Entry<Articolo, Integer> entry : ordine.getArticoli().entrySet()) {
-            if (articoliStr.length() > 0) articoliStr.append(",");
+            if (!articoliStr.isEmpty()) articoliStr.append(",");
             articoliStr.append(entry.getKey().leggiId())
                     .append(":")
                     .append(entry.getValue());

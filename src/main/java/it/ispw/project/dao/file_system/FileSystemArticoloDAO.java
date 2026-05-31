@@ -187,12 +187,12 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
     }
 
     private void aggiungiDatiSpecifici(StringBuilder sb, Articolo articolo) {
-        if (articolo instanceof Mangime) {
-            aggiungiMangime(sb, (Mangime) articolo);
-        } else if (articolo instanceof Utensile) {
-            aggiungiUtensile(sb, (Utensile) articolo);
-        } else if (articolo instanceof Fitofarmaco) {
-            aggiungiFitofarmaco(sb, (Fitofarmaco) articolo);
+        if (articolo instanceof Mangime mangime) {
+            aggiungiMangime(sb, mangime);
+        } else if (articolo instanceof Utensile utensile) {
+            aggiungiUtensile(sb, utensile);
+        } else if (articolo instanceof Fitofarmaco fitofarmaco) {
+            aggiungiFitofarmaco(sb, fitofarmaco);
         }
     }
 

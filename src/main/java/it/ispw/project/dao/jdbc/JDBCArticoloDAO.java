@@ -19,6 +19,8 @@ import java.util.logging.Logger;
 
 public class JDBCArticoloDAO implements ArticoloDAO {
 
+    private static final String DEFAULT_ARTICOLO_IMAGE_PATH = "/image/default.png";
+
     private final Logger logger = Logger.getLogger(JDBCArticoloDAO.class.getName());
     private final Map<Integer, Articolo> articoliById = new HashMap<>();
 
@@ -193,7 +195,7 @@ public class JDBCArticoloDAO implements ArticoloDAO {
 
         if (articolo != null) {
             if (imgPath == null || imgPath.trim().isEmpty()) {
-                imgPath = "/image/default.png";
+                imgPath = DEFAULT_ARTICOLO_IMAGE_PATH;
             }
             articolo.setImmaginePath(imgPath);
         }
