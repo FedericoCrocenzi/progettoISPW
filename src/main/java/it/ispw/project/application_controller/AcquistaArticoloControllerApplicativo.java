@@ -12,9 +12,9 @@ import it.ispw.project.model.*;
 import it.ispw.project.model.observer.Observer;
 import it.ispw.project.session_manager.Session;
 import it.ispw.project.session_manager.SessionManager;
+import it.ispw.project.validation.PagamentoValidator;
 
 import java.util.ArrayList;
-import java.time.YearMonth;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -185,9 +185,7 @@ public class AcquistaArticoloControllerApplicativo {
 
         CarrelloBean cb = new CarrelloBean();
         for (Map.Entry<Articolo, Integer> entry : carrello.getListaArticoli().entrySet()) {
-            ArticoloBean b = convertiModelInBean(entry.getKey());
-            b.setQuantita(entry.getValue());
-            cb.aggiungiArticolo(b);
+            cb.aggiungiArticolo(convertiArticoloConQuantitaInBean(entry));
         }
         cb.setTotale(carrello.calcolaTotale());
         return cb;
@@ -202,14 +200,7 @@ public class AcquistaArticoloControllerApplicativo {
         UtenteDAO utenteDAO = factory.getUtenteDAO();
         Utente utente = utenteDAO.findById(idCliente);
 
-        UtenteBean bean = new UtenteBean();
-        if (utente != null) {
-            bean.setUsername(utente.leggiUsername());
-            bean.setEmail(utente.leggiEmail());
-            bean.setIndirizzo(utente.leggiIndirizzo());
-            bean.setRuolo(utente.scopriRuolo());
-        }
-        return bean;
+        return convertiUtenteInBean(utente);
     }
 
     public OrdineBean completaAcquisto(String sessionId, PagamentoBean datiPagamento)
@@ -229,7 +220,7 @@ public class AcquistaArticoloControllerApplicativo {
         if (datiPagamento == null)
             throw new PaymentException("Dati pagamento mancanti.");
 
-        validaDatiPagamento(datiPagamento);
+        PagamentoValidator.valida(datiPagamento);
 
         if (Math.abs(datiPagamento.getImportoDaPagare() - carrello.calcolaTotale()) > 0.01)
             throw new PaymentException("Errore importo: il totale è cambiato.");
@@ -290,81 +281,6 @@ public class AcquistaArticoloControllerApplicativo {
                 throw new DAOException("Rollback persistente delle scorte non riuscito.");
             }
         }
-    }
-
-    private void validaDatiPagamento(PagamentoBean datiPagamento) throws PaymentException {
-        String metodo = datiPagamento.getMetodoPagamento();
-        if (metodo == null || metodo.isBlank()) {
-            throw new PaymentException("Seleziona un metodo di pagamento.");
-        }
-
-        if ("CARTA_CREDITO".equals(metodo)) {
-            validaDatiCarta(datiPagamento);
-        } else if ("PAYPAL".equals(metodo)) {
-            validaDatiPaypal(datiPagamento);
-        } else if (!"CONTANTI_CONSEGNA".equals(metodo)) {
-            throw new PaymentException("Metodo di pagamento non valido.");
-        }
-    }
-
-    private void validaDatiCarta(PagamentoBean datiPagamento) throws PaymentException {
-        if (isBlank(datiPagamento.getIntestatario())
-                || isBlank(datiPagamento.getNumeroCarta())
-                || isBlank(datiPagamento.getDataScadenza())
-                || isBlank(datiPagamento.getCvv())) {
-            throw new PaymentException("Inserisci tutti i dati della carta.");
-        }
-
-        if (!datiPagamento.getIntestatario().trim().matches("^[\\p{L}][\\p{L}\\s'\\-]*$")) {
-            throw new PaymentException("Intestatario carta non valido.");
-        }
-
-        String numeroCarta = datiPagamento.getNumeroCarta().replaceAll("\\s+", "");
-        if (!numeroCarta.matches("\\d{13,19}")) {
-            throw new PaymentException("Numero carta non valido.");
-        }
-
-        validaScadenzaCarta(datiPagamento.getDataScadenza());
-
-        if (!datiPagamento.getCvv().matches("\\d{3,4}")) {
-            throw new PaymentException("CVV non valido.");
-        }
-    }
-
-    // Supporta i formati MM/YY e MM/YYYY.
-    private void validaScadenzaCarta(String dataScadenza) throws PaymentException {
-        if (!dataScadenza.matches("(0[1-9]|1[0-2])/(\\d{2}|\\d{4})")) {
-            throw new PaymentException("Data di scadenza non valida. Usa MM/YY o MM/YYYY.");
-        }
-
-        String[] parti = dataScadenza.split("/");
-        int mese = Integer.parseInt(parti[0]);
-        int anno = Integer.parseInt(parti[1]);
-        if (parti[1].length() == 2) {
-            anno += 2000;
-        }
-
-        YearMonth scadenza = YearMonth.of(anno, mese);
-        if (scadenza.isBefore(YearMonth.now())) {
-            throw new PaymentException("La carta risulta scaduta.");
-        }
-    }
-
-    private void validaDatiPaypal(PagamentoBean datiPagamento) throws PaymentException {
-        String email = datiPagamento.getEmailPaypal();
-        String password = datiPagamento.getPasswordPaypal();
-
-        if (isBlank(email) || isBlank(password)) {
-            throw new PaymentException("Inserisci email e password PayPal.");
-        }
-
-        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
-            throw new PaymentException("Email PayPal non valida.");
-        }
-    }
-
-    private boolean isBlank(String value) {
-        return value == null || value.isBlank();
     }
 
     // -----------------------------------------------------------------
@@ -459,6 +375,23 @@ public class AcquistaArticoloControllerApplicativo {
         return b;
     }
 
+    private ArticoloBean convertiArticoloConQuantitaInBean(Map.Entry<Articolo, Integer> entry) {
+        ArticoloBean articoloBean = convertiModelInBean(entry.getKey());
+        articoloBean.setQuantita(entry.getValue());
+        return articoloBean;
+    }
+
+    private UtenteBean convertiUtenteInBean(Utente utente) {
+        UtenteBean bean = new UtenteBean();
+        if (utente != null) {
+            bean.setUsername(utente.leggiUsername());
+            bean.setEmail(utente.leggiEmail());
+            bean.setIndirizzo(utente.leggiIndirizzo());
+            bean.setRuolo(utente.scopriRuolo());
+        }
+        return bean;
+    }
+
     private OrdineBean convertiOrdineInBean(Ordine o) {
         OrdineBean b = new OrdineBean();
         b.setId(o.leggiId());
@@ -467,21 +400,15 @@ public class AcquistaArticoloControllerApplicativo {
         b.setStato(o.getStato());
 
         if (o.getCliente() != null) {
-            UtenteBean clienteBean = new UtenteBean();
+            UtenteBean clienteBean = convertiUtenteInBean(o.getCliente());
             clienteBean.setId(o.getCliente().ottieniId());
-            clienteBean.setUsername(o.getCliente().leggiUsername());
-            clienteBean.setEmail(o.getCliente().leggiEmail());
-            clienteBean.setIndirizzo(o.getCliente().leggiIndirizzo());
-            clienteBean.setRuolo(o.getCliente().scopriRuolo());
             b.setCliente(clienteBean);
         }
 
         List<ArticoloBean> articoliBean = new ArrayList<>();
         if (o.getArticoli() != null) {
             for (Map.Entry<Articolo, Integer> entry : o.getArticoli().entrySet()) {
-                ArticoloBean articoloBean = convertiModelInBean(entry.getKey());
-                articoloBean.setQuantita(entry.getValue());
-                articoliBean.add(articoloBean);
+                articoliBean.add(convertiArticoloConQuantitaInBean(entry));
             }
         }
         b.setArticoli(articoliBean);

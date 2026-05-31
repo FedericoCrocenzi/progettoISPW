@@ -11,14 +11,11 @@ public class CatalogoCLIController extends CLIControllerBase {
     public void show() {
         CLIPrinter.println("=== CATALOGO PRODOTTI ===");
 
-        if (sessionId == null) {
-            CLIPrinter.println("Errore: sessione non inizializzata.");
-            CLIViewNavigator.goToLogin();
+        if (sessioneNonValida("Errore: sessione non inizializzata.")) {
             return;
         }
 
-        AcquistaArticoloControllerApplicativo controller =
-                new AcquistaArticoloControllerApplicativo();
+        AcquistaArticoloControllerApplicativo controller = creaControllerAcquisto();
 
         List<ArticoloBean> catalogo = controller.visualizzaCatalogo();
 
@@ -34,11 +31,8 @@ public class CatalogoCLIController extends CLIControllerBase {
         CLIPrinter.println("9) Logout");
         CLIPrinter.print("Scelta: ");
 
-        int scelta;
-        try {
-            scelta = Integer.parseInt(scanner.nextLine());
-        } catch (NumberFormatException e) {
-            show();
+        Integer scelta = leggiSceltaIntera();
+        if (scelta == null) {
             return;
         }
 

@@ -6,6 +6,7 @@ import it.ispw.project.bean.OrdineBean;
 import it.ispw.project.bean.PagamentoBean;
 import it.ispw.project.exception.DAOException;
 import it.ispw.project.exception.PaymentException;
+import it.ispw.project.validation.PagamentoValidator;
 import it.ispw.project.view.ViewSwitcher;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -23,7 +24,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.time.YearMonth;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -92,27 +92,9 @@ public class PaymentGraphicController implements ControllerGraficoBase {
     @FXML
     public void confermaPagamento() {
         try {
-            PagamentoBean pagamentoBean = new PagamentoBean();
-
-            if (rbCarta.isSelected()) {
-                pagamentoBean.setMetodoPagamento(METODO_CARTA_CREDITO);
-                pagamentoBean.setNumeroCarta(testoCampo(txtNumeroCarta));
-                pagamentoBean.setIntestatario(testoCampo(txtIntestatario));
-                pagamentoBean.setDataScadenza(
-                        testoCampo(txtScadenzaMese) + "/" + testoCampo(txtScadenzaAnno)
-                );
-                pagamentoBean.setCvv(testoCampo(txtCvv));
-            } else if (rbPaypal.isSelected()) {
-                pagamentoBean.setMetodoPagamento(METODO_PAYPAL);
-                pagamentoBean.setEmailPaypal(testoCampo(txtEmailPaypal));
-                pagamentoBean.setPasswordPaypal(testoCampo(txtPasswordPaypal));
-            } else {
-                pagamentoBean.setMetodoPagamento(METODO_CONTANTI_CONSEGNA);
-            }
-
             CarrelloBean carrelloTmp = appController.visualizzaCarrello(sessionId);
-            pagamentoBean.setImportoDaPagare(carrelloTmp.getTotale());
-            validaPagamentoInput(pagamentoBean);
+            PagamentoBean pagamentoBean = creaPagamentoDaSelezione(carrelloTmp);
+            PagamentoValidator.valida(pagamentoBean);
 
             OrdineBean ordineBean = completaOrdineConPagamento(pagamentoBean, carrelloTmp);
 
@@ -120,17 +102,12 @@ public class PaymentGraphicController implements ControllerGraficoBase {
             mostraPopupAcquistoCompletato(ordineBean, stage);
 
         } catch (PaymentException e) {
-            mostraMessaggio("Errore Pagamento", e.getMessage(), Alert.AlertType.WARNING);
+            mostraErrorePagamento(e);
         } catch (DAOException e) {
-            LOGGER.log(Level.SEVERE, "Errore tecnico durante il completamento dell'ordine.", e);
-            mostraMessaggio("Errore Sistema",
-                    "Impossibile completare l'ordine. Riprova piu' tardi.",
-                    Alert.AlertType.ERROR);
+            mostraErroreSistema("Errore tecnico durante il completamento dell'ordine.",
+                    "Impossibile completare l'ordine. Riprova piu' tardi.", e);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Errore imprevisto durante il pagamento.", e);
-            mostraMessaggio("Errore Imprevisto",
-                    "Si e' verificato un errore imprevisto. Riprova piu' tardi.",
-                    Alert.AlertType.ERROR);
+            mostraErroreImprevisto("Errore imprevisto durante il pagamento.", e);
         }
     }
 
@@ -141,27 +118,20 @@ public class PaymentGraphicController implements ControllerGraficoBase {
     public void pagaInCassa() {
         try {
             CarrelloBean carrelloTmp = appController.visualizzaCarrello(sessionId);
-            PagamentoBean pagamentoBean = new PagamentoBean();
-            pagamentoBean.setMetodoPagamento(METODO_CONTANTI_CONSEGNA);
-            pagamentoBean.setImportoDaPagare(carrelloTmp.getTotale());
+            PagamentoBean pagamentoBean = creaPagamentoInCassa(carrelloTmp);
 
             completaOrdineConPagamento(pagamentoBean, carrelloTmp);
             mostraMessaggio("Pagamento in cassa", "Ti aspettiamo in cassa!", Alert.AlertType.INFORMATION);
 
         } catch (PaymentException e) {
-            mostraMessaggio("Errore Pagamento", e.getMessage(), Alert.AlertType.WARNING);
+            mostraErrorePagamento(e);
             return;
         } catch (DAOException e) {
-            LOGGER.log(Level.SEVERE, "Errore tecnico durante la conferma del pagamento in cassa.", e);
-            mostraMessaggio("Errore Sistema",
-                    "Impossibile confermare l'ordine. Riprova piu' tardi.",
-                    Alert.AlertType.ERROR);
+            mostraErroreSistema("Errore tecnico durante la conferma del pagamento in cassa.",
+                    "Impossibile confermare l'ordine. Riprova piu' tardi.", e);
             return;
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Errore imprevisto durante il pagamento in cassa.", e);
-            mostraMessaggio("Errore Imprevisto",
-                    "Si e' verificato un errore imprevisto. Riprova piu' tardi.",
-                    Alert.AlertType.ERROR);
+            mostraErroreImprevisto("Errore imprevisto durante il pagamento in cassa.", e);
             return;
         }
 
@@ -183,6 +153,46 @@ public class PaymentGraphicController implements ControllerGraficoBase {
         alert.showAndWait();
     }
 
+    private PagamentoBean creaPagamentoDaSelezione(CarrelloBean carrelloTmp) {
+        PagamentoBean pagamentoBean = new PagamentoBean();
+
+        if (rbCarta.isSelected()) {
+            popolaDatiCarta(pagamentoBean);
+        } else if (rbPaypal.isSelected()) {
+            popolaDatiPaypal(pagamentoBean);
+        } else {
+            pagamentoBean.setMetodoPagamento(METODO_CONTANTI_CONSEGNA);
+        }
+
+        impostaImportoDaPagare(pagamentoBean, carrelloTmp);
+        return pagamentoBean;
+    }
+
+    private PagamentoBean creaPagamentoInCassa(CarrelloBean carrelloTmp) {
+        PagamentoBean pagamentoBean = new PagamentoBean();
+        pagamentoBean.setMetodoPagamento(METODO_CONTANTI_CONSEGNA);
+        impostaImportoDaPagare(pagamentoBean, carrelloTmp);
+        return pagamentoBean;
+    }
+
+    private void popolaDatiCarta(PagamentoBean pagamentoBean) {
+        pagamentoBean.setMetodoPagamento(METODO_CARTA_CREDITO);
+        pagamentoBean.setNumeroCarta(testoCampo(txtNumeroCarta));
+        pagamentoBean.setIntestatario(testoCampo(txtIntestatario));
+        pagamentoBean.setDataScadenza(testoCampo(txtScadenzaMese) + "/" + testoCampo(txtScadenzaAnno));
+        pagamentoBean.setCvv(testoCampo(txtCvv));
+    }
+
+    private void popolaDatiPaypal(PagamentoBean pagamentoBean) {
+        pagamentoBean.setMetodoPagamento(METODO_PAYPAL);
+        pagamentoBean.setEmailPaypal(testoCampo(txtEmailPaypal));
+        pagamentoBean.setPasswordPaypal(testoCampo(txtPasswordPaypal));
+    }
+
+    private void impostaImportoDaPagare(PagamentoBean pagamentoBean, CarrelloBean carrelloTmp) {
+        pagamentoBean.setImportoDaPagare(carrelloTmp.getTotale());
+    }
+
     private OrdineBean completaOrdineConPagamento(PagamentoBean pagamentoBean, CarrelloBean carrelloTmp)
             throws DAOException, PaymentException {
         OrdineBean ordineBean = appController.completaAcquisto(sessionId, pagamentoBean);
@@ -192,86 +202,6 @@ public class PaymentGraphicController implements ControllerGraficoBase {
             CommessoGraphicController.registraNuovoOrdineInAttesa(ordineBean);
         }
         return ordineBean;
-    }
-
-    private void validaPagamentoInput(PagamentoBean pagamentoBean) throws PaymentException {
-        if (pagamentoBean.getMetodoPagamento() == null || pagamentoBean.getMetodoPagamento().isBlank()) {
-            throw new PaymentException("Seleziona un metodo di pagamento.");
-        }
-
-        String metodo = pagamentoBean.getMetodoPagamento();
-
-        if (METODO_CONTANTI_CONSEGNA.equals(metodo)) {
-            return;
-        }
-
-        if (METODO_PAYPAL.equals(metodo)) {
-            validaDatiPaypal(pagamentoBean);
-            return;
-        }
-
-        if (METODO_CARTA_CREDITO.equals(metodo)) {
-            validaDatiCarta(pagamentoBean);
-            return;
-        }
-
-        throw new PaymentException("Metodo di pagamento non valido.");
-    }
-
-    private void validaDatiCarta(PagamentoBean pagamentoBean) throws PaymentException {
-        if (isBlank(pagamentoBean.getIntestatario())
-                || isBlank(pagamentoBean.getNumeroCarta())
-                || isBlank(pagamentoBean.getDataScadenza())
-                || isBlank(pagamentoBean.getCvv())) {
-            throw new PaymentException("Inserisci tutti i dati della carta.");
-        }
-
-        if (!pagamentoBean.getIntestatario().trim().matches("^[\\p{L}][\\p{L}\\s'\\-]*$")) {
-            throw new PaymentException("Intestatario carta non valido.");
-        }
-
-        String numeroCarta = pagamentoBean.getNumeroCarta().replaceAll("\\s+", "");
-        if (!numeroCarta.matches("\\d{13,19}")) {
-            throw new PaymentException("Numero carta non valido.");
-        }
-
-        validaScadenzaCarta(pagamentoBean.getDataScadenza());
-
-        if (!pagamentoBean.getCvv().matches("\\d{3,4}")) {
-            throw new PaymentException("CVV non valido.");
-        }
-    }
-
-    // La UI invia la scadenza come MM/YY o MM/YYYY.
-    private void validaScadenzaCarta(String dataScadenza) throws PaymentException {
-        if (!dataScadenza.matches("(0[1-9]|1[0-2])/(\\d{2}|\\d{4})")) {
-            throw new PaymentException("Data di scadenza non valida. Usa MM/YY o MM/YYYY.");
-        }
-
-        String[] parti = dataScadenza.split("/");
-        int mese = Integer.parseInt(parti[0]);
-        int anno = Integer.parseInt(parti[1]);
-        if (parti[1].length() == 2) {
-            anno += 2000;
-        }
-
-        YearMonth scadenza = YearMonth.of(anno, mese);
-        if (scadenza.isBefore(YearMonth.now())) {
-            throw new PaymentException("La carta risulta scaduta.");
-        }
-    }
-
-    private void validaDatiPaypal(PagamentoBean pagamentoBean) throws PaymentException {
-        String email = pagamentoBean.getEmailPaypal();
-        String password = pagamentoBean.getPasswordPaypal();
-
-        if (isBlank(email) || isBlank(password)) {
-            throw new PaymentException("Inserisci email e password PayPal.");
-        }
-
-        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
-            throw new PaymentException("Email PayPal non valida.");
-        }
     }
 
     private void aggiornaCampiMetodoPagamento() {
@@ -289,12 +219,24 @@ public class PaymentGraphicController implements ControllerGraficoBase {
         }
     }
 
-    private boolean isBlank(String value) {
-        return value == null || value.isBlank();
-    }
-
     private String testoCampo(TextField campo) {
         return campo == null || campo.getText() == null ? "" : campo.getText().trim();
+    }
+
+    private void mostraErrorePagamento(PaymentException e) {
+        mostraMessaggio("Errore Pagamento", e.getMessage(), Alert.AlertType.WARNING);
+    }
+
+    private void mostraErroreSistema(String logMessage, String userMessage, Exception e) {
+        LOGGER.log(Level.SEVERE, logMessage, e);
+        mostraMessaggio("Errore Sistema", userMessage, Alert.AlertType.ERROR);
+    }
+
+    private void mostraErroreImprevisto(String logMessage, Exception e) {
+        LOGGER.log(Level.SEVERE, logMessage, e);
+        mostraMessaggio("Errore Imprevisto",
+                "Si e' verificato un errore imprevisto. Riprova piu' tardi.",
+                Alert.AlertType.ERROR);
     }
 
     private void mostraPopupAcquistoCompletato(OrdineBean ordineBean, Stage owner) {

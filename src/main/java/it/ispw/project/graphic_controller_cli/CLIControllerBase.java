@@ -1,5 +1,7 @@
 package it.ispw.project.graphic_controller_cli;
 
+import it.ispw.project.application_controller.AcquistaArticoloControllerApplicativo;
+
 import java.util.Scanner;
 
 public abstract class CLIControllerBase {
@@ -30,5 +32,27 @@ public abstract class CLIControllerBase {
 
     protected void chiudiApplicazione() {
         CLIPrinter.println("Chiusura applicazione.");
+    }
+
+    protected boolean sessioneNonValida(String messaggio) {
+        if (sessionId == null) {
+            CLIPrinter.println(messaggio);
+            CLIViewNavigator.goToLogin();
+            return true;
+        }
+        return false;
+    }
+
+    protected AcquistaArticoloControllerApplicativo creaControllerAcquisto() {
+        return new AcquistaArticoloControllerApplicativo();
+    }
+
+    protected Integer leggiSceltaIntera() {
+        try {
+            return Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            show();
+            return null;
+        }
     }
 }

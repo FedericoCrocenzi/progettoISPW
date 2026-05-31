@@ -11,14 +11,11 @@ public class CarrelloCLIController extends CLIControllerBase {
     public void show() {
         CLIPrinter.println("=== CARRELLO ===");
 
-        if (sessionId == null) {
-            CLIPrinter.println("Sessione non valida.");
-            CLIViewNavigator.goToLogin();
+        if (sessioneNonValida("Sessione non valida.")) {
             return;
         }
 
-        AcquistaArticoloControllerApplicativo controller =
-                new AcquistaArticoloControllerApplicativo();
+        AcquistaArticoloControllerApplicativo controller = creaControllerAcquisto();
 
         CarrelloBean carrello;
         try {
@@ -49,11 +46,8 @@ public class CarrelloCLIController extends CLIControllerBase {
         CLIPrinter.println("9) Logout");
         CLIPrinter.print("Scelta: ");
 
-        int scelta;
-        try {
-            scelta = Integer.parseInt(scanner.nextLine());
-        } catch (NumberFormatException e) {
-            show();
+        Integer scelta = leggiSceltaIntera();
+        if (scelta == null) {
             return;
         }
 
@@ -86,9 +80,7 @@ public class CarrelloCLIController extends CLIControllerBase {
         try {
             int indice = Integer.parseInt(scanner.nextLine()) - 1;
             if (indice < 0 || indice >= carrello.getListaArticoli().size()) {
-                CLIPrinter.println("Articolo non valido.");
-                waitForEnter();
-                show();
+                mostraErroreAggiornamento("Articolo non valido.");
                 return;
             }
 
@@ -101,17 +93,17 @@ public class CarrelloCLIController extends CLIControllerBase {
             show();
 
         } catch (NumberFormatException e) {
-            CLIPrinter.println("Inserisci un numero valido.");
-            waitForEnter();
-            show();
+            mostraErroreAggiornamento("Inserisci un numero valido.");
         } catch (QuantitaInsufficienteException e) {
-            CLIPrinter.println("Quantita non disponibile.");
-            waitForEnter();
-            show();
+            mostraErroreAggiornamento("Quantita non disponibile.");
         } catch (IllegalArgumentException e) {
-            CLIPrinter.println("Impossibile aggiornare il carrello.");
-            waitForEnter();
-            show();
+            mostraErroreAggiornamento("Impossibile aggiornare il carrello.");
         }
+    }
+
+    private void mostraErroreAggiornamento(String messaggio) {
+        CLIPrinter.println(messaggio);
+        waitForEnter();
+        show();
     }
 }
