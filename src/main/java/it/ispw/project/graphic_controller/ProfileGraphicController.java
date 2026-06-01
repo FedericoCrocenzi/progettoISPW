@@ -65,7 +65,7 @@ public class ProfileGraphicController implements ControllerGraficoBase {
 
     @FXML
     public void eliminaAccount() {
-        mostraMessaggio("Attenzione", "Funzionalità 'Elimina Account' non disponibile nella demo.");
+        mostraMessaggio("Attenzione", "Funzionalità 'Elimina Account' non disponibile.");
     }
 
     private void mostraMessaggio(String titolo, String testo) {
