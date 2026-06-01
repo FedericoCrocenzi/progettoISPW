@@ -8,15 +8,20 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ChoiceDialog;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 
 public class Main extends Application {
 
+    private static final String APP_ICON_PATH = "/image/icona_app_definitiva.png";
+
     @Override
     public void start(Stage stage) throws Exception {
+        applicaIconaApplicazione(stage);
 
         // 1 Popup scelta persistenza (BLOCCANTE)
         ChoiceDialog<String> dialog = new ChoiceDialog<>(
@@ -60,6 +65,14 @@ public class Main extends Application {
         stage.setTitle("AgriCenter Crocenzi");
         stage.setScene(scene);
         stage.show();
+    }
+
+    private void applicaIconaApplicazione(Stage stage) throws Exception {
+        try (InputStream iconStream = getClass().getResourceAsStream(APP_ICON_PATH)) {
+            if (iconStream != null) {
+                stage.getIcons().add(new Image(iconStream));
+            }
+        }
     }
 
     public static void main(String[] args) {

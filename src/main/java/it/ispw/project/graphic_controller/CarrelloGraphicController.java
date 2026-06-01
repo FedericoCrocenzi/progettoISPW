@@ -82,32 +82,34 @@ public class CarrelloGraphicController implements ControllerGraficoBase, Observe
     private AnchorPane creaCardProdotto(ArticoloBean art) {
         AnchorPane card = new AnchorPane();
         card.setPrefHeight(100.0);
+        card.setMaxWidth(Double.MAX_VALUE);
         card.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);");
 
         ImageView imgView = new ImageView();
         imgView.setFitHeight(80.0);
         imgView.setFitWidth(80.0);
-        imgView.setLayoutX(8.0);
-        imgView.setLayoutY(6.0);
         imgView.setPreserveRatio(true);
+        AnchorPane.setLeftAnchor(imgView, 8.0);
+        AnchorPane.setTopAnchor(imgView, 6.0);
         caricaImmagine(imgView, art.getImmaginePath());
 
         Label lblNome = new Label(art.getDescrizione());
-        lblNome.setLayoutX(93.0);
-        lblNome.setLayoutY(17.0);
         lblNome.setStyle("-fx-font-size: 14px;");
+        AnchorPane.setLeftAnchor(lblNome, 93.0);
+        AnchorPane.setRightAnchor(lblNome, 42.0);
+        AnchorPane.setTopAnchor(lblNome, 17.0);
 
         Label lblPrezzo = new Label(String.format("EUR %.2f", art.getPrezzo()));
-        lblPrezzo.setLayoutX(93.0);
-        lblPrezzo.setLayoutY(53.0);
         lblPrezzo.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
+        AnchorPane.setLeftAnchor(lblPrezzo, 93.0);
+        AnchorPane.setTopAnchor(lblPrezzo, 53.0);
 
         HBox hBoxQty = new HBox(10);
         hBoxQty.setAlignment(Pos.CENTER);
-        hBoxQty.setLayoutX(218.0);
-        hBoxQty.setLayoutY(62.0);
         hBoxQty.setPrefSize(89.0, 28.0);
         hBoxQty.setStyle("-fx-background-radius: 15; -fx-background-color: white; -fx-border-color: #FFF176; -fx-border-radius: 15; -fx-border-width: 2;");
+        AnchorPane.setRightAnchor(hBoxQty, 45.0);
+        AnchorPane.setBottomAnchor(hBoxQty, 10.0);
 
         Button btnMinus = new Button("-");
         btnMinus.setStyle("-fx-font-weight: bold; -fx-background-color: transparent; -fx-cursor: hand;");
@@ -123,9 +125,9 @@ public class CarrelloGraphicController implements ControllerGraficoBase, Observe
         hBoxQty.getChildren().addAll(btnMinus, lblQty, btnPlus);
 
         Button btnTrash = new Button("X");
-        btnTrash.setLayoutX(285.0);
-        btnTrash.setLayoutY(3.0);
         btnTrash.setStyle("-fx-background-color: transparent; -fx-text-fill: red; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;");
+        AnchorPane.setTopAnchor(btnTrash, 3.0);
+        AnchorPane.setRightAnchor(btnTrash, 8.0);
         btnTrash.setOnAction(e -> appController.rimuoviArticoloDalCarrello(sessionId, art));
 
         card.getChildren().addAll(imgView, lblNome, lblPrezzo, hBoxQty, btnTrash);
