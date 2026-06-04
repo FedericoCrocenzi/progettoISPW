@@ -51,7 +51,7 @@ public class AcquistaArticoloControllerApplicativo {
     // GESTIONE CATALOGO
     // -----------------------------------------------------------------
 
-    public List<ArticoloBean> visualizzaCatalogo() {
+    public List<ArticoloBean> visualizzaCatalogo() throws DAOException {
         Magazzino magazzino = Magazzino.getInstance();
 
         // Lazy loading del catalogo
@@ -72,7 +72,7 @@ public class AcquistaArticoloControllerApplicativo {
         return listaBean;
     }
 
-    public List<ArticoloBean> ricercaArticoli(RicercaArticoloBean criteri) {
+    public List<ArticoloBean> ricercaArticoli(RicercaArticoloBean criteri) throws DAOException {
         if (criteri == null ||
                 (criteri.getTestoRicerca() == null && criteri.getTipoArticolo() == null)) {
             return visualizzaCatalogo();
@@ -103,7 +103,7 @@ public class AcquistaArticoloControllerApplicativo {
     // -----------------------------------------------------------------
 
     public void aggiungiArticoloAlCarrello(String sessionId, ArticoloBean articoloBean, int quantita)
-            throws QuantitaInsufficienteException {
+            throws QuantitaInsufficienteException, DAOException {
 
         if (quantita <= 0)
             throw new IllegalArgumentException("La quantità deve essere positiva.");
@@ -252,7 +252,7 @@ public class AcquistaArticoloControllerApplicativo {
             boolean scortaAggiornata;
             try {
                 scortaAggiornata = articoloDAO.updateScorta(art);
-            } catch (RuntimeException e) {
+            } catch (DAOException | RuntimeException e) {
                 magazzino.ripristinaMerceOrdine(ordine);
                 ripristinaScortePersistite(articoloDAO, articoliPersistiti);
                 throw new DAOException("Errore durante l'aggiornamento delle scorte.", e);

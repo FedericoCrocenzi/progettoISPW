@@ -3,6 +3,7 @@ package it.ispw.project.dao.jdbc;
 import it.ispw.project.dao.ArticoloDAO;
 import it.ispw.project.dao.db_connection.DBConnection;
 import it.ispw.project.dao.db_connection.Queries;
+import it.ispw.project.exception.DAOException;
 import it.ispw.project.model.Articolo;
 import it.ispw.project.model.Fitofarmaco;
 import it.ispw.project.model.Mangime;
@@ -25,7 +26,7 @@ public class JDBCArticoloDAO implements ArticoloDAO {
     private final Map<Integer, Articolo> articoliById = new HashMap<>();
 
     @Override
-    public Articolo selectArticoloById(int id) {
+    public Articolo selectArticoloById(int id) throws DAOException {
         synchronized (articoliById) {
             Articolo articoloInCache = articoliById.get(id);
             if (articoloInCache != null) {
@@ -35,7 +36,9 @@ public class JDBCArticoloDAO implements ArticoloDAO {
 
         // MODIFICA QUI: Uso del Singleton
         Connection conn = DBConnection.getInstance().getConnection();
-        if (conn == null) return null;
+        if (conn == null) {
+            throw new DAOException("Connessione al database non disponibile.");
+        }
 
         try (PreparedStatement stmt = conn.prepareStatement(
                 Queries.SELECT_ARTICOLO_BY_ID,
@@ -53,16 +56,19 @@ public class JDBCArticoloDAO implements ArticoloDAO {
             }
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Errore durante il recupero articolo per ID", e);
+            throw new DAOException("Errore durante il recupero dell'articolo.", e);
         }
         return null;
     }
 
     @Override
-    public List<Articolo> selectAllArticoli() {
+    public List<Articolo> selectAllArticoli() throws DAOException {
         // MODIFICA QUI: Uso del Singleton
         Connection conn = DBConnection.getInstance().getConnection();
         List<Articolo> lista = new ArrayList<>();
-        if (conn == null) return lista;
+        if (conn == null) {
+            throw new DAOException("Connessione al database non disponibile.");
+        }
 
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(Queries.SELECT_ALL_ARTICOLI)) {
@@ -77,16 +83,20 @@ public class JDBCArticoloDAO implements ArticoloDAO {
 
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Errore durante il recupero del catalogo", e);
+            throw new DAOException("Errore durante il recupero del catalogo.", e);
         }
         return lista;
     }
 
     @Override
-    public List<Articolo> selectByFilter(String testo, String tipo, Double prezzoMin, Double prezzoMax) {
+    public List<Articolo> selectByFilter(String testo, String tipo, Double prezzoMin, Double prezzoMax)
+            throws DAOException {
         // MODIFICA QUI: Uso del Singleton
         Connection conn = DBConnection.getInstance().getConnection();
         List<Articolo> lista = new ArrayList<>();
-        if (conn == null) return lista;
+        if (conn == null) {
+            throw new DAOException("Connessione al database non disponibile.");
+        }
 
         StringBuilder queryBuilder = new StringBuilder(Queries.SELECT_ARTICOLO_BASE);
         List<Object> params = new ArrayList<>();
@@ -126,19 +136,22 @@ public class JDBCArticoloDAO implements ArticoloDAO {
             }
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Errore durante la ricerca filtrata", e);
+            throw new DAOException("Errore durante la ricerca degli articoli.", e);
         }
         return lista;
     }
 
     @Override
-    public boolean updateScorta(Articolo articolo) {
+    public boolean updateScorta(Articolo articolo) throws DAOException {
         if (articolo == null) {
             return false;
         }
 
         // MODIFICA QUI: Uso del Singleton
         Connection conn = DBConnection.getInstance().getConnection();
-        if (conn == null) return false;
+        if (conn == null) {
+            throw new DAOException("Connessione al database non disponibile.");
+        }
 
         try (PreparedStatement stmt = conn.prepareStatement(Queries.UPDATE_ARTICOLO_SCORTA)) {
             stmt.setInt(1, articolo.ottieniScorta());
@@ -156,7 +169,7 @@ public class JDBCArticoloDAO implements ArticoloDAO {
             invalidaArticolo(articolo.leggiId());
             logger.log(Level.SEVERE, e,
                     () -> MessageFormat.format("Errore aggiornamento scorta articolo {0}", articolo.leggiId()));
-            return false;
+            throw new DAOException("Errore durante l'aggiornamento della scorta.", e);
         }
     }
 
@@ -190,7 +203,7 @@ public class JDBCArticoloDAO implements ArticoloDAO {
 
             default:
                 logger.log(Level.WARNING, "Tipo articolo sconosciuto nel DB: {0}", tipo);
-                return null;
+                throw new SQLException("Tipo articolo sconosciuto nel DB: " + tipo);
         }
 
         if (articolo != null) {

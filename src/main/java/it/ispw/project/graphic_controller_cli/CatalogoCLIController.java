@@ -2,6 +2,7 @@ package it.ispw.project.graphic_controller_cli;
 
 import it.ispw.project.application_controller.AcquistaArticoloControllerApplicativo;
 import it.ispw.project.bean.ArticoloBean;
+import it.ispw.project.exception.DAOException;
 
 import java.util.List;
 
@@ -17,7 +18,14 @@ public class CatalogoCLIController extends CLIControllerBase {
 
         AcquistaArticoloControllerApplicativo controller = creaControllerAcquisto();
 
-        List<ArticoloBean> catalogo = controller.visualizzaCatalogo();
+        List<ArticoloBean> catalogo;
+        try {
+            catalogo = controller.visualizzaCatalogo();
+        } catch (DAOException e) {
+            CLIPrinter.println("Errore di sistema durante il caricamento del catalogo.");
+            waitForEnter();
+            return;
+        }
 
         for (int i = 0; i < catalogo.size(); i++) {
             ArticoloBean a = catalogo.get(i);

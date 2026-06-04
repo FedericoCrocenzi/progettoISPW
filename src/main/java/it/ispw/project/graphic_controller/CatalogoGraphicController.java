@@ -3,6 +3,7 @@ package it.ispw.project.graphic_controller;
 import it.ispw.project.application_controller.AcquistaArticoloControllerApplicativo;
 import it.ispw.project.bean.ArticoloBean;
 import it.ispw.project.bean.RicercaArticoloBean;
+import it.ispw.project.exception.DAOException;
 import it.ispw.project.exception.QuantitaInsufficienteException;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -55,10 +56,19 @@ public class CatalogoGraphicController implements ControllerGraficoBase {
         tilePaneCatalogo.getChildren().clear();
         List<ArticoloBean> listaArticoli;
 
-        if (filtroCorrente != null && filtroCorrente.getTestoRicerca() != null && !filtroCorrente.getTestoRicerca().isEmpty()) {
-            listaArticoli = appController.ricercaArticoli(filtroCorrente);
-        } else {
-            listaArticoli = appController.visualizzaCatalogo();
+        try {
+            if (filtroCorrente != null && filtroCorrente.getTestoRicerca() != null && !filtroCorrente.getTestoRicerca().isEmpty()) {
+                listaArticoli = appController.ricercaArticoli(filtroCorrente);
+            } else {
+                listaArticoli = appController.visualizzaCatalogo();
+            }
+        } catch (DAOException e) {
+            LOGGER.log(Level.SEVERE, "Errore caricamento catalogo.", e);
+            tilePaneCatalogo.getChildren().add(new Label("Catalogo non disponibile."));
+            mostraMessaggio("Errore Sistema",
+                    "Impossibile caricare il catalogo. Riprova piu' tardi.",
+                    Alert.AlertType.ERROR);
+            return;
         }
 
         if (listaArticoli.isEmpty()) {
@@ -165,6 +175,11 @@ public class CatalogoGraphicController implements ControllerGraficoBase {
                 mostraMessaggio("Errore", "Inserisci un numero valido.", Alert.AlertType.ERROR);
             } catch (QuantitaInsufficienteException e) {
                 mostraMessaggio("Scorta Insufficiente", e.getMessage(), Alert.AlertType.WARNING);
+            } catch (DAOException e) {
+                LOGGER.log(Level.SEVERE, "Errore durante l'aggiunta al carrello.", e);
+                mostraMessaggio("Errore Sistema",
+                        "Impossibile aggiornare il carrello. Riprova piu' tardi.",
+                        Alert.AlertType.ERROR);
             } catch (IllegalArgumentException e) {
                 mostraMessaggio("Attenzione", e.getMessage(), Alert.AlertType.WARNING);
             }

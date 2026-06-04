@@ -89,6 +89,11 @@ public class ArticoloViewGraphicController {
             chiudiScheda();
         } catch (QuantitaInsufficienteException e) {
             mostraMessaggio("Attenzione", e.getMessage(), Alert.AlertType.WARNING);
+        } catch (DAOException e) {
+            LOGGER.log(Level.SEVERE, "Errore durante l'aggiunta al carrello.", e);
+            mostraMessaggio("Errore Sistema",
+                    "Impossibile aggiornare il carrello. Riprova piu' tardi.",
+                    Alert.AlertType.ERROR);
         } catch (IllegalArgumentException e) {
             mostraMessaggio("Errore", e.getMessage(), Alert.AlertType.ERROR);
         }

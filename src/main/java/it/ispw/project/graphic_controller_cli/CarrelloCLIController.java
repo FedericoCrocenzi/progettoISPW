@@ -3,6 +3,7 @@ package it.ispw.project.graphic_controller_cli;
 import it.ispw.project.application_controller.AcquistaArticoloControllerApplicativo;
 import it.ispw.project.bean.ArticoloBean;
 import it.ispw.project.bean.CarrelloBean;
+import it.ispw.project.exception.DAOException;
 import it.ispw.project.exception.QuantitaInsufficienteException;
 
 public class CarrelloCLIController extends CLIControllerBase {
@@ -96,6 +97,8 @@ public class CarrelloCLIController extends CLIControllerBase {
             mostraErroreAggiornamento("Inserisci un numero valido.");
         } catch (QuantitaInsufficienteException e) {
             mostraErroreAggiornamento("Quantita non disponibile.");
+        } catch (DAOException e) {
+            mostraErroreAggiornamento("Errore di sistema durante l'aggiornamento del carrello.");
         } catch (IllegalArgumentException e) {
             mostraErroreAggiornamento("Impossibile aggiornare il carrello.");
         }

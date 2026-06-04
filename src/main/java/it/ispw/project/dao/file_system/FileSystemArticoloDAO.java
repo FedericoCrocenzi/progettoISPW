@@ -2,6 +2,7 @@ package it.ispw.project.dao.file_system;
 
 import it.ispw.project.dao.ArticoloDAO;
 import it.ispw.project.dao.ArticoloFilter;
+import it.ispw.project.exception.DAOException;
 import it.ispw.project.model.Articolo;
 import it.ispw.project.model.Fitofarmaco;
 import it.ispw.project.model.Mangime;
@@ -23,7 +24,7 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
     private final SimpleDateFormat dateFmt = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
-    public Articolo selectArticoloById(int id) {
+    public Articolo selectArticoloById(int id) throws DAOException {
         List<Articolo> tutti = selectAllArticoli();
         for (Articolo a : tutti) {
             if (a.leggiId() == id) {
@@ -34,7 +35,7 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
     }
 
     @Override
-    public List<Articolo> selectAllArticoli() {
+    public List<Articolo> selectAllArticoli() throws DAOException {
         List<Articolo> catalogo = new ArrayList<>();
         File file = new File(CSV_FILE_NAME);
         if (!file.exists()) return catalogo;
@@ -49,12 +50,13 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
             }
         } catch (IOException | ParseException | NumberFormatException e) {
             LOGGER.log(Level.SEVERE, "Errore lettura file articoli.", e);
+            throw new DAOException("Errore durante il recupero del catalogo.", e);
         }
         return catalogo;
     }
 
     @Override
-    public boolean updateScorta(Articolo articoloModificato) {
+    public boolean updateScorta(Articolo articoloModificato) throws DAOException {
         if (articoloModificato == null) {
             return false;
         }
@@ -80,7 +82,8 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
     }
 
     @Override
-    public List<Articolo> selectByFilter(String descrizione, String tipo, Double min, Double max) {
+    public List<Articolo> selectByFilter(String descrizione, String tipo, Double min, Double max)
+            throws DAOException {
         // Filtro in memoria (Java Stream o ciclo classico)
         List<Articolo> tutti = selectAllArticoli();
         List<Articolo> filtrati = new ArrayList<>();
@@ -94,7 +97,7 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
     }
 
     // Metodo helper per salvare le modifiche
-    private boolean riscriviFile(List<Articolo> lista) {
+    private boolean riscriviFile(List<Articolo> lista) throws DAOException {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(CSV_FILE_NAME))) {
             for (Articolo a : lista) {
                 bw.write(serializzaArticolo(a));
@@ -103,13 +106,16 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
             return true;
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Errore scrittura file articoli.", e);
-            return false;
+            throw new DAOException("Errore durante l'aggiornamento della scorta.", e);
         }
     }
 
     private Articolo parseArticolo(String line) throws ParseException {
         String[] d = line.split(";");
         // Formato: id;TIPO;descrizione;prezzo;scorta;extra;[immagine_path]
+        if (d.length < 5) {
+            throw new ParseException("Riga articolo incompleta.", 0);
+        }
 
         int id = Integer.parseInt(d[0]);
         String tipo = d[1];
@@ -135,7 +141,7 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
                 boolean patentino = (dati.length > 5) && Boolean.parseBoolean(dati[5]);
                 return new Fitofarmaco(id, desc, prezzo, scorta, patentino);
             default:
-                return null;
+                throw new ParseException("Tipo articolo sconosciuto: " + tipo, 0);
         }
     }
 

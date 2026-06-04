@@ -2,6 +2,7 @@ package it.ispw.project.dao.demo;
 
 import it.ispw.project.dao.ArticoloDAO;
 import it.ispw.project.dao.ArticoloFilter;
+import it.ispw.project.exception.DAOException;
 import it.ispw.project.model.Articolo;
 import it.ispw.project.model.Fitofarmaco;
 import it.ispw.project.model.Magazzino; // Importa il Singleton
@@ -40,19 +41,19 @@ public class MemoryArticoloDAO implements ArticoloDAO {
     }
 
     @Override
-    public Articolo selectArticoloById(int id) {
+    public Articolo selectArticoloById(int id) throws DAOException {
         // Deleghiamo al Magazzino
         return Magazzino.getInstance().trovaArticolo(id);
     }
 
     @Override
-    public List<Articolo> selectAllArticoli() {
+    public List<Articolo> selectAllArticoli() throws DAOException {
         // Recuperiamo la mappa dal Magazzino e la convertiamo in Lista per rispettare l'interfaccia
         return new ArrayList<>(Magazzino.getInstance().getCatalogo().values());
     }
 
     @Override
-    public boolean updateScorta(Articolo articolo) {
+    public boolean updateScorta(Articolo articolo) throws DAOException {
         if (articolo == null) {
             return false;
         }
@@ -69,7 +70,8 @@ public class MemoryArticoloDAO implements ArticoloDAO {
     }
 
     @Override
-    public List<Articolo> selectByFilter(String descrizione, String tipo, Double min, Double max) {
+    public List<Articolo> selectByFilter(String descrizione, String tipo, Double min, Double max)
+            throws DAOException {
         // Filtriamo direttamente sugli oggetti del Magazzino
         List<Articolo> tutti = selectAllArticoli();
         List<Articolo> filtrati = new ArrayList<>();
