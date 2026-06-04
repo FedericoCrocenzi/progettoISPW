@@ -60,10 +60,7 @@ public class FileSystemOrdineDAO implements OrdineDAO {
             String line;
             while ((line = br.readLine()) != null) {
                 if (!line.trim().isEmpty()) {
-                    Ordine o = parseLineToOrdine(line);
-                    if (o != null) {
-                        ordini.add(o);
-                    }
+                    ordini.add(parseLineToOrdine(line));
                 }
             }
         } catch (IOException e) {
@@ -110,27 +107,35 @@ public class FileSystemOrdineDAO implements OrdineDAO {
 
     @Override
     public void updateStato(Ordine ordine) throws DAOException {
+        if (ordine == null) {
+            throw new DAOException("Ordine non valido durante l'aggiornamento dello stato.");
+        }
+
         File file = new File(CSV_FILE_NAME);
         List<String> lines = new ArrayList<>();
         boolean updated = false;
 
-        if (file.exists()) {
-            try {
-                updated = caricaRigheAggiornate(file, ordine, lines);
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, ERRORE_LETTURA_FILE_ORDINI, e);
-                throw new DAOException("Errore durante l'aggiornamento dello stato ordine.", e);
-            }
+        if (!file.exists()) {
+            throw new DAOException("File ordini non trovato durante l'aggiornamento dello stato.");
+        }
+
+        try {
+            updated = caricaRigheAggiornate(file, ordine, lines);
+        } catch (IOException | NumberFormatException e) {
+            LOGGER.log(Level.SEVERE, ERRORE_LETTURA_FILE_ORDINI, e);
+            throw new DAOException("Errore durante l'aggiornamento dello stato ordine.", e);
         }
 
         // 3. Riscrivi tutto il file solo se c'è stata modifica
-        if (updated) {
-            try {
-                riscriviRigheOrdini(file, lines);
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Errore scrittura file ordini.", e);
-                throw new DAOException("Errore durante l'aggiornamento dello stato ordine.", e);
-            }
+        if (!updated) {
+            throw new DAOException("Ordine non trovato durante l'aggiornamento dello stato.");
+        }
+
+        try {
+            riscriviRigheOrdini(file, lines);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Errore scrittura file ordini.", e);
+            throw new DAOException("Errore durante l'aggiornamento dello stato ordine.", e);
         }
     }
 
@@ -234,7 +239,7 @@ public class FileSystemOrdineDAO implements OrdineDAO {
      */
     private Ordine parseLineToOrdine(String line) throws DAOException {
         try {
-            String[] parts = line.split(SEPARATOR);
+            String[] parts = line.split(SEPARATOR, -1);
             // Formato: ID;TIMESTAMP;TOTALE;STATO;ID_CLIENTE;LISTA_ARTICOLI
 
             int id = Integer.parseInt(parts[0]);
@@ -248,6 +253,9 @@ public class FileSystemOrdineDAO implements OrdineDAO {
 
             // Ricostruzione Mappa Articoli
             Map<Articolo, Integer> mappaArticoli = new HashMap<>();
+            if (articoliStr.isBlank()) {
+                throw new DAOException("Nessuna riga articolo trovata per l'ordine " + id + ".");
+            }
             if (!articoliStr.isEmpty()) {
                 FileSystemArticoloDAO articoloDAO = new FileSystemArticoloDAO();
                 String[] coppie = articoliStr.split(",");
@@ -257,9 +265,10 @@ public class FileSystemOrdineDAO implements OrdineDAO {
                     int qta = Integer.parseInt(kv[1]);
 
                     Articolo art = articoloDAO.selectArticoloById(idArt);
-                    if (art != null) {
-                        mappaArticoli.put(art, qta);
+                    if (art == null) {
+                        throw new DAOException("Articolo referenziato dall'ordine " + id + " non trovato: " + idArt + ".");
                     }
+                    mappaArticoli.put(art, qta);
                 }
             }
 
@@ -299,15 +308,12 @@ public class FileSystemOrdineDAO implements OrdineDAO {
         return sb.toString();
     }
 
-    private Utente recuperaClienteOrdine(int idCliente) {
+    private Utente recuperaClienteOrdine(int idCliente) throws DAOException {
         FileSystemUtenteDAO utenteDAO = new FileSystemUtenteDAO();
-        try {
-            return utenteDAO.findById(idCliente);
-        } catch (Exception e) {
-            LOGGER.log(Level.FINE,
-                    "Cliente non ricostruibile: l'ordine viene comunque letto con cliente nullo.",
-                    e);
-            return null;
+        Utente cliente = utenteDAO.findById(idCliente);
+        if (cliente == null) {
+            throw new DAOException("Cliente referenziato dall'ordine non trovato: " + idCliente + ".");
         }
+        return cliente;
     }
 }

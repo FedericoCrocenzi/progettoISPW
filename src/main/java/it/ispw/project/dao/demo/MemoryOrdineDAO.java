@@ -1,6 +1,7 @@
 package it.ispw.project.dao.demo;
 
 import it.ispw.project.dao.OrdineDAO;
+import it.ispw.project.exception.DAOException;
 import it.ispw.project.model.Ordine;
 
 import java.util.ArrayList;
@@ -63,7 +64,11 @@ public class MemoryOrdineDAO implements OrdineDAO {
     }
 
     @Override
-    public void updateStato(Ordine ordine) {
+    public void updateStato(Ordine ordine) throws DAOException {
+        if (ordine == null) {
+            throw new DAOException("Ordine non valido durante l'aggiornamento dello stato.");
+        }
+
         // In memoria (passaggio per riferimento), l'oggetto 'ordine' passato
         // è lo stesso che sta nella lista 'tabellaOrdini'.
         // Quindi l'aggiornamento è automatico.
@@ -79,5 +84,6 @@ public class MemoryOrdineDAO implements OrdineDAO {
                 return;
             }
         }
+        throw new DAOException("Ordine non trovato durante l'aggiornamento dello stato.");
     }
 }

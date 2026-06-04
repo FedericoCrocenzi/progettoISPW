@@ -141,8 +141,7 @@ public class JDBCOrdineDAO implements OrdineDAO {
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                Ordine o = mapRowToOrdine(rs);
-                if (o != null) lista.add(o);
+                lista.add(mapRowToOrdine(rs));
             }
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Errore findAll ordini", e);
@@ -162,8 +161,7 @@ public class JDBCOrdineDAO implements OrdineDAO {
             stmt.setString(1, stato);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Ordine o = mapRowToOrdine(rs);
-                    if (o != null) lista.add(o);
+                    lista.add(mapRowToOrdine(rs));
                 }
             }
         } catch (SQLException e) {
@@ -197,7 +195,7 @@ public class JDBCOrdineDAO implements OrdineDAO {
     // HELPER METHODS (Private)
     // =================================================================
 
-    private Ordine mapRowToOrdine(ResultSet rs) throws SQLException {
+    private Ordine mapRowToOrdine(ResultSet rs) throws SQLException, DAOException {
         int id = rs.getInt("id");
         Timestamp data = rs.getTimestamp("data_creazione");
         double totale = rs.getDouble("totale");
@@ -205,11 +203,14 @@ public class JDBCOrdineDAO implements OrdineDAO {
         int idCliente = rs.getInt("id_cliente");
 
         // 1. Recupero Utente
-        Utente cliente = null;
+        Utente cliente;
         try {
             cliente = utenteDAO.findById(idCliente);
-        } catch (Exception e) {
-            throw new SQLException("Errore recupero cliente per ordine " + id, e);
+        } catch (DAOException e) {
+            throw new DAOException("Errore durante il recupero del cliente dell'ordine " + id + ".", e);
+        }
+        if (cliente == null) {
+            throw new DAOException("Cliente referenziato dall'ordine " + id + " non trovato.");
         }
 
         // 2. Recupero Articoli
@@ -220,12 +221,14 @@ public class JDBCOrdineDAO implements OrdineDAO {
         return o;
     }
 
-    private Map<Articolo, Integer> getRigheOrdine(int idOrdine) {
+    private Map<Articolo, Integer> getRigheOrdine(int idOrdine) throws DAOException {
         Map<Articolo, Integer> mappa = new HashMap<>();
         // MODIFICA QUI: Accesso tramite Singleton
         Connection conn = DBConnection.getInstance().getConnection();
 
-        if (conn == null) return mappa;
+        if (conn == null) {
+            throw new DAOException("Connessione al database non disponibile.");
+        }
 
         try (PreparedStatement stmt = conn.prepareStatement(Queries.SELECT_RIGHE_BY_ORDINE)) {
             stmt.setInt(1, idOrdine);
@@ -239,21 +242,24 @@ public class JDBCOrdineDAO implements OrdineDAO {
                 }
             }
         } catch (SQLException e) {
-            logger.log(Level.WARNING, e,
-                    () -> MessageFormat.format("Errore SQL recupero righe ordine {0}", idOrdine));
+            throw new DAOException("Errore durante il recupero delle righe dell'ordine " + idOrdine + ".", e);
+        }
+        if (mappa.isEmpty()) {
+            throw new DAOException("Nessuna riga ordine trovata per l'ordine " + idOrdine + ".");
         }
         return mappa;
     }
 
-    private void aggiungiArticoloOrdine(Map<Articolo, Integer> mappa, int idArticolo, int qta) {
+    private void aggiungiArticoloOrdine(Map<Articolo, Integer> mappa, int idArticolo, int qta) throws DAOException {
+        Articolo a;
         try {
-            Articolo a = articoloDAO.selectArticoloById(idArticolo);
-            if (a != null) {
-                mappa.put(a, qta);
-            }
-        } catch (Exception e) {
-            logger.log(Level.WARNING, e,
-                    () -> MessageFormat.format("Errore nel recupero articolo id={0}", idArticolo));
+            a = articoloDAO.selectArticoloById(idArticolo);
+        } catch (DAOException e) {
+            throw new DAOException("Errore durante il recupero dell'articolo " + idArticolo + " della riga ordine.", e);
         }
+        if (a == null) {
+            throw new DAOException("Articolo referenziato da riga ordine non trovato: " + idArticolo + ".");
+        }
+        mappa.put(a, qta);
     }
 }
