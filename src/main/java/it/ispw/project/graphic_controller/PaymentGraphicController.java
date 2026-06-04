@@ -34,7 +34,7 @@ public class PaymentGraphicController implements ControllerGraficoBase {
     private static final String METODO_PAYPAL = "PAYPAL";
     private static final String METODO_CONTANTI_CONSEGNA = "CONTANTI_CONSEGNA";
     private static final String MAIN_VIEW_PATH = "/view/MainView.fxml";
-    private static final String TITOLO_ACQUISTA_ARTICOLO = "Acquista Articolo";
+    private static final String TITOLO_ACQUISTA_ARTICOLO = "Pagamento Effettuato";
     private static final String MESSAGGIO_ORDINE_COMPLETATO = "Ordine completato correttamente.";
 
     @FXML private TextField txtNumeroCarta;
@@ -199,7 +199,7 @@ public class PaymentGraphicController implements ControllerGraficoBase {
         ordineBean.setArticoli(carrelloTmp.getListaArticoli());
         ordineBean.setTotale(carrelloTmp.getTotale());
         if (!CommessoGraphicController.isCommessoGraficoAttivo()) {
-            CommessoGraphicController.registraNuovoOrdineInAttesa(ordineBean);
+            CommessoGraphicController.registraNuovoOrdineInElaborazione(ordineBean);
         }
         return ordineBean;
     }

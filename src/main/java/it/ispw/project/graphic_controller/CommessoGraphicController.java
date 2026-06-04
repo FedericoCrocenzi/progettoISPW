@@ -25,6 +25,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -41,7 +42,7 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
     private static final String TESTO_VISUALIZZA_ORDINE = "Visualizza Ordine";
     private static final String MESSAGGIO_NUOVO_ORDINE_COMPLETO =
             "E' arrivato un nuovo ordine con la lista articoli completa.";
-    private static final Map<Integer, OrdineBean> nuoviOrdiniInAttesa = new LinkedHashMap<>();
+    private static final Map<Integer, OrdineBean> nuoviOrdiniInElaborazione = new LinkedHashMap<>();
     private static boolean commessoGraficoAttivo;
 
     @FXML private TilePane tilePaneOrdini;
@@ -76,7 +77,7 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
 
         List<OrdineBean> ordiniCorrenti = caricaOrdini();
         Platform.runLater(() -> {
-            boolean notificheMostrate = mostraNuoviOrdiniInAttesa();
+            boolean notificheMostrate = mostraNuoviOrdiniInElaborazione();
             if (!notificheMostrate) {
                 mostraPopupLoginSeNecessario(ordiniCorrenti);
             }
@@ -95,23 +96,23 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
         return commessoGraficoAttivo;
     }
 
-    public static synchronized void registraNuovoOrdineInAttesa(OrdineBean ordineBean) {
-        if (ordineBean != null && ordineBean.getId() > 0 && "IN_ATTESA".equals(ordineBean.getStato())) {
-            nuoviOrdiniInAttesa.putIfAbsent(ordineBean.getId(), ordineBean);
+    public static synchronized void registraNuovoOrdineInElaborazione(OrdineBean ordineBean) {
+        if (ordineBean != null && ordineBean.getId() > 0 && "IN_ELABORAZIONE".equals(ordineBean.getStato())) {
+            nuoviOrdiniInElaborazione.putIfAbsent(ordineBean.getId(), ordineBean);
         }
     }
 
-    private static synchronized void rimuoviNuovoOrdineInAttesa(int idOrdine) {
-        nuoviOrdiniInAttesa.remove(idOrdine);
+    private static synchronized void rimuoviNuovoOrdineInElaborazione(int idOrdine) {
+        nuoviOrdiniInElaborazione.remove(idOrdine);
     }
 
     private static synchronized void setCommessoGraficoAttivo(boolean attivo) {
         commessoGraficoAttivo = attivo;
     }
 
-    private static synchronized List<OrdineBean> prelevaNuoviOrdiniInAttesa() {
-        List<OrdineBean> ordini = new ArrayList<>(nuoviOrdiniInAttesa.values());
-        nuoviOrdiniInAttesa.clear();
+    private static synchronized List<OrdineBean> prelevaNuoviOrdiniInElaborazione() {
+        List<OrdineBean> ordini = new ArrayList<>(nuoviOrdiniInElaborazione.values());
+        nuoviOrdiniInElaborazione.clear();
         return ordini;
     }
 
@@ -178,7 +179,7 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
     private void gestisciOrdinePronto(int idOrdine, VBox cardGrafica) {
         try {
             appController.confermaRitiroMerce(idOrdine);
-            rimuoviNuovoOrdineInAttesa(idOrdine);
+            rimuoviNuovoOrdineInElaborazione(idOrdine);
             tilePaneOrdini.getChildren().remove(cardGrafica);
             if (tilePaneOrdini.getChildren().isEmpty()) {
                 tilePaneOrdini.getChildren().add(new Label("Nessun ordine da evadere."));
@@ -267,8 +268,8 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
         );
     }
 
-    private boolean mostraNuoviOrdiniInAttesa() {
-        List<OrdineBean> ordini = prelevaNuoviOrdiniInAttesa();
+    private boolean mostraNuoviOrdiniInElaborazione() {
+        List<OrdineBean> ordini = prelevaNuoviOrdiniInElaborazione();
         if (ordini.isEmpty()) {
             return false;
         }
@@ -292,7 +293,7 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
         Platform.runLater(() -> {
             if (data instanceof OrdineBean) {
                 OrdineBean bean = (OrdineBean) data;
-                if (!"IN_ATTESA".equals(bean.getStato())) {
+                if (!"IN_ELABORAZIONE".equals(bean.getStato())) {
                     return;
                 }
 

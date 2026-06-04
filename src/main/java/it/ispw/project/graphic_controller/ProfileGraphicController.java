@@ -60,7 +60,7 @@ public class ProfileGraphicController implements ControllerGraficoBase {
         String nuovaEmail = txtEmail.getText();
 
         mostraMessaggio("Profilo Aggiornato",
-                "Le modifiche sono state salvate (Simulazione).\nNuova Email: " + nuovaEmail);
+                "Le modifiche sono state salvate(Simulazione).\nNuova Email: " + nuovaEmail);
     }
 
     @FXML

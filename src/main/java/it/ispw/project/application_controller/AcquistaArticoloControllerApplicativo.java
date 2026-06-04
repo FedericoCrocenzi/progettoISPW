@@ -23,7 +23,7 @@ import java.util.Map;
 
 public class AcquistaArticoloControllerApplicativo {
 
-    private static final String STATO_ORDINE_IN_ATTESA = "IN_ATTESA";
+    private static final String STATO_ORDINE_IN_ELABORAZIONE = "IN_ELABORAZIONE";
 
     public AcquistaArticoloControllerApplicativo() {
         // Costruttore vuoto (Stateless)
@@ -232,7 +232,7 @@ public class AcquistaArticoloControllerApplicativo {
                 new HashMap<>(carrello.getListaArticoli()),
                 carrello.calcolaTotale()
         );
-        ordine.setStato(STATO_ORDINE_IN_ATTESA);
+        ordine.setStato(STATO_ORDINE_IN_ELABORAZIONE);
 
         DAOFactory factory = DAOFactory.getDAOFactory();
         OrdineDAO ordineDAO = factory.getOrdineDAO();
@@ -290,7 +290,7 @@ public class AcquistaArticoloControllerApplicativo {
     public List<OrdineBean> recuperaOrdiniPendenti() throws DAOException {
         DAOFactory factory = DAOFactory.getDAOFactory();
         OrdineDAO ordineDAO = factory.getOrdineDAO();
-        List<Ordine> ordini = ordineDAO.findByStato(STATO_ORDINE_IN_ATTESA);
+        List<Ordine> ordini = ordineDAO.findByStato(STATO_ORDINE_IN_ELABORAZIONE);
 
         List<OrdineBean> beans = new ArrayList<>();
         for (Ordine o : ordini) {
@@ -299,7 +299,7 @@ public class AcquistaArticoloControllerApplicativo {
         return beans;
     }
 
-    public void segnalaClienteInNegozio(int idOrdine) throws DAOException {
+   /* public void segnalaClienteInNegozio(int idOrdine) throws DAOException {
         DAOFactory factory = DAOFactory.getDAOFactory();
         OrdineDAO ordineDAO = factory.getOrdineDAO();
         Ordine ordine = ordineDAO.selectOrdineById(idOrdine);
@@ -310,14 +310,14 @@ public class AcquistaArticoloControllerApplicativo {
             GestoreNotifiche.getInstance()
                     .inviaMessaggio("CLIENTE_IN_NEGOZIO: Ordine #" + idOrdine);
         }
-    }
+    }*/
 
     public void confermaRitiroMerce(int idOrdine) throws DAOException {
         DAOFactory factory = DAOFactory.getDAOFactory();
         OrdineDAO ordineDAO = factory.getOrdineDAO();
         Ordine ordine = ordineDAO.selectOrdineById(idOrdine);
 
-        if (ordine == null || !STATO_ORDINE_IN_ATTESA.equals(ordine.getStato())) {
+        if (ordine == null || !STATO_ORDINE_IN_ELABORAZIONE.equals(ordine.getStato())) {
             return;
         }
 

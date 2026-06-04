@@ -185,7 +185,7 @@ public class FileSystemOrdineDAO implements OrdineDAO {
         sb.append(nuovoId).append(SEPARATOR);
         sb.append(ordine.getDataCreazione().getTime()).append(SEPARATOR); // Timestamp long
         sb.append(ordine.getTotale()).append(SEPARATOR);
-        sb.append(ordine.getStato() == null ? "IN_ATTESA" : ordine.getStato()).append(SEPARATOR);
+        sb.append(ordine.getStato() == null ? "IN_ELABORAZIONE" : ordine.getStato()).append(SEPARATOR);
         sb.append(ordine.getCliente().ottieniId()).append(SEPARATOR);
         sb.append(articoliStr);
         return sb.toString();
