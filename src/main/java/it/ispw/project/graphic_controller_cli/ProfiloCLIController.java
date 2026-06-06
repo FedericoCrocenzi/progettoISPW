@@ -1,5 +1,7 @@
 package it.ispw.project.graphic_controller_cli;
 
+import it.ispw.project.bean.UtenteBean;
+import it.ispw.project.exception.DAOException;
 import it.ispw.project.session_manager.Session;
 import it.ispw.project.session_manager.SessionManager;
 
@@ -25,8 +27,19 @@ public class ProfiloCLIController extends CLIControllerBase {
             return;
         }
 
-        CLIPrinter.println("Username: " + session.getUtenteCorrente().leggiUsername());
-        CLIPrinter.println("Ruolo: " + session.getUtenteCorrente().scopriRuolo());
+        try {
+            UtenteBean utenteBean = creaControllerAcquisto().recuperaDatiCliente(session.getUserId());
+
+            if (utenteBean != null) {
+                CLIPrinter.println("Username: " + utenteBean.getUsername());
+                CLIPrinter.println("Ruolo: " + utenteBean.getRuolo());
+            } else {
+                CLIPrinter.println("Dati profilo non disponibili.");
+            }
+        } catch (DAOException e) {
+            CLIPrinter.println("Errore nel recupero dati profilo: " + e.getMessage());
+        }
+
         CLIPrinter.println();
         CLIPrinter.println("1 - Torna al catalogo");
         CLIPrinter.println("2 - Logout");
