@@ -24,14 +24,6 @@ public class Utente {
         this.indirizzo = indirizzo;
     }
 
-    // Costruttore ridotto per la registrazione (quando ancora non abbiamo ID, email, etc.)
-    // Utile se devi creare un utente nuovo da salvare poi nel DB
-    public Utente(String username, String password, String ruolo) {
-        this.username = username;
-        this.password = password;
-        this.ruolo = ruolo;
-    }
-
     // --- GETTERS (Solo lettura, niente Setter) ---
 
     public int ottieniId() { return id; }

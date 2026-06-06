@@ -69,11 +69,4 @@ public class GestoreNotifiche extends Subject {
         notificheMercePronta.remove(idOrdine);
     }
 
-    /**
-     * Usato per messaggi generici (es. "Cliente in negozio", "Merce Pronta")
-     */
-    public void inviaMessaggio(String messaggio) {
-        // Notifica gli observer passando una Stringa
-        super.notifyObservers(messaggio);
-    }
 }

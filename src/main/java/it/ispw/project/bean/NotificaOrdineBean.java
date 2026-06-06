@@ -15,9 +15,7 @@ public class NotificaOrdineBean {
         this.idOrdine = idOrdine;
     }
 
-    public int getIdCliente() {
-        return idCliente;
-    }
+    public int getIdCliente() {return idCliente;}
 
     public void setIdCliente(int idCliente) {
         this.idCliente = idCliente;

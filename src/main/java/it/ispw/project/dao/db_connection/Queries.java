@@ -16,9 +16,6 @@ public class Queries {
 
     public static final String SELECT_UTENTE_BY_ID =
             "SELECT * FROM utente WHERE id = ?";
-    public static final String INSERT_UTENTE =
-            "INSERT INTO utente (username, password, ruolo, email, indirizzo) VALUES (?, ?, ?, ?, ?)";
-
     // =================================================================================
     // QUERY TABELLA ARTICOLO
     // =================================================================================
@@ -45,9 +42,6 @@ public class Queries {
 
     public static final String SELECT_ORDINE_BY_ID =
             "SELECT * FROM ordine WHERE id = ?";
-
-    public static final String SELECT_ORDINI_BY_CLIENTE =
-            "SELECT * FROM ordine WHERE id_cliente = ? ORDER BY data_creazione DESC";
 
     public static final String UPDATE_ORDINE_STATO =
             "UPDATE ordine SET stato = ? WHERE id = ?";

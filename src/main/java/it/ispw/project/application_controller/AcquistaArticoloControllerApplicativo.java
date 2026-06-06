@@ -335,19 +335,6 @@ public class AcquistaArticoloControllerApplicativo {
         }
     }
 
-   /* public void segnalaClienteInNegozio(int idOrdine) throws DAOException {
-        DAOFactory factory = DAOFactory.getDAOFactory();
-        OrdineDAO ordineDAO = factory.getOrdineDAO();
-        Ordine ordine = ordineDAO.selectOrdineById(idOrdine);
-
-        if (ordine != null) {
-            ordine.setStato("CLIENTE_IN_NEGOZIO");
-            ordineDAO.updateStato(ordine);
-            GestoreNotifiche.getInstance()
-                    .inviaMessaggio("CLIENTE_IN_NEGOZIO: Ordine #" + idOrdine);
-        }
-    }*/
-
     public void confermaMercePronta(int idOrdine) throws DAOException {
         DAOFactory factory = DAOFactory.getDAOFactory();
         OrdineDAO ordineDAO = factory.getOrdineDAO();

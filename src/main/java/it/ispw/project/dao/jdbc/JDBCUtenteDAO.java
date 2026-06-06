@@ -106,39 +106,6 @@ public class JDBCUtenteDAO implements UtenteDAO {
         }
     }
 
-    @Override
-    public void salva(Utente utente) throws DAOException {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        try {
-            // MODIFICA QUI: Accesso tramite Singleton
-            conn = DBConnection.getInstance().getConnection();
-
-            if (conn == null) {
-                throw new DAOException("Impossibile connettersi al database: Connessione null.");
-            }
-
-            stmt = conn.prepareStatement(Queries.INSERT_UTENTE);
-
-            stmt.setString(1, utente.leggiUsername());
-            stmt.setString(2, utente.ottieniPassword());
-            stmt.setString(3, utente.scopriRuolo());
-            stmt.setString(4, utente.leggiEmail());
-            stmt.setString(5, utente.leggiIndirizzo());
-
-            int affectedRows = stmt.executeUpdate();
-            if (affectedRows == 0) {
-                throw new DAOException("Creazione utente fallita, nessuna riga aggiunta.");
-            }
-
-        } catch (SQLException e) {
-            throw new DAOException("Errore durante il salvataggio dell'utente: " + utente.leggiUsername(), e);
-        } finally {
-            closeResources(null, stmt);
-        }
-    }
-
     // --- Helper Methods ---
 
     private Utente mapRowToUtente(ResultSet rs) throws SQLException {

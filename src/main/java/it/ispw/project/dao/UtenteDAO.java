@@ -6,5 +6,4 @@ import it.ispw.project.model.Utente;
 public interface UtenteDAO {
     Utente checkCredentials(String username, String password) throws DAOException;
     Utente findById(int id) throws DAOException;
-    void salva(Utente utente) throws DAOException;
 }

@@ -286,12 +286,6 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
                         () -> apriDettaglioOrdine(bean)
                 );
 
-            } else if (data instanceof String) {
-                String msg = (String) data;
-                if (msg.contains("CLIENTE_IN_NEGOZIO")) {
-                    caricaOrdini();
-                    apriPopupNotifica(null, "Cliente Arrivato", msg);
-                }
             }
         });
     }
@@ -301,6 +295,11 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
         onClose();
         Stage stage = (Stage) tilePaneOrdini.getScene().getWindow();
         ViewSwitcher.switchTo("/view/Login.fxml", null, stage);
+    }
+
+    @FXML
+    public void scannerizzaBarcode() {
+        mostraInfo("Scannerizza Barcode", "Funzionalità non ancora implementata.");
     }
 
     private void mostraErrore(String titolo, String testo) {
