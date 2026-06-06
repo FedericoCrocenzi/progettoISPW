@@ -5,6 +5,7 @@ import it.ispw.project.bean.NotificaOrdineBean;
 import it.ispw.project.bean.OrdineBean;
 import it.ispw.project.bean.RicercaArticoloBean; // Assicurati che questo import esista
 import it.ispw.project.model.GestoreNotifiche;
+import it.ispw.project.model.NotificaOrdine;
 import it.ispw.project.model.observer.Observer;
 import it.ispw.project.view.ViewSwitcher; // Se usi ViewSwitcher per il logout, altrimenti lascia stare
 import javafx.application.Platform;
@@ -179,11 +180,14 @@ public class MainGraphicController implements ControllerGraficoBase, Observer {
 
     @Override
     public void update(Object data) {
-        if (!(data instanceof NotificaOrdineBean)) {
+        if (!(data instanceof NotificaOrdine)) {
             return;
         }
 
-        NotificaOrdineBean notifica = (NotificaOrdineBean) data;
+        NotificaOrdine notifica = (NotificaOrdine) data;
+        if (notifica.getTipo() != NotificaOrdine.Tipo.MERCE_PRONTA) {
+            return;
+        }
 
         Platform.runLater(() -> {
             if (!isSchermataClienteAttiva()) {
@@ -193,7 +197,10 @@ public class MainGraphicController implements ControllerGraficoBase, Observer {
             }
 
             if (appController.notificaDestinataAllaSessione(sessionId, notifica)) {
-                mostraPopupMercePronta(notifica);
+                NotificaOrdineBean notificaBean = appController.convertiNotificaOrdineInBean(notifica);
+                if (notificaBean != null) {
+                    mostraPopupMercePronta(notificaBean);
+                }
             }
         });
     }

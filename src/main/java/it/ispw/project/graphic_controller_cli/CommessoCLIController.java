@@ -20,7 +20,7 @@ public class CommessoCLIController extends CLIControllerBase {
     public void show() {
         CLIPrinter.println("\n=== AREA COMMESSO ===");
         CLIPrinter.println("1 - Visualizza ordini pendenti");
-        CLIPrinter.println("2 - Conferma ritiro merce");
+        CLIPrinter.println("2 - Conferma merce pronta");
         CLIPrinter.println("3 - Logout");
 
         CLIPrinter.print("Scelta: ");
@@ -74,7 +74,7 @@ public class CommessoCLIController extends CLIControllerBase {
 
         try {
             int idOrdine = Integer.parseInt(input);
-            appController.confermaRitiroMerce(idOrdine);
+            appController.confermaMercePronta(idOrdine);
             CLIPrinter.println("Ordine confermato. Cliente notificato.");
 
         } catch (NumberFormatException e) {

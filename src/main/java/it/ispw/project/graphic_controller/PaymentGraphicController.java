@@ -198,9 +198,6 @@ public class PaymentGraphicController implements ControllerGraficoBase {
         OrdineBean ordineBean = appController.completaAcquisto(sessionId, pagamentoBean);
         ordineBean.setArticoli(carrelloTmp.getListaArticoli());
         ordineBean.setTotale(carrelloTmp.getTotale());
-        if (!CommessoGraphicController.isCommessoGraficoAttivo()) {
-            CommessoGraphicController.registraNuovoOrdineInElaborazione(ordineBean);
-        }
         return ordineBean;
     }
 

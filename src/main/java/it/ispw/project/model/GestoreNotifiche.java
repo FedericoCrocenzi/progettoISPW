@@ -1,7 +1,5 @@
 package it.ispw.project.model;
 
-import it.ispw.project.bean.NotificaOrdineBean;
-import it.ispw.project.bean.OrdineBean;
 import it.ispw.project.model.observer.Subject;
 
 import java.util.ArrayList;
@@ -13,7 +11,7 @@ import java.util.Map;
 @SuppressWarnings("java:S6548")
 public class GestoreNotifiche extends Subject {
 
-    private final Map<Integer, NotificaOrdineBean> notificheMercePronta;
+    private final Map<Integer, NotificaOrdine> notificheMercePronta;
 
     private GestoreNotifiche() {
         super();
@@ -33,12 +31,18 @@ public class GestoreNotifiche extends Subject {
     /**
      * Usato quando viene creato un nuovo ordine (Notifica al Magazzino/Commesso)
      */
-    public void inviaNotificaNuovoOrdine(OrdineBean ordine) {
-        super.notifyObservers(ordine);
+    public void inviaNotificaNuovoOrdine(NotificaOrdine notifica) {
+        if (notifica == null || notifica.getTipo() != NotificaOrdine.Tipo.NUOVO_ORDINE) {
+            return;
+        }
+        super.notifyObservers(notifica);
     }
 
-    public void inviaNotificaMercePronta(NotificaOrdineBean notifica) {
+    public void inviaNotificaMercePronta(NotificaOrdine notifica) {
         if (notifica == null || notifica.getIdOrdine() <= 0 || notifica.getIdCliente() <= 0) {
+            return;
+        }
+        if (notifica.getTipo() != NotificaOrdine.Tipo.MERCE_PRONTA) {
             return;
         }
         if (!"PRONTO".equals(notifica.getStato())) {
@@ -51,9 +55,9 @@ public class GestoreNotifiche extends Subject {
         super.notifyObservers(notifica);
     }
 
-    public synchronized List<NotificaOrdineBean> getNotificheMerceProntaPerCliente(int idCliente) {
-        List<NotificaOrdineBean> notifiche = new ArrayList<>();
-        for (NotificaOrdineBean notifica : notificheMercePronta.values()) {
+    public synchronized List<NotificaOrdine> getNotificheMerceProntaPerCliente(int idCliente) {
+        List<NotificaOrdine> notifiche = new ArrayList<>();
+        for (NotificaOrdine notifica : notificheMercePronta.values()) {
             if (notifica.getIdCliente() == idCliente) {
                 notifiche.add(notifica);
             }

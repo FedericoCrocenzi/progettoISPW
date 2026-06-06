@@ -4,6 +4,7 @@ import it.ispw.project.application_controller.AcquistaArticoloControllerApplicat
 import it.ispw.project.bean.OrdineBean;
 import it.ispw.project.exception.DAOException;
 import it.ispw.project.model.GestoreNotifiche;
+import it.ispw.project.model.NotificaOrdine;
 import it.ispw.project.model.observer.Observer;
 import it.ispw.project.view.ViewSwitcher;
 import javafx.application.Platform;
@@ -28,9 +29,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,8 +41,6 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
     private static final String TESTO_VISUALIZZA_ORDINE = "Visualizza Ordine";
     private static final String MESSAGGIO_NUOVO_ORDINE_COMPLETO =
             "E' arrivato un nuovo ordine con la lista articoli completa.";
-    private static final Map<Integer, OrdineBean> nuoviOrdiniInElaborazione = new LinkedHashMap<>();
-    private static boolean commessoGraficoAttivo;
 
     @FXML private TilePane tilePaneOrdini;
     @FXML private ToggleGroup menuGroup;
@@ -72,7 +69,6 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
         this.sessionId = sessionId;
         this.appController = new AcquistaArticoloControllerApplicativo();
 
-        setCommessoGraficoAttivo(true);
         GestoreNotifiche.getInstance().attach(this);
 
         List<OrdineBean> ordiniCorrenti = caricaOrdini();
@@ -88,32 +84,7 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
      * Deregistra l'observer grafico quando il commesso esce dalla schermata.
      */
     public void onClose() {
-        setCommessoGraficoAttivo(false);
         GestoreNotifiche.getInstance().detach(this);
-    }
-
-    public static synchronized boolean isCommessoGraficoAttivo() {
-        return commessoGraficoAttivo;
-    }
-
-    public static synchronized void registraNuovoOrdineInElaborazione(OrdineBean ordineBean) {
-        if (ordineBean != null && ordineBean.getId() > 0 && "IN_ELABORAZIONE".equals(ordineBean.getStato())) {
-            nuoviOrdiniInElaborazione.putIfAbsent(ordineBean.getId(), ordineBean);
-        }
-    }
-
-    private static synchronized void rimuoviNuovoOrdineInElaborazione(int idOrdine) {
-        nuoviOrdiniInElaborazione.remove(idOrdine);
-    }
-
-    private static synchronized void setCommessoGraficoAttivo(boolean attivo) {
-        commessoGraficoAttivo = attivo;
-    }
-
-    private static synchronized List<OrdineBean> prelevaNuoviOrdiniInElaborazione() {
-        List<OrdineBean> ordini = new ArrayList<>(nuoviOrdiniInElaborazione.values());
-        nuoviOrdiniInElaborazione.clear();
-        return ordini;
     }
 
     public List<OrdineBean> caricaOrdini() {
@@ -178,8 +149,8 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
 
     private void gestisciOrdinePronto(int idOrdine, VBox cardGrafica) {
         try {
-            appController.confermaRitiroMerce(idOrdine);
-            rimuoviNuovoOrdineInElaborazione(idOrdine);
+            appController.confermaMercePronta(idOrdine);
+            appController.rimuoviNuovoOrdineInElaborazione(idOrdine);
             tilePaneOrdini.getChildren().remove(cardGrafica);
             if (tilePaneOrdini.getChildren().isEmpty()) {
                 tilePaneOrdini.getChildren().add(new Label("Nessun ordine da evadere."));
@@ -269,7 +240,7 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
     }
 
     private boolean mostraNuoviOrdiniInElaborazione() {
-        List<OrdineBean> ordini = prelevaNuoviOrdiniInElaborazione();
+        List<OrdineBean> ordini = appController.prelevaNuoviOrdiniInElaborazione();
         if (ordini.isEmpty()) {
             return false;
         }
@@ -291,12 +262,19 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
     @Override
     public void update(Object data) {
         Platform.runLater(() -> {
-            if (data instanceof OrdineBean) {
-                OrdineBean bean = (OrdineBean) data;
-                if (!"IN_ELABORAZIONE".equals(bean.getStato())) {
+            if (data instanceof NotificaOrdine) {
+                NotificaOrdine notifica = (NotificaOrdine) data;
+                if (notifica.getTipo() != NotificaOrdine.Tipo.NUOVO_ORDINE
+                        || !"IN_ELABORAZIONE".equals(notifica.getStato())) {
                     return;
                 }
 
+                OrdineBean bean = appController.convertiNotificaOrdineInOrdineBean(notifica);
+                if (bean == null) {
+                    return;
+                }
+
+                appController.rimuoviNuovoOrdineInElaborazione(bean.getId());
                 caricaOrdini();
 
                 apriPopupNotifica(

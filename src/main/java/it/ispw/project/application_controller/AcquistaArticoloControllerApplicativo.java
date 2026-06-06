@@ -17,6 +17,7 @@ import it.ispw.project.validation.PagamentoValidator;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +25,7 @@ import java.util.Map;
 public class AcquistaArticoloControllerApplicativo {
 
     private static final String STATO_ORDINE_IN_ELABORAZIONE = "IN_ELABORAZIONE";
+    private static final Map<Integer, NotificaOrdine> nuoviOrdiniInElaborazione = new LinkedHashMap<>();
 
     public AcquistaArticoloControllerApplicativo() {
         // Costruttore vuoto (Stateless)
@@ -267,7 +269,9 @@ public class AcquistaArticoloControllerApplicativo {
         }
 
         OrdineBean ordineBean = convertiOrdineInBean(ordine);
-        GestoreNotifiche.getInstance().inviaNotificaNuovoOrdine(ordineBean);
+        NotificaOrdine notificaNuovoOrdine = NotificaOrdine.nuovoOrdine(ordine);
+        registraNuovoOrdineInElaborazione(notificaNuovoOrdine);
+        GestoreNotifiche.getInstance().inviaNotificaNuovoOrdine(notificaNuovoOrdine);
         session.setUltimoOrdineCreato(ordine);
         carrello.svuota();
 
@@ -299,6 +303,38 @@ public class AcquistaArticoloControllerApplicativo {
         return beans;
     }
 
+    public void rimuoviNuovoOrdineInElaborazione(int idOrdine) {
+        synchronized (nuoviOrdiniInElaborazione) {
+            nuoviOrdiniInElaborazione.remove(idOrdine);
+        }
+    }
+
+    public List<OrdineBean> prelevaNuoviOrdiniInElaborazione() {
+        synchronized (nuoviOrdiniInElaborazione) {
+            List<OrdineBean> ordini = new ArrayList<>();
+            for (NotificaOrdine notifica : nuoviOrdiniInElaborazione.values()) {
+                OrdineBean ordineBean = convertiNotificaOrdineInOrdineBean(notifica);
+                if (ordineBean != null) {
+                    ordini.add(ordineBean);
+                }
+            }
+            nuoviOrdiniInElaborazione.clear();
+            return ordini;
+        }
+    }
+
+    private void registraNuovoOrdineInElaborazione(NotificaOrdine notifica) {
+        if (notifica == null || notifica.getTipo() != NotificaOrdine.Tipo.NUOVO_ORDINE
+                || notifica.getIdOrdine() <= 0
+                || !STATO_ORDINE_IN_ELABORAZIONE.equals(notifica.getStato())) {
+            return;
+        }
+
+        synchronized (nuoviOrdiniInElaborazione) {
+            nuoviOrdiniInElaborazione.putIfAbsent(notifica.getIdOrdine(), notifica);
+        }
+    }
+
    /* public void segnalaClienteInNegozio(int idOrdine) throws DAOException {
         DAOFactory factory = DAOFactory.getDAOFactory();
         OrdineDAO ordineDAO = factory.getOrdineDAO();
@@ -312,7 +348,7 @@ public class AcquistaArticoloControllerApplicativo {
         }
     }*/
 
-    public void confermaRitiroMerce(int idOrdine) throws DAOException {
+    public void confermaMercePronta(int idOrdine) throws DAOException {
         DAOFactory factory = DAOFactory.getDAOFactory();
         OrdineDAO ordineDAO = factory.getOrdineDAO();
         Ordine ordine = ordineDAO.selectOrdineById(idOrdine);
@@ -331,10 +367,18 @@ public class AcquistaArticoloControllerApplicativo {
         if (session == null) {
             return new ArrayList<>();
         }
-        return GestoreNotifiche.getInstance().getNotificheMerceProntaPerCliente(session.getUserId());
+        List<NotificaOrdineBean> notificheBean = new ArrayList<>();
+        for (NotificaOrdine notifica : GestoreNotifiche.getInstance()
+                .getNotificheMerceProntaPerCliente(session.getUserId())) {
+            NotificaOrdineBean notificaBean = convertiNotificaOrdineInBean(notifica);
+            if (notificaBean != null) {
+                notificheBean.add(notificaBean);
+            }
+        }
+        return notificheBean;
     }
 
-    public boolean notificaDestinataAllaSessione(String sessionId, NotificaOrdineBean notifica) {
+    public boolean notificaDestinataAllaSessione(String sessionId, NotificaOrdine notifica) {
         Session session = SessionManager.getInstance().getSession(sessionId);
         return session != null
                 && notifica != null
@@ -415,14 +459,34 @@ public class AcquistaArticoloControllerApplicativo {
         return b;
     }
 
-    private NotificaOrdineBean creaNotificaOrdine(Ordine ordine) {
-        NotificaOrdineBean notifica = new NotificaOrdineBean();
-        notifica.setIdOrdine(ordine.leggiId());
-        notifica.setStato(ordine.getStato());
-        if (ordine.getCliente() != null) {
-            notifica.setIdCliente(ordine.getCliente().ottieniId());
+    public OrdineBean convertiNotificaOrdineInOrdineBean(NotificaOrdine notifica) {
+        if (notifica == null) {
+            return null;
         }
-        notifica.setOrdine(convertiOrdineInBean(ordine));
-        return notifica;
+        if (notifica.getOrdine() != null) {
+            return convertiOrdineInBean(notifica.getOrdine());
+        }
+
+        OrdineBean ordineBean = new OrdineBean();
+        ordineBean.setId(notifica.getIdOrdine());
+        ordineBean.setStato(notifica.getStato());
+        return ordineBean;
+    }
+
+    public NotificaOrdineBean convertiNotificaOrdineInBean(NotificaOrdine notifica) {
+        if (notifica == null) {
+            return null;
+        }
+
+        NotificaOrdineBean notificaBean = new NotificaOrdineBean();
+        notificaBean.setIdOrdine(notifica.getIdOrdine());
+        notificaBean.setIdCliente(notifica.getIdCliente());
+        notificaBean.setStato(notifica.getStato());
+        notificaBean.setOrdine(convertiNotificaOrdineInOrdineBean(notifica));
+        return notificaBean;
+    }
+
+    private NotificaOrdine creaNotificaOrdine(Ordine ordine) {
+        return NotificaOrdine.mercePronta(ordine);
     }
 }

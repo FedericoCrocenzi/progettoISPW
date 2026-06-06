@@ -145,7 +145,7 @@ public class OrdineCommessoGraphicController {
             if (ordineCorrente == null) return;
 
             // 1. Chiama il controller applicativo per aggiornare lo stato
-            appController.confermaRitiroMerce(ordineCorrente.getId());
+            appController.confermaMercePronta(ordineCorrente.getId());
 
             // 2. Mostra feedback
             mostraInfo("Ordine Aggiornato", "L'ordine #" + ordineCorrente.getId() + " è pronto e il cliente è stato notificato.");
