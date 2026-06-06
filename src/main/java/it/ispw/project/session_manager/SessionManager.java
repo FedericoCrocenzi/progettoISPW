@@ -7,20 +7,19 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// Singleton intenzionale: centralizza la sessione utente corrente nell'app stand-alone ISPW.
-@SuppressWarnings("java:S6548")
+
 public class SessionManager {
 
     private final Logger logger = Logger.getLogger(SessionManager.class.getName());
 
-    // Mappa: SessionID (String) -> Oggetto Sessione
+    // Mappa: SessionID  -> Oggetto Sessione
     private final Map<String, Session> activeSessions;
 
     private SessionManager() {
         activeSessions = new HashMap<>();
     }
 
-    // Pattern Singleton con Helper Class (Stile del tuo esempio)
+    // Pattern Singleton con Helper Class
     private static class SingletonHelper {
         private static final SessionManager INSTANCE = new SessionManager();
     }
@@ -29,9 +28,9 @@ public class SessionManager {
         return SingletonHelper.INSTANCE;
     }
 
-    /**
-     * Crea una nuova sessione per l'utente loggato.
-     * Se l'utente ha già una sessione attiva, ritorna quella esistente.
+    /*
+      Crea una nuova sessione per l'utente loggato.
+      Se l'utente ha già una sessione attiva, ritorna quella esistente.
      */
     public String addSession(Utente utente) {
         // Controllo duplicati (stesso utente loggato due volte)
@@ -60,10 +59,9 @@ public class SessionManager {
         return activeSessions.get(sessionId);
     }
 
-    /**
-     * Cerca se esiste già una sessione per questo username/email.
-     * Usa gli stream come nel tuo esempio.
-     */
+
+     //Cerca se esiste già una sessione per questo username/email.
+
     private Session checkDuplicateSessionUtente(Utente utente) {
         return activeSessions.values()
                 .stream()

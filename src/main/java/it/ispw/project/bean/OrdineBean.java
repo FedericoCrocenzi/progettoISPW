@@ -16,7 +16,6 @@ public class OrdineBean {
     // Cosa ha comprato?
     private List<ArticoloBean> articoli;
 
-    // --- Getters & Setters ---
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }

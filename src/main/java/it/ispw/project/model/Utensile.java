@@ -29,7 +29,7 @@ public class Utensile extends Articolo {
         return "Categoria: Utensile - Materiale: " + this.materiale;
     }
 
-    // --- Getter & Setter ---
+
 
     public String getMateriale() {
         return materiale;

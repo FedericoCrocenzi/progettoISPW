@@ -44,7 +44,6 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
 
     @FXML private TilePane tilePaneOrdini;
     @FXML private ToggleGroup menuGroup;
-    @FXML private Label lblNomeUtente;
 
     private String sessionId;
     private AcquistaArticoloControllerApplicativo appController;
@@ -80,8 +79,8 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
         });
     }
 
-    /**
-     * Deregistra l'observer grafico quando il commesso esce dalla schermata.
+    /*
+      Deregistra l'observer grafico quando il commesso esce dalla schermata.
      */
     public void onClose() {
         GestoreNotifiche.getInstance().detach(this);
@@ -185,13 +184,6 @@ public class CommessoGraphicController implements ControllerGraficoBase, Observe
         } catch (IOException e) {
             mostraErrore("Errore", "Impossibile aprire il dettaglio ordine.");
         }
-    }
-
-    private void apriPopupNotifica(OrdineBean ordineBean, String titolo, String messaggio) {
-        Runnable azione = ordineBean != null ? () -> apriDettaglioOrdine(ordineBean) : null;
-        String testoPulsante = ordineBean != null ? TESTO_VISUALIZZA_ORDINE : "Chiudi";
-        String testoMessaggio = messaggio != null ? messaggio : "E' arrivato un nuovo ordine da preparare.";
-        apriPopupNotifica(ordineBean, titolo, testoMessaggio, testoPulsante, ICONA_ORDINE_PATH, azione);
     }
 
     private void apriPopupNotifica(OrdineBean ordineBean,

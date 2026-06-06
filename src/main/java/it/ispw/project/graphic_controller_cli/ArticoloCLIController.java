@@ -41,7 +41,7 @@ public class ArticoloCLIController extends CLIControllerBase {
             AcquistaArticoloControllerApplicativo controller =
                     new AcquistaArticoloControllerApplicativo();
 
-            // ✅ CHIAMATA CORRETTA (firma reale)
+
             controller.aggiungiArticoloAlCarrello(sessionId, articolo, qta);
 
             CLIPrinter.println("Articolo aggiunto al carrello.");

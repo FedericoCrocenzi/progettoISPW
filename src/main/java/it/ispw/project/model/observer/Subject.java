@@ -22,7 +22,7 @@ public abstract class Subject {
     // Metodo protetto
     protected void notifyObservers(Object data) {
         for (Observer o : observers) {
-            // CORREZIONE QUI: Devi passare 'data' al metodo update!
+
             o.update(data);
         }
     }

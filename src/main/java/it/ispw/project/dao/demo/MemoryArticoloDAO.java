@@ -18,11 +18,11 @@ public class MemoryArticoloDAO implements ArticoloDAO {
 
     private static final Logger LOGGER = Logger.getLogger(MemoryArticoloDAO.class.getName());
 
-    // Rimuoviamo la lista statica 'tabellaArticoli'.
-    // Usiamo Magazzino come unica fonte di verità.
+    // Non uso una lista statica 'tabellaArticoli'.
+    // Uso Magazzino come unica fonte di verità.
 
     public MemoryArticoloDAO() {
-        // Opzionale: Se il Magazzino è vuoto, lo popoliamo con dati fake all'avvio.
+
         Magazzino magazzino = Magazzino.getInstance();
         if (magazzino.getCatalogo().isEmpty()) {
             popolaDatiFake(magazzino);
@@ -58,12 +58,9 @@ public class MemoryArticoloDAO implements ArticoloDAO {
             return false;
         }
 
-        // In modalità DEMO (tutto in RAM), l'oggetto 'articolo' passato dal Controller
-        // è ESATTAMENTE lo stesso oggetto che sta dentro la Map del Magazzino (Java lavora per riferimento).
-        // Quindi, se il Controller ha fatto: magazzino.scaricaMerce(id, qta),
-        // l'oggetto è già aggiornato.
 
-        // Qui non dobbiamo fare nulla di pratico, ma per simulare un DAO reale potremmo fare:
+
+
         Magazzino.getInstance().aggiungiArticolo(articolo); // Sovrascrive/Conferma
         LOGGER.info(() -> "DEMO: Scorta salvata (in RAM) per articolo " + articolo.leggiId());
         return true;
@@ -71,7 +68,7 @@ public class MemoryArticoloDAO implements ArticoloDAO {
 
     @Override
     public List<Articolo> selectByDescrizione(String descrizione) throws DAOException {
-        // Filtriamo direttamente sugli oggetti del Magazzino
+        // Filtro direttamente sugli oggetti del Magazzino
         List<Articolo> tutti = selectAllArticoli();
         List<Articolo> filtrati = new ArrayList<>();
 

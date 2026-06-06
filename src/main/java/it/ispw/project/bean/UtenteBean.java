@@ -4,15 +4,15 @@ public class UtenteBean {
 
     private int id;
     private String username;
-    private String password; // Necessaria in fase di Login
+    private String password;
     private String ruolo;    // "CLIENTE" o "COMMESSO"
 
-    // Dati specifici del cliente (null se è un commesso)
+    // Dati specifici del cliente
     private String email;
     private String indirizzo;
     private String sessionId;
 
-    // --- Getters & Setters ---
+
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }

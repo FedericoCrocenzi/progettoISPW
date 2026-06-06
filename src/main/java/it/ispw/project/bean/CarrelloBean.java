@@ -14,7 +14,7 @@ public class CarrelloBean {
         this.totale = 0.0;
     }
 
-    // --- Getters & Setters ---
+
 
     public List<ArticoloBean> getListaArticoli() {
         return listaArticoli;
@@ -32,7 +32,7 @@ public class CarrelloBean {
         this.totale = totale;
     }
 
-    // Metodo helper per aggiungere comodamente (opzionale ma utile)
+    // Metodo helper per aggiungere
     public void aggiungiArticolo(ArticoloBean art) {
         this.listaArticoli.add(art);
     }

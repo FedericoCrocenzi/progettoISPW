@@ -23,7 +23,6 @@ public class Main extends Application {
     public void start(Stage stage) throws Exception {
         applicaIconaApplicazione(stage);
 
-        // 1 Popup scelta persistenza (BLOCCANTE)
         ChoiceDialog<String> dialog = new ChoiceDialog<>(
                 "DEMO",
                 List.of("DEMO", "FILESYSTEM", "JDBC")
@@ -36,11 +35,9 @@ public class Main extends Application {
         Optional<String> result = dialog.showAndWait();
 
         if (result.isEmpty()) {
-            // Utente chiude il popup → uscita pulita
             System.exit(0);
         }
 
-        // 2 Traduzione scelta → costante DAO
         switch (result.get()) {
             case "FILESYSTEM":
                 PersistenceConfig.setPersistenceType(DAOFactory.FILESYSTEM);
@@ -54,7 +51,6 @@ public class Main extends Application {
                 break;
         }
 
-        // 3 Caricamento Login
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/Login.fxml"));
         Parent root = loader.load();
 

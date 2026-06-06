@@ -28,7 +28,7 @@ public class AcquistaArticoloControllerApplicativo {
     private static final Map<Integer, NotificaOrdine> nuoviOrdiniInElaborazione = new LinkedHashMap<>();
 
     public AcquistaArticoloControllerApplicativo() {
-        // Costruttore vuoto (Stateless)
+
     }
 
     // -----------------------------------------------------------------
@@ -56,7 +56,7 @@ public class AcquistaArticoloControllerApplicativo {
     public List<ArticoloBean> visualizzaCatalogo() throws DAOException {
         Magazzino magazzino = Magazzino.getInstance();
 
-        // Lazy loading del catalogo
+
         if (magazzino.getCatalogo().isEmpty()) {
             DAOFactory factory = DAOFactory.getDAOFactory();
             ArticoloDAO articoloDAO = factory.getArticoloDAO();

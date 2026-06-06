@@ -27,13 +27,9 @@ public class Ordine {
         this.stato = "IN_ELABORAZIONE";
     }
 
-    // --- LOGICA DI BUSINESS E SETTERS ---
 
-    /**
-     * Permette di modificare lo stato dell'ordine.
-     * Necessario per il Controller Applicativo (es. quando diventa "PRONTO")
-     * e per il DAO (quando carica lo stato dal DB).
-     */
+
+
     public void setStato(String stato) {
         this.stato = stato;
     }
@@ -42,18 +38,18 @@ public class Ordine {
         this.stato = "COMPLETATO";
     }
 
-    /**
-     * Metodo per la persistenza: assegna l'ID generato dal DB.
-     */
+
+
+
     public void registraIdGenerato(int id) {
         if (this.id != 0) {
-            // Se l'ID è già settato, evitiamo sovrascritture accidentali
-            // (A meno che non sia una logica voluta, qui lancio eccezione per sicurezza)
+            // Se l'ID è già settato, evito sovrascritture accidentali
+
         }
         this.id = id;
     }
 
-    // --- GETTERS ---
+
 
     public int leggiId() {
         return id;
@@ -83,7 +79,7 @@ public class Ordine {
         return articoliAcquistati;
     }
 
-    // Manteniamo anche il getter originale per compatibilità interna se serve
+
     public Map<Articolo, Integer> getArticoliAcquistati() {
         return getArticoli();
     }

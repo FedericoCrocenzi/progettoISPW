@@ -69,15 +69,12 @@ public class MemoryOrdineDAO implements OrdineDAO {
             throw new DAOException("Ordine non valido durante l'aggiornamento dello stato.");
         }
 
-        // In memoria (passaggio per riferimento), l'oggetto 'ordine' passato
-        // è lo stesso che sta nella lista 'tabellaOrdini'.
-        // Quindi l'aggiornamento è automatico.
-        // Tuttavia, per simulare un comportamento realistico di update:
+
 
         for (Ordine o : tabellaOrdini) {
             if (o.leggiId() == ordine.leggiId()) {
-                // In un DB vero faresti: UPDATE ... SET stato = ...
-                // Qui stampiamo solo un log di conferma
+
+                // Qui stampo solo un log di conferma
                 LOGGER.log(Level.INFO,
                         "DEMO (RAM): Stato ordine #{0} aggiornato a: {1}",
                         new Object[]{o.leggiId(), ordine.getStato()});

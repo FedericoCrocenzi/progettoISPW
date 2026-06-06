@@ -3,7 +3,7 @@ package it.ispw.project.graphic_controller_cli;
 public final class CLIPrinter {
 
     private CLIPrinter() {
-        // Utility class.
+
     }
 
     @SuppressWarnings("java:S106")

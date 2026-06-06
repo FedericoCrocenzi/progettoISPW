@@ -8,16 +8,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Classe Singleton del Model che rappresenta l'inventario del negozio.
- *
- * Il Magazzino non e' una cache tecnica della persistenza: quella responsabilita'
- * appartiene ai DAO. Questa classe conserva gli articoli caricati nel dominio e
- * centralizza le regole sulle scorte, come disponibilita', scarico merce e
- * ripristino dello stock dopo un fallimento della persistenza.
+/*
+  Classe Singleton del Model che rappresenta l'inventario del negozio.
+
+ Il Magazzino non e' una cache tecnica della persistenza: quella responsabilita'
+ appartiene ai DAO. Questa classe conserva gli articoli caricati nel dominio e
+ centralizza le regole sulle scorte, come disponibilita', scarico merce e
+ ripristino dello stock dopo un fallimento della persistenza.
  */
-// Singleton intenzionale per il progetto ISPW: rappresenta l'unico magazzino fisico dell'applicazione.
-@SuppressWarnings("java:S6548")
+
+
 public class Magazzino {
 
     private final Map<Integer, Articolo> stock;
@@ -40,11 +40,11 @@ public class Magazzino {
         }
     }
 
-    /**
-     * Restituisce l'entity di dominio gestita dal Magazzino.
-     * Metodo mantenuto per compatibilita' con i flussi esistenti: chi lo usa
-     * deve trattare l'oggetto come mutabile e modificarlo solo tramite metodi
-     * di dominio del Model.
+    /*
+     Restituisce l'entity di dominio gestita dal Magazzino.
+     Metodo mantenuto per compatibilita' con i flussi esistenti: chi lo usa
+     deve trattare l'oggetto come mutabile e modificarlo solo tramite metodi
+     di dominio del Model.
      */
     public synchronized Articolo trovaArticolo(int id) {
         return this.stock.get(id);
@@ -135,10 +135,10 @@ public class Magazzino {
         }
     }
 
-    /**
-     * Mantiene la compatibilita' con il codice esistente, ma non espone piu'
-     * la mappa interna del Magazzino. Il risultato e' una fotografia non
-     * modificabile del catalogo corrente.
+    /*
+     Mantiene la compatibilita' con il codice esistente, ma non espone piu'
+     la mappa interna del Magazzino. Il risultato e' una fotografia non
+     modificabile del catalogo corrente.
      */
     public synchronized Map<Integer, Articolo> getCatalogo() {
         Map<Integer, Articolo> catalogo = new LinkedHashMap<>();

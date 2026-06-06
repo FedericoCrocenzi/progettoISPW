@@ -7,8 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-// Singleton intenzionale: centralizza notifiche/eventi tra controller grafici nel progetto ISPW.
-@SuppressWarnings("java:S6548")
+
 public class GestoreNotifiche extends Subject {
 
     private final Map<Integer, NotificaOrdine> notificheMercePronta;

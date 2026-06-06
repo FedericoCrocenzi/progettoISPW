@@ -37,7 +37,7 @@ public class JDBCOrdineDAO implements OrdineDAO {
 
     @Override
     public void insertOrdine(Ordine ordine) throws DAOException {
-        // MODIFICA QUI: Accesso tramite Singleton
+
         Connection conn = DBConnection.getInstance().getConnection();
         if (conn == null) {
             throw new DAOException("Connessione al database non disponibile.");
@@ -69,7 +69,7 @@ public class JDBCOrdineDAO implements OrdineDAO {
                 }
             }
 
-            // 3. Insert Righe (Batch)
+            // 3. Insert Righe
             stmtRiga = conn.prepareStatement(Queries.INSERT_RIGA_ORDINE);
 
             for (Map.Entry<Articolo, Integer> entry : ordine.getArticoli().entrySet()) {
@@ -108,7 +108,7 @@ public class JDBCOrdineDAO implements OrdineDAO {
 
     @Override
     public Ordine selectOrdineById(int id) throws DAOException {
-        // MODIFICA QUI: Accesso tramite Singleton
+
         Connection conn = DBConnection.getInstance().getConnection();
         Ordine ordine = null;
 
@@ -131,7 +131,7 @@ public class JDBCOrdineDAO implements OrdineDAO {
 
     @Override
     public List<Ordine> findAll() throws DAOException {
-        // MODIFICA QUI: Accesso tramite Singleton
+
         Connection conn = DBConnection.getInstance().getConnection();
         List<Ordine> lista = new ArrayList<>();
 
@@ -223,7 +223,7 @@ public class JDBCOrdineDAO implements OrdineDAO {
 
     private Map<Articolo, Integer> getRigheOrdine(int idOrdine) throws DAOException {
         Map<Articolo, Integer> mappa = new HashMap<>();
-        // MODIFICA QUI: Accesso tramite Singleton
+
         Connection conn = DBConnection.getInstance().getConnection();
 
         if (conn == null) {

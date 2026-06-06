@@ -17,27 +17,19 @@ public class ProfileGraphicController implements ControllerGraficoBase {
     @FXML private TextField txtEmail;
     @FXML private TextField txtIndirizzo;
 
-    private String sessionId;
     private AcquistaArticoloControllerApplicativo appController;
 
     @Override
     public void initData(String sessionId) {
-        this.sessionId = sessionId;
-
-        // CORREZIONE: Costruttore vuoto (Stateless)
         this.appController = new AcquistaArticoloControllerApplicativo();
 
-        // Recupero i dati dalla sessione
         Session session = SessionManager.getInstance().getSession(sessionId);
 
         if (session != null) {
-            // Dati base dalla sessione (Login)
             lblUsername.setText(session.getUsername());
             lblRuolo.setText("Ruolo: " + session.getRuolo());
 
-            // Tentativo di recuperare dati completi dal DB tramite Controller Applicativo
             try {
-                // Nota: recuperaDatiCliente accetta l'ID (int), quindi è corretto passare session.getUserId()
                 UtenteBean utenteBean = appController.recuperaDatiCliente(session.getUserId());
 
                 if (utenteBean != null) {
@@ -48,7 +40,6 @@ public class ProfileGraphicController implements ControllerGraficoBase {
                     txtIndirizzo.setText("Dati non disponibili");
                 }
             } catch (DAOException e) {
-                // Fallback in caso di errore DB
                 txtEmail.setText("Errore recupero email");
                 txtIndirizzo.setText("Errore recupero indirizzo");
             }

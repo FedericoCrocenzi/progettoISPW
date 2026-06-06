@@ -6,7 +6,6 @@ import it.ispw.project.bean.OrdineBean;
 import it.ispw.project.bean.PagamentoBean;
 import it.ispw.project.exception.DAOException;
 import it.ispw.project.exception.PaymentException;
-import it.ispw.project.validation.PagamentoValidator;
 import it.ispw.project.view.ViewSwitcher;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -47,7 +46,6 @@ public class PaymentGraphicController implements ControllerGraficoBase {
 
     @FXML private RadioButton rbCarta;
     @FXML private RadioButton rbPaypal;
-    @FXML private RadioButton rbContanti;
     @FXML private ToggleGroup gruppoPagamento;
 
     @FXML private Button btnConferma;
@@ -94,7 +92,6 @@ public class PaymentGraphicController implements ControllerGraficoBase {
         try {
             CarrelloBean carrelloTmp = appController.visualizzaCarrello(sessionId);
             PagamentoBean pagamentoBean = creaPagamentoDaSelezione(carrelloTmp);
-            PagamentoValidator.valida(pagamentoBean);
 
             OrdineBean ordineBean = completaOrdineConPagamento(pagamentoBean, carrelloTmp);
 

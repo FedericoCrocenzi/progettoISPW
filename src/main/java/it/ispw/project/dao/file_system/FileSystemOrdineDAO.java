@@ -27,21 +27,21 @@ public class FileSystemOrdineDAO implements OrdineDAO {
         File file = new File(CSV_FILE_NAME);
         int nuovoId = calcolaProssimoId(file);
 
-        // Assegno il nuovo ID all'oggetto (anche se il Model non ha setter pubblico,
-        // nel costruttore usato per la lettura lo useremo).
-        // Nota: Nel FS simuliamo l'assegnazione salvandolo con quell'ID.
 
-        // 2. Preparazione stringa articoli: "id:qta,id:qta"
+
+
+
+        //  Preparazione stringa articoli: "id:qta,id:qta"
         String articoliStr = serializzaArticoli(ordine.getArticoliAcquistati());
 
-        // 3. Scrittura su file
+        //  Scrittura su file
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
             if (file.length() > 0) bw.newLine();
 
             // Formato: ID;TIMESTAMP;TOTALE;STATO;ID_CLIENTE;LISTA_ARTICOLI
             bw.write(creaRigaOrdine(nuovoId, ordine, articoliStr));
 
-            // Aggiorniamo l'ID dell'oggetto in memoria per coerenza con la sessione
+            // Aggiorno l'ID dell'oggetto in memoria per coerenza con la sessione
             ordine.registraIdGenerato(nuovoId);
 
         } catch (IOException e) {
@@ -168,7 +168,7 @@ public class FileSystemOrdineDAO implements OrdineDAO {
                     return idLetto + 1;
                 }
             } catch (NumberFormatException ignored) {
-                // Riga malformata: viene ignorata per mantenere la lettura degli ordini resiliente.
+
             }
         }
         return nuovoId;

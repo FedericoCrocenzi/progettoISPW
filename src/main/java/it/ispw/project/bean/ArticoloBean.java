@@ -4,17 +4,17 @@ import java.util.Date;
 
 public class ArticoloBean {
 
-    // --- Campi Comuni (Base) ---
+
     private int id;
     private String descrizione;
     private double prezzo;
     private int quantita; // Disponibilità o qta nel carrello
     private String immaginePath; // Nuovo attributo
-    // --- IL DISCRIMINATORE ---
-    // Fondamentale: dice alla View come interpretare i dati (es. "MANGIME", "UTENSILE")
+
+    // Campo che dice alla View come interpretare i dati (es. "MANGIME", "UTENSILE")
     private String type;
 
-    // --- Campi Specifici (Optionali/Nullable) ---
+
     // Appartiene a: Mangime
     private Date dataScadenza;
 
@@ -24,7 +24,7 @@ public class ArticoloBean {
     // Appartiene a: Fitofarmaco
     private boolean servePatentino;
 
-    // --- Getters e Setters ---
+
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
@@ -41,8 +41,7 @@ public class ArticoloBean {
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
 
-    // Campi specifici: gestiti come semplici getter/setter.
-    // Sarà il Controller a decidere quali chiamare in fase di riempimento.
+
 
     public Date getDataScadenza() { return dataScadenza; }
     public void setDataScadenza(Date dataScadenza) { this.dataScadenza = dataScadenza; }

@@ -46,7 +46,6 @@ public class CatalogoGraphicController implements ControllerGraficoBase {
 
     public void initData(String sessionId, RicercaArticoloBean filtro) {
         this.sessionId = sessionId;
-        // CORREZIONE 1: Costruttore vuoto (Stateless)
         this.appController = new AcquistaArticoloControllerApplicativo();
         this.filtroCorrente = filtro;
         caricaProdotti();
@@ -166,7 +165,6 @@ public class CatalogoGraphicController implements ControllerGraficoBase {
             try {
                 int qta = Integer.parseInt(qtyStr);
 
-                // CORREZIONE 2: Passaggio di sessionId
                 appController.aggiungiArticoloAlCarrello(sessionId, articolo, qta);
 
                 mostraMessaggio("Successo", "Articolo aggiunto al carrello!", Alert.AlertType.INFORMATION);

@@ -6,7 +6,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -15,49 +14,12 @@ import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// Singleton intenzionale: centralizza il cambio schermata nell'app stand-alone ISPW.
-@SuppressWarnings("java:S6548")
+// Utility class, non istanziabile: centralizza cambio root scene, CSS e fullscreen.
 public class ViewSwitcher {
 
     private static final Logger LOGGER = Logger.getLogger(ViewSwitcher.class.getName());
-    private static ViewSwitcher instance;
-    private BorderPane mainPane;
 
     private ViewSwitcher() {}
-
-    public static ViewSwitcher getInstance() {
-        if (instance == null) {
-            instance = new ViewSwitcher();
-        }
-        return instance;
-    }
-
-    public void setMainPane(BorderPane mainPane) {
-        this.mainPane = mainPane;
-    }
-
-    /**
-     * Cambia il contenuto centrale senza sostituire la Scene principale.
-     */
-    public void switchView(String fxmlPath, String sessionId) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-            Parent view = loader.load();
-
-            Object controller = loader.getController();
-            if (controller instanceof ControllerGraficoBase controllerGraficoBase) {
-                controllerGraficoBase.initData(sessionId);
-            }
-
-            if (mainPane != null) {
-                mainPane.setCenter(view);
-            }
-
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, e,
-                    () -> MessageFormat.format("Errore caricamento vista centrale: {0}", fxmlPath));
-        }
-    }
 
     /**
      * Cambia schermata riusando la Scene esistente quando possibile.

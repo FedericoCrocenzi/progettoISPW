@@ -36,7 +36,7 @@ public class CatalogoCLIController extends CLIControllerBase {
 
         CLIPrinter.println();
         CLIPrinter.println("0) Vai al carrello");
-        CLIPrinter.println("9) Logout");
+        CLIPrinter.println("-1) Logout");
         CLIPrinter.print("Scelta: ");
 
         Integer scelta = leggiSceltaIntera();
@@ -47,7 +47,7 @@ public class CatalogoCLIController extends CLIControllerBase {
         if (scelta == 0) {
             CLIViewNavigator.goToCarrello();
 
-        } else if (scelta == 9) {
+        } else if (scelta == -1) {
             CLIViewNavigator.logout();
 
         } else if (scelta > 0 && scelta <= catalogo.size()) {

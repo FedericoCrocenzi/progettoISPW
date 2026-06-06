@@ -2,9 +2,8 @@ package it.ispw.project.dao.db_connection;
 
 public class Queries {
 
-    // COSTRUTTORE PRIVATO
-    // Impedisce di istanziare la classe (es. new Queries()) perché serve solo come contenitore di costanti.
-    // Questo copia lo stile di "WanderWise".
+
+
     private Queries() {}
 
     // =================================================================================

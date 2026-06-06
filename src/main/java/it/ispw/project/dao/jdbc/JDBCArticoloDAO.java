@@ -34,7 +34,7 @@ public class JDBCArticoloDAO implements ArticoloDAO {
             }
         }
 
-        // MODIFICA QUI: Uso del Singleton
+
         Connection conn = DBConnection.getInstance().getConnection();
         if (conn == null) {
             throw new DAOException("Connessione al database non disponibile.");
@@ -94,7 +94,7 @@ public class JDBCArticoloDAO implements ArticoloDAO {
             return selectAllArticoli();
         }
 
-        // MODIFICA QUI: Uso del Singleton
+
         Connection conn = DBConnection.getInstance().getConnection();
         List<Articolo> lista = new ArrayList<>();
         if (conn == null) {
@@ -125,7 +125,7 @@ public class JDBCArticoloDAO implements ArticoloDAO {
             return false;
         }
 
-        // MODIFICA QUI: Uso del Singleton
+
         Connection conn = DBConnection.getInstance().getConnection();
         if (conn == null) {
             throw new DAOException("Connessione al database non disponibile.");
@@ -151,7 +151,7 @@ public class JDBCArticoloDAO implements ArticoloDAO {
         }
     }
 
-    // Metodo helper privato (rimane invariato)
+    // Metodo helper
     private Articolo istanziaArticoloDaResultSet(ResultSet rs) throws SQLException {
         int id = rs.getInt("id");
         String desc = rs.getString("descrizione");

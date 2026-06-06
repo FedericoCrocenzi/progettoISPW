@@ -37,7 +37,7 @@ public class LoginCLIController extends CLIControllerBase {
             CLIViewNavigator.setSessionId(out.getSessionId());
             CLIPrinter.println("Login OK. Ruolo: " + out.getRuolo());
 
-            // FIX: switch su String (ruolo) con literal corretti
+
             switch (out.getRuolo().toUpperCase()) {
                 case "CLIENTE" -> CLIViewNavigator.goToCatalogo();
                 case "COMMESSO" -> CLIViewNavigator.goToAreaCommesso();

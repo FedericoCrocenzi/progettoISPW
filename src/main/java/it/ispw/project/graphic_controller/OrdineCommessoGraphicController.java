@@ -33,32 +33,23 @@ public class OrdineCommessoGraphicController {
     @FXML
     private Button btnChiudi;
 
-    @FXML
-    private Button btnOrdinePronto;
-
     private OrdineBean ordineCorrente;
     private CommessoGraphicController parentController;
     private AcquistaArticoloControllerApplicativo appController;
 
-    /**
-     * Metodo chiamato dal CommessoGraphicController per passare i dati.
-     */
     public void initData(OrdineBean ordine, CommessoGraphicController parent) {
         this.ordineCorrente = ordine;
         this.parentController = parent;
-        this.appController = new AcquistaArticoloControllerApplicativo(); // Controller Applicativo Stateless
+        this.appController = new AcquistaArticoloControllerApplicativo();
 
         if (ordine != null) {
-            // 1. Imposta il Titolo
             lblTitoloOrdine.setText("ORDINE N° " + ordine.getId());
 
-            // 2. Popola la lista degli articoli
             popolaListaArticoli();
         }
     }
 
     private void popolaListaArticoli() {
-        // Pulisce eventuali placeholder presenti nell'FXML
         vboxArticoli.getChildren().clear();
 
         if (ordineCorrente.getArticoli() == null || ordineCorrente.getArticoli().isEmpty()) {
@@ -66,24 +57,18 @@ public class OrdineCommessoGraphicController {
             return;
         }
 
-        // Per ogni articolo nel bean, crea una riga grafica
         for (ArticoloBean articolo : ordineCorrente.getArticoli()) {
             AnchorPane rigaArticolo = creaRigaArticolo(articolo);
             vboxArticoli.getChildren().add(rigaArticolo);
         }
     }
 
-    /**
-     * Crea graficamente il box per un singolo articolo.
-     * Replica lo stile definito nel tuo FXML originale.
-     */
     private AnchorPane creaRigaArticolo(ArticoloBean articolo) {
         AnchorPane anchor = new AnchorPane();
         anchor.setPrefHeight(100.0);
         anchor.setPrefWidth(318.0);
         anchor.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);");
 
-        // Immagine Prodotto
         ImageView imgView = new ImageView();
         imgView.setFitHeight(80.0);
         imgView.setFitWidth(80.0);
@@ -92,25 +77,21 @@ public class OrdineCommessoGraphicController {
         imgView.setPreserveRatio(true);
         caricaImmagineArticolo(imgView, articolo.getImmaginePath());
 
-        // Nome Articolo
         Label lblNome = new Label(articolo.getDescrizione());
         lblNome.setLayoutX(95.0);
         lblNome.setLayoutY(13.0);
         lblNome.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 
-        // Prezzo
         Label lblPrezzo = new Label(String.format("€ %.2f", articolo.getPrezzo()));
         lblPrezzo.setLayoutX(95.0);
         lblPrezzo.setLayoutY(37.0);
         lblPrezzo.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #125332;");
 
-        // Box Quantità (Badge Giallo)
         HBox hboxQta = new HBox();
         hboxQta.setAlignment(Pos.CENTER);
         hboxQta.setPrefHeight(28.0);
-        hboxQta.setPrefWidth(95.0); // Leggermente più largo per il testo
+        hboxQta.setPrefWidth(95.0);
         hboxQta.setStyle("-fx-background-radius: 15; -fx-background-color: white; -fx-border-color: #FFF176; -fx-border-radius: 15; -fx-border-width: 2;");
-        // Posizionamento in basso a destra
         AnchorPane.setBottomAnchor(hboxQta, 10.0);
         AnchorPane.setRightAnchor(hboxQta, 10.0);
 
@@ -118,7 +99,6 @@ public class OrdineCommessoGraphicController {
         lblQta.setStyle("-fx-font-size: 12px;");
         hboxQta.getChildren().add(lblQta);
 
-        // Aggiunta figli all'AnchorPane
         anchor.getChildren().addAll(imgView, lblNome, lblPrezzo, hboxQta);
 
         return anchor;
@@ -144,17 +124,14 @@ public class OrdineCommessoGraphicController {
         try {
             if (ordineCorrente == null) return;
 
-            // 1. Chiama il controller applicativo per aggiornare lo stato
             appController.confermaMercePronta(ordineCorrente.getId());
 
-            // 2. Mostra feedback
             mostraInfo("Ordine Aggiornato", "L'ordine #" + ordineCorrente.getId() + " è pronto e il cliente è stato notificato.");
 
             if (parentController != null) {
                 parentController.caricaOrdini();
             }
 
-            // 3. Chiudi la finestra
             chiudiFinestra();
 
         } catch (DAOException e) {

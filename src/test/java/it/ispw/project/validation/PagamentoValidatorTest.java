@@ -1,7 +1,7 @@
-package it.ispw.project.bean;
+package it.ispw.project.validation;
 
+import it.ispw.project.bean.PagamentoBean;
 import it.ispw.project.exception.PaymentException;
-import it.ispw.project.validation.PagamentoValidator;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;

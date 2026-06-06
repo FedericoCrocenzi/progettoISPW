@@ -34,26 +34,19 @@ public class ArticoloViewGraphicController {
     private String sessionId;
     private AcquistaArticoloControllerApplicativo appController;
 
-    /**
-     * Inizializza la vista con i dati dell'articolo cliccato.
-     */
     public void setDatiArticolo(ArticoloBean articolo, String sessionId) {
         this.articoloCorrente = articolo;
         this.sessionId = sessionId;
 
-        // CORREZIONE 1: Il costruttore ora è vuoto (Stateless)
         this.appController = new AcquistaArticoloControllerApplicativo();
 
-        // Popolamento UI
         lblTitolo.setText(articolo.getDescrizione());
         lblPrezzo.setText(String.format("€ %.2f", articolo.getPrezzo()));
         lblDescrizione.setText(articolo.getDescrizione());
         lblQuantita.setText(String.valueOf(quantitaSelezionata));
 
-        // Gestione Immagine
         try {
             if (articolo.getImmaginePath() != null) {
-                // Nota: assicurati che il path sia gestito correttamente come risorsa o file
                 imgProdotto.setImage(new Image(getClass().getResourceAsStream(articolo.getImmaginePath())));
             }
         } catch (Exception e) {
@@ -61,7 +54,6 @@ public class ArticoloViewGraphicController {
                     () -> MessageFormat.format("Immagine non trovata: {0}", articolo.getImmaginePath()));
         }
 
-        // Gestione Patentino
         lblPatentino.setVisible("FITOFARMACO".equals(articolo.getType()) && articolo.isServePatentino());
     }
 
@@ -82,7 +74,6 @@ public class ArticoloViewGraphicController {
     @FXML
     public void aggiungiAlCarrello() {
         try {
-            // CORREZIONE 2: Passiamo sessionId al metodo, perché il controller non lo conserva
             appController.aggiungiArticoloAlCarrello(sessionId, articoloCorrente, quantitaSelezionata);
 
             mostraMessaggio("Successo", "Articolo aggiunto al carrello!", Alert.AlertType.INFORMATION);
@@ -102,12 +93,8 @@ public class ArticoloViewGraphicController {
     @FXML
     public void acquistaSubito() {
         aggiungiAlCarrello();
-        // Logica futura per switch view
     }
 
-    /**
-     * Il tasto "X" funge da tasto "Indietro" per tornare al Catalogo.
-     */
     @FXML
     public void chiudiScheda() {
         try {

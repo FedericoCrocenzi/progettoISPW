@@ -27,7 +27,7 @@ public class JDBCUtenteDAO implements UtenteDAO {
         ResultSet rs = null;
 
         try {
-            // MODIFICA QUI: Accesso tramite Singleton
+
             conn = DBConnection.getInstance().getConnection();
 
             if (conn == null) {
@@ -75,7 +75,7 @@ public class JDBCUtenteDAO implements UtenteDAO {
         ResultSet rs = null;
 
         try {
-            // MODIFICA QUI: Accesso tramite Singleton
+
             conn = DBConnection.getInstance().getConnection();
 
             if (conn == null) {
@@ -131,7 +131,7 @@ public class JDBCUtenteDAO implements UtenteDAO {
         try {
             if (rs != null) rs.close();
             if (stmt != null) stmt.close();
-            // Non chiudiamo la connessione qui perché è gestita dal Singleton condiviso
+            // Non chiudo la connessione qui perché è gestita dal Singleton condiviso
         } catch (SQLException e) {
             LOGGER.log(Level.WARNING, "Errore durante la chiusura delle risorse JDBC.", e);
         }

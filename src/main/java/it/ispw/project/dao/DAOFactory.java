@@ -10,7 +10,7 @@ import it.ispw.project.config.PersistenceConfig;
  * Fornisce un'interfaccia per creare famiglie di oggetti DAO
  * senza specificare le loro classi concrete.
  */
-// Singleton intenzionale: mantiene riusabili le factory DAO per la persistenza scelta nel progetto ISPW.
+
 @SuppressWarnings("java:S6548")
 public abstract class DAOFactory {
 

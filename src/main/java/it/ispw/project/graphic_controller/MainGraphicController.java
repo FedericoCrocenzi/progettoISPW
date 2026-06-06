@@ -3,11 +3,11 @@ package it.ispw.project.graphic_controller;
 import it.ispw.project.application_controller.AcquistaArticoloControllerApplicativo;
 import it.ispw.project.bean.NotificaOrdineBean;
 import it.ispw.project.bean.OrdineBean;
-import it.ispw.project.bean.RicercaArticoloBean; // Assicurati che questo import esista
+import it.ispw.project.bean.RicercaArticoloBean;
 import it.ispw.project.model.GestoreNotifiche;
 import it.ispw.project.model.NotificaOrdine;
 import it.ispw.project.model.observer.Observer;
-import it.ispw.project.view.ViewSwitcher; // Se usi ViewSwitcher per il logout, altrimenti lascia stare
+import it.ispw.project.view.ViewSwitcher;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -17,7 +17,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -30,16 +29,12 @@ import java.util.logging.Logger;
 public class MainGraphicController implements ControllerGraficoBase, Observer {
 
     private static final Logger LOGGER = Logger.getLogger(MainGraphicController.class.getName());
-    private static boolean clienteGraficoAttivo;
     private static MainGraphicController controllerClienteRegistrato;
 
-    @FXML private BorderPane rootLayout; // Il contenitore principale
+    @FXML private BorderPane rootLayout;
     @FXML private ToggleButton btnHome;
     @FXML private ToggleButton btnCarrello;
     @FXML private ToggleButton btnProfilo;
-    @FXML private ToggleGroup menuGroup;
-
-    // --- NUOVO CAMPO PER LA RICERCA ---
     @FXML private TextField txtRicerca;
 
     private String sessionId;
@@ -49,44 +44,34 @@ public class MainGraphicController implements ControllerGraficoBase, Observer {
     public void initData(String sessionId) {
         this.sessionId = sessionId;
         this.appController = new AcquistaArticoloControllerApplicativo();
-        setClienteGraficoAttivo(true);
         MainGraphicController precedente = sostituisciControllerCliente(this);
         if (precedente != null && precedente != this) {
             GestoreNotifiche.getInstance().detach(precedente);
         }
         GestoreNotifiche.getInstance().attach(this);
-        // All'avvio carica la Home (Catalogo completo)
         mostraHome();
         Platform.runLater(this::mostraNotificheMerceProntaInAttesa);
     }
 
     /**
-     * Metodo chiamato dal bottone lente o premendo Invio nella TextField.
-     * Crea il bean di ricerca e ricarica il catalogo filtrato.
+     Metodo chiamato dal bottone lente o premendo Invio nella TextField.
      */
     @FXML
     public void cercaProdotti() {
         String testo = txtRicerca.getText();
 
-        // 1. Creazione del Bean per il trasferimento dati (Pattern Bean)
         RicercaArticoloBean beanRicerca = new RicercaArticoloBean();
         beanRicerca.setTestoRicerca(testo);
 
-        // 2. Caricamento manuale del Catalogo per passare il filtro
         try {
-            // Nota: percorso corretto "/view/..." (senza /main/resources se lanci da IDE compilato)
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/CatalogoView.fxml"));
             Node vista = loader.load();
 
-            // 3. Recupero del controller e passaggio dati specifici
             CatalogoGraphicController catController = loader.getController();
-            // Chiama il metodo overloaded che accetta il filtro (definito nel passaggio precedente)
             catController.initData(sessionId, beanRicerca);
 
-            // 4. Aggiornamento vista centrale
             rootLayout.setCenter(vista);
 
-            // Mantiene il bottone Home selezionato perché siamo tecnicamente nel catalogo
             if (btnHome != null) btnHome.setSelected(true);
 
         } catch (IOException e) {
@@ -102,13 +87,11 @@ public class MainGraphicController implements ControllerGraficoBase, Observer {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Node vista = loader.load();
 
-            // Inizializza il controller della sotto-vista se necessario
             Object controller = loader.getController();
             if (controller instanceof ControllerGraficoBase controllerGraficoBase) {
                 controllerGraficoBase.initData(sessionId);
             }
 
-            // Sostituisce il centro del BorderPane
             rootLayout.setCenter(vista);
 
         } catch (IOException e) {
@@ -119,7 +102,6 @@ public class MainGraphicController implements ControllerGraficoBase, Observer {
 
     @FXML
     public void mostraHome() {
-        // Pulisce la barra di ricerca quando si torna alla home "pulita"
         if (txtRicerca != null) {
             txtRicerca.setText("");
         }
@@ -135,7 +117,6 @@ public class MainGraphicController implements ControllerGraficoBase, Observer {
 
     @FXML
     public void mostraProfilo() {
-        // Assicurati che il file si chiami ProfileView.fxml o profileView.fxml (case sensitive)
         caricaVistaCentrale("/view/profileView.fxml");
         if (btnProfilo != null) btnProfilo.setSelected(true);
     }
@@ -157,14 +138,6 @@ public class MainGraphicController implements ControllerGraficoBase, Observer {
         ViewSwitcher.switchTo("/view/Login.fxml", null, stage);
     }
 
-    public static synchronized boolean isClienteGraficoAttivo() {
-        return clienteGraficoAttivo;
-    }
-
-    private static synchronized void setClienteGraficoAttivo(boolean attivo) {
-        clienteGraficoAttivo = attivo;
-    }
-
     private static synchronized MainGraphicController sostituisciControllerCliente(MainGraphicController controller) {
         MainGraphicController precedente = controllerClienteRegistrato;
         controllerClienteRegistrato = controller;
@@ -174,7 +147,6 @@ public class MainGraphicController implements ControllerGraficoBase, Observer {
     private static synchronized void rimuoviControllerCliente(MainGraphicController controller) {
         if (controllerClienteRegistrato == controller) {
             controllerClienteRegistrato = null;
-            clienteGraficoAttivo = false;
         }
     }
 

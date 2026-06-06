@@ -5,17 +5,17 @@ public class PagamentoBean {
     // Metodo scelto: "CARTA_CREDITO", "PAYPAL", "CONTANTI_CONSEGNA"
     private String metodoPagamento;
 
-    private double importoDaPagare; // Utile per verifica di coerenza
+    private double importoDaPagare;
 
-    // --- Dati per Carta di Credito (Opzionali/Nullable) ---
+    // --- Dati per Carta di Credito  ---
     private String numeroCarta;
     private String intestatario;
-    private String dataScadenza; // Formato stringa "MM/YY" è spesso sufficiente per il bean
+    private String dataScadenza;
     private String cvv;
     private String emailPaypal;
     private String passwordPaypal;
 
-    // --- Getters & Setters ---
+
 
     public String getMetodoPagamento() { return metodoPagamento; }
     public void setMetodoPagamento(String metodoPagamento) { this.metodoPagamento = metodoPagamento; }

@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class Carrello extends Subject {
 
-    // Associazione Articolo -> Quantità
+
     private Map<Articolo, Integer> contenuto;
 
     public Carrello() {
@@ -47,8 +47,7 @@ public class Carrello extends Subject {
         super.notifyObservers(this);
     }
 
-    // --- CORREZIONE 1: Rinominato da svuotaCarrello() a svuota() ---
-    // Questo combacia con la chiamata "this.carrello.svuota()" del Controller
+
     public void svuota() {
         contenuto.clear();
         super.notifyObservers(this);
@@ -64,8 +63,7 @@ public class Carrello extends Subject {
         return totale;
     }
 
-    // --- CORREZIONE 2: Rinominato da getContenuto() a getListaArticoli() ---
-    // Questo risolve l'errore "Cannot resolve method getListaArticoli"
+
     public Map<Articolo, Integer> getListaArticoli() {
         return contenuto;
     }

@@ -38,9 +38,7 @@ public class CommessoCLIController extends CLIControllerBase {
         }
     }
 
-    // =========================
-    // FUNZIONALITÀ COMMESSO
-    // =========================
+
 
     private void mostraOrdiniPendenti() {
         try {
