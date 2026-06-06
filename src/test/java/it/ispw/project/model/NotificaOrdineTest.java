@@ -10,6 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 class NotificaOrdineTest {
 
+    private static final long DATA_CREAZIONE_TEST = 1_700_000_000_000L;
+
     @Test
     void creaNotificaNuovoOrdineConDatiOrdine() {
         Ordine ordine = creaOrdine("IN_ELABORAZIONE");
@@ -38,7 +40,7 @@ class NotificaOrdineTest {
 
     private Ordine creaOrdine(String stato) {
         Utente cliente = new Utente(2, "cliente", "1234", "CLIENTE", "cliente@test.it", "Via Test 1");
-        Ordine ordine = new Ordine(10, new Date(), cliente, new HashMap<>(), 0.0);
+        Ordine ordine = new Ordine(10, new Date(DATA_CREAZIONE_TEST), cliente, new HashMap<>(), 0.0);
         ordine.setStato(stato);
         return ordine;
     }

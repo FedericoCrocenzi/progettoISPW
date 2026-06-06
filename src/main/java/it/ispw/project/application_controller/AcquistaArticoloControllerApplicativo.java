@@ -27,10 +27,6 @@ public class AcquistaArticoloControllerApplicativo {
     private static final String STATO_ORDINE_IN_ELABORAZIONE = "IN_ELABORAZIONE";
     private static final Map<Integer, NotificaOrdine> nuoviOrdiniInElaborazione = new LinkedHashMap<>();
 
-    public AcquistaArticoloControllerApplicativo() {
-
-    }
-
     // -----------------------------------------------------------------
     // GESTIONE OBSERVER
     // -----------------------------------------------------------------

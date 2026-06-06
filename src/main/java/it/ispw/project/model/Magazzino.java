@@ -17,7 +17,8 @@ import java.util.Map;
  ripristino dello stock dopo un fallimento della persistenza.
  */
 
-
+// Singleton intenzionale: rappresenta lo stato condiviso del magazzino nel dominio applicativo.
+@SuppressWarnings("java:S6548")
 public class Magazzino {
 
     private final Map<Integer, Articolo> stock;

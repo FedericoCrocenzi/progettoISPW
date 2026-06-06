@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 
+// Singleton intenzionale: punto centralizzato per le notifiche Observer dell'applicazione.
+@SuppressWarnings("java:S6548")
 public class GestoreNotifiche extends Subject {
 
     private final Map<Integer, NotificaOrdine> notificheMercePronta;

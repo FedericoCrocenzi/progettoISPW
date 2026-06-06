@@ -3,6 +3,7 @@ package it.ispw.project.validation;
 import it.ispw.project.bean.PagamentoBean;
 import it.ispw.project.exception.PaymentException;
 
+import java.time.ZoneId;
 import java.time.YearMonth;
 
 public final class PagamentoValidator {
@@ -76,7 +77,7 @@ public final class PagamentoValidator {
         }
 
         YearMonth scadenza = YearMonth.of(anno, mese);
-        if (scadenza.isBefore(YearMonth.now())) {
+        if (scadenza.isBefore(YearMonth.now(ZoneId.systemDefault()))) {
             throw new PaymentException("La carta risulta scaduta.");
         }
     }

@@ -34,11 +34,7 @@ public class JDBCArticoloDAO implements ArticoloDAO {
             }
         }
 
-
-        Connection conn = DBConnection.getInstance().getConnection();
-        if (conn == null) {
-            throw new DAOException("Connessione al database non disponibile.");
-        }
+        Connection conn = ottieniConnessione();
 
         try (PreparedStatement stmt = conn.prepareStatement(
                 Queries.SELECT_ARTICOLO_BY_ID,
@@ -49,9 +45,7 @@ public class JDBCArticoloDAO implements ArticoloDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    Articolo articolo = istanziaArticoloDaResultSet(rs);
-                    cacheArticolo(articolo);
-                    return articolo;
+                    return creaArticoloDaResultSet(rs);
                 }
             }
         } catch (SQLException e) {
@@ -63,29 +57,17 @@ public class JDBCArticoloDAO implements ArticoloDAO {
 
     @Override
     public List<Articolo> selectAllArticoli() throws DAOException {
-        // MODIFICA QUI: Uso del Singleton
-        Connection conn = DBConnection.getInstance().getConnection();
-        List<Articolo> lista = new ArrayList<>();
-        if (conn == null) {
-            throw new DAOException("Connessione al database non disponibile.");
-        }
+        Connection conn = ottieniConnessione();
 
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(Queries.SELECT_ALL_ARTICOLI)) {
 
-            while (rs.next()) {
-                Articolo a = istanziaArticoloDaResultSet(rs);
-                if (a != null) {
-                    cacheArticolo(a);
-                    lista.add(a);
-                }
-            }
+            return creaListaArticoliDaResultSet(rs);
 
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Errore durante il recupero del catalogo", e);
             throw new DAOException("Errore durante il recupero del catalogo.", e);
         }
-        return lista;
     }
 
     @Override
@@ -94,29 +76,17 @@ public class JDBCArticoloDAO implements ArticoloDAO {
             return selectAllArticoli();
         }
 
-
-        Connection conn = DBConnection.getInstance().getConnection();
-        List<Articolo> lista = new ArrayList<>();
-        if (conn == null) {
-            throw new DAOException("Connessione al database non disponibile.");
-        }
+        Connection conn = ottieniConnessione();
 
         try (PreparedStatement stmt = conn.prepareStatement(Queries.SELECT_ARTICOLO_BY_DESCRIZIONE)) {
             stmt.setString(1, "%" + testo + "%");
             try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Articolo a = istanziaArticoloDaResultSet(rs);
-                    if (a != null) {
-                        cacheArticolo(a);
-                        lista.add(a);
-                    }
-                }
+                return creaListaArticoliDaResultSet(rs);
             }
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Errore durante la ricerca filtrata", e);
             throw new DAOException("Errore durante la ricerca degli articoli.", e);
         }
-        return lista;
     }
 
     @Override
@@ -125,11 +95,7 @@ public class JDBCArticoloDAO implements ArticoloDAO {
             return false;
         }
 
-
-        Connection conn = DBConnection.getInstance().getConnection();
-        if (conn == null) {
-            throw new DAOException("Connessione al database non disponibile.");
-        }
+        Connection conn = ottieniConnessione();
 
         try (PreparedStatement stmt = conn.prepareStatement(Queries.UPDATE_ARTICOLO_SCORTA)) {
             stmt.setInt(1, articolo.ottieniScorta());
@@ -151,7 +117,31 @@ public class JDBCArticoloDAO implements ArticoloDAO {
         }
     }
 
-    // Metodo helper
+    private Connection ottieniConnessione() throws DAOException {
+        Connection conn = DBConnection.getInstance().getConnection();
+        if (conn == null) {
+            throw new DAOException("Connessione al database non disponibile.");
+        }
+        return conn;
+    }
+
+    private List<Articolo> creaListaArticoliDaResultSet(ResultSet rs) throws SQLException {
+        List<Articolo> lista = new ArrayList<>();
+        while (rs.next()) {
+            Articolo articolo = creaArticoloDaResultSet(rs);
+            if (articolo != null) {
+                lista.add(articolo);
+            }
+        }
+        return lista;
+    }
+
+    private Articolo creaArticoloDaResultSet(ResultSet rs) throws SQLException {
+        Articolo articolo = istanziaArticoloDaResultSet(rs);
+        cacheArticolo(articolo);
+        return articolo;
+    }
+
     private Articolo istanziaArticoloDaResultSet(ResultSet rs) throws SQLException {
         int id = rs.getInt("id");
         String desc = rs.getString("descrizione");

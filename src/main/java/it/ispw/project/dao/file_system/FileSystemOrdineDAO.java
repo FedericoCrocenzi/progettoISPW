@@ -168,7 +168,7 @@ public class FileSystemOrdineDAO implements OrdineDAO {
                     return idLetto + 1;
                 }
             } catch (NumberFormatException ignored) {
-
+                // Riga con ID malformato ignorata solo per non bloccare il calcolo del prossimo ID.
             }
         }
         return nuovoId;

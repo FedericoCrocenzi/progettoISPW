@@ -15,6 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 class GestoreNotificheTest {
 
+    private static final long DATA_CREAZIONE_TEST = 1_700_000_000_000L;
+
     @Test
     void getInstanceRestituisceIstanzaNonNull() {
         assertNotNull(GestoreNotifiche.getInstance());
@@ -46,7 +48,7 @@ class GestoreNotificheTest {
 
     private Ordine creaOrdine() {
         Utente cliente = new Utente(2, "cliente", "1234", "CLIENTE", "cliente@test.it", "Via Test 1");
-        return new Ordine(10, new Date(), cliente, new HashMap<>(), 0.0);
+        return new Ordine(10, new Date(DATA_CREAZIONE_TEST), cliente, new HashMap<>(), 0.0);
     }
 
     private static class TestObserver implements Observer {
