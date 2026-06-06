@@ -70,14 +70,13 @@ public class MemoryArticoloDAO implements ArticoloDAO {
     }
 
     @Override
-    public List<Articolo> selectByFilter(String descrizione, String tipo, Double min, Double max)
-            throws DAOException {
+    public List<Articolo> selectByDescrizione(String descrizione) throws DAOException {
         // Filtriamo direttamente sugli oggetti del Magazzino
         List<Articolo> tutti = selectAllArticoli();
         List<Articolo> filtrati = new ArrayList<>();
 
         for (Articolo a : tutti) {
-            if (ArticoloFilter.rispettaFiltri(a, descrizione, tipo, min, max)) {
+            if (ArticoloFilter.rispettaDescrizione(a, descrizione)) {
                 filtrati.add(a);
             }
         }

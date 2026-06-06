@@ -82,14 +82,13 @@ public class FileSystemArticoloDAO implements ArticoloDAO {
     }
 
     @Override
-    public List<Articolo> selectByFilter(String descrizione, String tipo, Double min, Double max)
-            throws DAOException {
+    public List<Articolo> selectByDescrizione(String descrizione) throws DAOException {
         // Filtro in memoria (Java Stream o ciclo classico)
         List<Articolo> tutti = selectAllArticoli();
         List<Articolo> filtrati = new ArrayList<>();
 
         for (Articolo a : tutti) {
-            if (ArticoloFilter.rispettaFiltri(a, descrizione, tipo, min, max)) {
+            if (ArticoloFilter.rispettaDescrizione(a, descrizione)) {
                 filtrati.add(a);
             }
         }

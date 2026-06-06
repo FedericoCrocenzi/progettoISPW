@@ -75,20 +75,14 @@ public class AcquistaArticoloControllerApplicativo {
     }
 
     public List<ArticoloBean> ricercaArticoli(RicercaArticoloBean criteri) throws DAOException {
-        if (criteri == null ||
-                (criteri.getTestoRicerca() == null && criteri.getTipoArticolo() == null)) {
+        if (criteri == null || criteri.getTestoRicerca() == null || criteri.getTestoRicerca().isEmpty()) {
             return visualizzaCatalogo();
         }
 
         DAOFactory factory = DAOFactory.getDAOFactory();
         ArticoloDAO articoloDAO = factory.getArticoloDAO();
 
-        List<Articolo> listaModel = articoloDAO.selectByFilter(
-                criteri.getTestoRicerca(),
-                criteri.getTipoArticolo(),
-                criteri.getPrezzoMin(),
-                criteri.getPrezzoMax()
-        );
+        List<Articolo> listaModel = articoloDAO.selectByDescrizione(criteri.getTestoRicerca());
 
         List<ArticoloBean> listaBean = new ArrayList<>();
         Magazzino magazzino = Magazzino.getInstance();

@@ -29,9 +29,8 @@ public class Queries {
     public static final String UPDATE_ARTICOLO_SCORTA =
             "UPDATE articolo SET scorta = ? WHERE id = ?";
 
-    // Usata per la ricerca dinamica (appendendo AND ...)
-    public static final String SELECT_ARTICOLO_BASE =
-            "SELECT * FROM articolo WHERE 1=1";
+    public static final String SELECT_ARTICOLO_BY_DESCRIZIONE =
+            "SELECT * FROM articolo WHERE descrizione LIKE ?";
 
     // =================================================================================
     // QUERY TABELLA ORDINE

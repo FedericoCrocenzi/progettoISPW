@@ -89,8 +89,11 @@ public class JDBCArticoloDAO implements ArticoloDAO {
     }
 
     @Override
-    public List<Articolo> selectByFilter(String testo, String tipo, Double prezzoMin, Double prezzoMax)
-            throws DAOException {
+    public List<Articolo> selectByDescrizione(String testo) throws DAOException {
+        if (testo == null || testo.isEmpty()) {
+            return selectAllArticoli();
+        }
+
         // MODIFICA QUI: Uso del Singleton
         Connection conn = DBConnection.getInstance().getConnection();
         List<Articolo> lista = new ArrayList<>();
@@ -98,33 +101,8 @@ public class JDBCArticoloDAO implements ArticoloDAO {
             throw new DAOException("Connessione al database non disponibile.");
         }
 
-        StringBuilder queryBuilder = new StringBuilder(Queries.SELECT_ARTICOLO_BASE);
-        List<Object> params = new ArrayList<>();
-
-        // Costruzione dinamica della query
-        if (testo != null && !testo.isEmpty()) {
-            queryBuilder.append(" AND descrizione LIKE ?");
-            params.add("%" + testo + "%");
-        }
-        if (tipo != null && !tipo.isEmpty() && !"TUTTI".equalsIgnoreCase(tipo)) {
-            queryBuilder.append(" AND tipo = ?");
-            params.add(tipo);
-        }
-        if (prezzoMin != null) {
-            queryBuilder.append(" AND prezzo >= ?");
-            params.add(prezzoMin);
-        }
-        if (prezzoMax != null) {
-            queryBuilder.append(" AND prezzo <= ?");
-            params.add(prezzoMax);
-        }
-
-        try (PreparedStatement stmt = conn.prepareStatement(queryBuilder.toString())) {
-            // Impostazione parametri
-            for (int i = 0; i < params.size(); i++) {
-                stmt.setObject(i + 1, params.get(i));
-            }
-
+        try (PreparedStatement stmt = conn.prepareStatement(Queries.SELECT_ARTICOLO_BY_DESCRIZIONE)) {
+            stmt.setString(1, "%" + testo + "%");
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Articolo a = istanziaArticoloDaResultSet(rs);
